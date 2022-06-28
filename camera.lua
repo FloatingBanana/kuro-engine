@@ -1,11 +1,15 @@
 local Camera = Object:extend()
 
+local Easing = require "engine.easing"
 local Rect = require "engine.rect"
 
 function Camera:new(position, zoom)
     self.position = position
-
+    self.actualPosition = position
     self.zoom = zoom
+
+    self.easing = Easing.linear
+    self.speed = 100
 end
 
 function Camera:getBounds()
@@ -15,11 +19,22 @@ function Camera:getBounds()
     return Rect(topleft, size)
 end
 
+function Camera:setInterpolation(easing, speed)
+    self.easing = easing
+    self.speed = speed
+end
+
+function Camera:update(dt)
+    self.actualPosition = self.easing(self.actualPosition, self.position, self.speed * dt)
+end
+
 function Camera:attach()
     lg.push()
+
     lg.translate(WIDTH / 2, HEIGHT / 2)
     lg.scale(self.zoom)
-    lg.translate(-self.position.x, -self.position.y)
+
+    lg.translate(-self.actualPosition.x, -self.actualPosition.y)
 end
 
 function Camera:detach()
