@@ -1,4 +1,3 @@
-local Utils = require "engine.Utils"
 local Rect = Object:extend()
 
 local zero = Vector()
