@@ -8,11 +8,16 @@ end
 
 function EM.emit(funcname, ...)
     for entity in pairs(EM.entities) do
-        entity[funcname](entity, ...)
+        local func = entity[funcname]
+
+        if func then
+            func(entity, ...)
+        end
     end
 end
 
 function EM.remove(entity)
+    entity:onRemove()
     EM.entities[entity] = nil
 end
 
