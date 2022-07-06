@@ -11,4 +11,29 @@ function Utils.vecAABB(pos1, size1, pos2, size2)
 	return Utils.AABB(pos1.x, pos1.y, size1.x, size1.y, pos2.x, pos2.y, size2.x, size2.y)
 end
 
+local fonts = {}
+local currFont = "default13"
+function Utils.setFont(name, size)
+	if not size then
+		name, size = "default", name or 13
+	end
+
+	local filename = name..size
+
+	if not fonts[filename] then
+		if name == "default" then
+			fonts[filename] = lg.newFont(size)
+		else
+			if lfs.getInfo("assets/fonts/"..name..".otf") then
+				fonts[filename] = lg.newFont("assets/fonts/"..name..".otf", size)
+			else
+				fonts[filename] = lg.newFont("assets/fonts/"..name..".ttf", size)
+			end
+		end
+	end
+
+	lg.setFont(fonts[filename])
+	currFont = filename
+end
+
 return Utils
