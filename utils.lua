@@ -11,6 +11,31 @@ function Utils.vecAABB(pos1, size1, pos2, size2)
 	return Utils.AABB(pos1.x, pos1.y, size1.x, size1.y, pos2.x, pos2.y, size2.x, size2.y)
 end
 
+function Utils.loadFilesFromFolder(folder, filter, recursive, func)
+    for i, file in ipairs(lfs.getDirectoryItems(folder)) do
+        local name = file:match("^(.*)%.")
+        local ext = file:match("%..-$")
+        local path = folder.."/"..file
+
+        if recursive and lfs.getInfo(path).type == "directory" then
+            Utils.loadFilesFromFolder(path, filter, recursive, func)
+
+        elseif not filter or Lume.find(filter, ext) then
+            func(folder, name, ext)
+        end
+    end
+end
+
+function Utils.requireFilesFromFolder(startFolder, recursive, results)
+    Utils.loadFilesFromFolder(startFolder, {".lua"}, recursive, function(folder, name, ext)
+		local result = require(folder.."."..name)
+
+		if results then
+			results[name] = result
+		end
+	end)
+end
+
 local fonts = {}
 local currFont = "default13"
 function Utils.setFont(name, size)
