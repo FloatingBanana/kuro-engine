@@ -1,4 +1,8 @@
-local Rect = Object:extend()
+local CStruct = require "engine.cstruct"
+local Rect = CStruct("Rect", [[
+    brinevector position;
+    brinevector size;
+]])
 
 local zero = Vector()
 
@@ -28,20 +32,23 @@ function Rect:__index(key)
         return self.position + self.size
     end
 
-    return Object[key]
+    return Rect[key]
 end
 
 function Rect:__newindex(key, value)
     if key == "topLeft" or key == "pos" then
         self.position = value
+        return
     end
 
     if key == "center" then
         self.position = value - (self.size / 2)
+        return
     end
 
     if key == "rightBottom" then
         self.position = value - self.size
+        return
     end
 
     rawset(self, key, value)
