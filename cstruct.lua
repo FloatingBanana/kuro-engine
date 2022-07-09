@@ -36,7 +36,9 @@ local function DefineStruct(structname, definition)
     local struct = setmetatable({typename = structname}, structmt)
 
     if hasJit then
-        ffi.cdef("typedef struct {"..definition.."} "..structname..";")
+        local code = ("typedef struct {%s} %s;"):format(definition, structname)
+        
+        ffi.cdef(code)
         ffi.metatype(structname, struct)
     end
 
