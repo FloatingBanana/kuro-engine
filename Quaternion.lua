@@ -12,6 +12,10 @@ function Quaternion:new(x, y, z, w)
 	self.w = w
 end
 
+-----------------------
+----- Metamethods -----
+-----------------------
+
 function Quaternion:__index(key)
 	if key == "normailized" then
 		return self:clone():normalize()
@@ -27,54 +31,77 @@ function Quaternion:__index(key)
 end
 
 function Quaternion:__add(other)
-	return Quaternion(
-		self.x + other.x,
-		self.y + other.y,
-		self.z + other.z,
-		self.w + other.w
-	)
+	return self:clone():add(other)
 end
 
 function Quaternion:__sub(other)
-	return Quaternion(
-		self.x - other.x,
-		self.y - other.y,
-		self.z - other.z,
-		self.w - other.w
-	)
+	return self:clone():subtract(other)
 end
 
 function Quaternion:__mult(other)
+	return self:clone():multiply(other)
+end
+
+function Quaternion:__div(other)
+	return self:clone():divide(other)
+end
+
+function Quaternion:__eq(other)
+	return self.x == other.x and
+		   self.y == other.y and
+		   self.z == other.z and
+		   self.w == other.w
+end
+
+--------------------
+------ Methods------
+--------------------
+
+function Quaternion:add(other)
+	self.x = self.x + other.x
+	self.y = self.y + other.y
+	self.z = self.z + other.z
+	self.w = self.w + other.w
+
+	return self
+end
+
+function Quaternion:subtract(other)
+	self.x = self.x - other.x
+	self.y = self.y - other.y
+	self.z = self.z - other.z
+	self.w = self.w - other.w
+
+	return self
+end
+
+function Quaternion:multiply(other)
 	if type(other) == "number" then
-		return Quaternion(
-			self.x * other,
-			self.y * other,
-			self.z * other,
-			self.w * other
-		)
+		self.x = self.x * other
+		self.y = self.y * other
+		self.z = self.z * other
+		self.w = self.w * other
 	else
 		local value1 = (self.y * other.z) - (self.z * other.y)
 		local value2 = (self.z * other.x) - (self.x * other.z)
 		local value3 = (self.x * other.y) - (self.y * other.x)
 		local value4 = (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
 
-		return Quaternion(
-			(self.x * other.w) + (other.x * self.w) + value1,
-			(self.y * other.w) + (other.y * self.w) + value2,
-			(self.z * other.w) + (other.z * self.w) + value3,
-			(self.w * other.w) - value4
-		)
+		self.x = (self.x * other.w) + (other.x * self.w) + value1
+		self.y = (self.y * other.w) + (other.y * self.w) + value2
+		self.z = (self.z * other.w) + (other.z * self.w) + value3
+		self.w = (self.w * other.w) - value4
 	end
+
+	return self
 end
 
-function Quaternion:__div(other)
+function Quaternion:divide(other)
 	if type(other) == "number" then
-		return Quaternion(
-			self.x / other.x,
-			self.y / other.y,
-			self.z / other.z,
-			self.w / other.w
-		)
+		self.x = self.x / other.x
+		self.y = self.y / other.y
+		self.z = self.z / other.z
+		self.w = self.w / other.w
 	else
 		-- yeah, IDK either...
 		local invLength = 1 / other.length
@@ -87,22 +114,14 @@ function Quaternion:__div(other)
 		local value3 = (self.x * otY) - (self.y * otX)
 		local value4 = (self.x * otX) + (self.y * otY) + (self.z * otZ)
 
-		return Quaternion(
-			(self.x * otW) + (otX * self.w) + value1,
-			(self.y * otW) + (otY * self.w) + value2,
-			(self.z * otW) + (otZ * self.w) + value3,
-			(self.w * otW) - value4
-		)
+		self.x = (self.x * otW) + (otX * self.w) + value1
+		self.y = (self.y * otW) + (otY * self.w) + value2
+		self.z = (self.z * otW) + (otZ * self.w) + value3
+		self.w = (self.w * otW) - value4
 	end
-end
 
-function Quaternion:__eq(other)
-	return self.x == other.x and
-		   self.y == other.y and
-		   self.z == other.z and
-		   self.w == other.w
+	return self
 end
-
 
 function Quaternion:normalize()
 	local invLength = 1 / self.length
@@ -123,23 +142,23 @@ function Quaternion:dot(other)
 end
 
 function Quaternion:lerp(other, progress)
-		local invAmount = 1 - progress
-		local quaternion = Quaternion()
-		local dot = Quaternion.dot(self, other)
+	local invAmount = 1 - progress
+	local quaternion = Quaternion()
+	local dot = Quaternion.dot(self, other)
 
-		if dot >= 0 then
-			quaternion.x = (invAmount * self.x) + (progress * other.x)
-			quaternion.y = (invAmount * self.y) + (progress * other.y)
-			quaternion.z = (invAmount * self.z) + (progress * other.z)
-			quaternion.w = (invAmount * self.w) + (progress * other.w)
-		else
-			quaternion.x = (invAmount * self.x) - (progress * other.x)
-			quaternion.y = (invAmount * self.y) - (progress * other.y)
-			quaternion.z = (invAmount * self.z) - (progress * other.z)
-			quaternion.w = (invAmount * self.w) - (progress * other.w)
-		end
+	if dot >= 0 then
+		quaternion.x = (invAmount * self.x) + (progress * other.x)
+		quaternion.y = (invAmount * self.y) + (progress * other.y)
+		quaternion.z = (invAmount * self.z) + (progress * other.z)
+		quaternion.w = (invAmount * self.w) + (progress * other.w)
+	else
+		quaternion.x = (invAmount * self.x) - (progress * other.x)
+		quaternion.y = (invAmount * self.y) - (progress * other.y)
+		quaternion.z = (invAmount * self.z) - (progress * other.z)
+		quaternion.w = (invAmount * self.w) - (progress * other.w)
+	end
 
-		return quaternion:normalized()
+	return quaternion:normalized()
 end
 
 function Quaternion:slerp(other, amount)
