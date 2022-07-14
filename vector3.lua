@@ -205,3 +205,5 @@ end
 function Vector3.distance(v1, v2)
     return math.sqrt(Vector3.distanceSquared(v1, v2))
 end
+
+return Vector3
