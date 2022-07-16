@@ -141,6 +141,10 @@ end
 ------ Static functions---------
 --------------------------------
 
+function Quaternion.identity()
+	return Quaternion(0, 0, 0, 1)
+end
+
 function Quaternion.lerp(q1, q2, progress)
 	local invAmount = 1 - progress
 	local quaternion = Quaternion()
@@ -183,15 +187,15 @@ function Quaternion.slerp(q1, q2, amount)
 	end
 
 	return Quaternion(
-		(num3 * q1.X) + (num2 * q2.X),
-		(num3 * q1.Y) + (num2 * q2.Y),
-		(num3 * q1.Z) + (num2 * q2.Z),
-		(num3 * q1.W) + (num2 * q2.W)
+		(num3 * q1.x) + (num2 * q2.x),
+		(num3 * q1.y) + (num2 * q2.y),
+		(num3 * q1.z) + (num2 * q2.z),
+		(num3 * q1.w) + (num2 * q2.w)
 	)
 end
 
 function Quaternion.dot(v1, v2)
-	return (v1.x * v2.x) + (v1.y * v2.y) + (v1.Z * v2.Z) + (v1.w * v2.w)
+	return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z) + (v1.w * v2.w)
 end
 
 function Quaternion.createFromAxisAngle(axis, angle)
@@ -219,6 +223,55 @@ function Quaternion.createFromYawPitchRoll(yaw, pitch, roll)
 		(sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll),
 		(cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll),
 		(cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll)
+	)
+end
+
+function Quaternion.createFromRotationMatrix(mat)
+    local scale = mat.m11 + mat.m22 + mat.m33;
+
+	if (scale > 0) then
+        local sqrt = math.sqrt(scale + 1);
+        local half = 0.5 / sqrt;
+
+		return Quaternion(
+			(mat.m23 - mat.m32) * half,
+	    	(mat.m31 - mat.m13) * half,
+	    	(mat.m12 - mat.m21) * half,
+	    	sqrt * 0.5
+		)
+	end
+
+	if ((mat.m11 >= mat.m22) and (mat.m11 >= mat.m33)) then
+        local sqrt = math.sqrt(1 + mat.m11 - mat.m22 - mat.m33);
+        local half = 0.5 / sqrt;
+
+	    return Quaternion(
+			0.5 * sqrt,
+	    	(mat.m12 + mat.m21) * half,
+	    	(mat.m13 + mat.m31) * half,
+	    	(mat.m23 - mat.m32) * half
+		)
+	end
+
+	if (mat.m22 > mat.m33) then
+        local sqrt = math.sqrt(1 + mat.m22 - mat.m11 - mat.m33);
+        local half = 0.5 / sqrt;
+
+		return Quaternion(
+			(mat.m21 + mat.m12) * half,
+	    	0.5 * sqrt,
+	    	(mat.m32 + mat.m23) * half,
+	    	(mat.m31 - mat.m13) * half
+		)
+	end
+    local sqrt = math.sqrt(1 + mat.m33 - mat.m11 - mat.m22);
+	local half = 0.5 / sqrt;
+
+	return Quaternion(
+		(mat.m31 + mat.m13) * half,
+		(mat.m32 + mat.m23) * half,
+		0.5 * sqrt,
+		(mat.m12 - mat.m21) * half
 	)
 end
 
