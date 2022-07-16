@@ -11,6 +11,10 @@ function Utils.vecAABB(pos1, size1, pos2, size2)
 	return Utils.AABB(pos1.x, pos1.y, size1.x, size1.y, pos2.x, pos2.y, size2.x, size2.y)
 end
 
+function Utils.isNan(number)
+	return number ~= number
+end
+
 function Utils.loadFilesFromFolder(folder, filter, recursive, func)
     for i, file in ipairs(lfs.getDirectoryItems(folder)) do
         local name = file:match("^(.*)%.")
