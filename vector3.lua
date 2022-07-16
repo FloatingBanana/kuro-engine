@@ -1,5 +1,5 @@
 local CStruct = require "engine.cstruct"
-local Vector3 = CStruct("Rect", [[
+local Vector3 = CStruct("vector3", [[
     float x, y, z;
 ]])
 
@@ -13,7 +13,26 @@ end
 ----- Metamethods -----
 -----------------------
 
+local predefined = {
+    forward   = Vector3( 0, 0, 1),
+    backwards = Vector3( 0, 0,-1),
+    up        = Vector3( 0, 1, 0),
+    down      = Vector3( 0,-1, 0),
+    left      = Vector3( 1, 0, 0),
+    right     = Vector3(-1, 0, 0),
+}
+
+local aliases = {
+    width  = "x", red   = "x", r = "x", pitch = "x",
+    height = "y", green = "y", g = "y", yaw   = "y",
+    depth  = "z", blue  = "z", b = "z", roll  = "z"
+}
+
 function Vector3:__index(key)
+    if aliases[key] then
+        return self[aliases[key]]
+    end
+
     if key == "lengthSquared" then
         return self.x*self.x + self.y*self.y + self.z*self.z
     end
@@ -28,6 +47,18 @@ function Vector3:__index(key)
 
     if key == "inverse" then
         return self:clone():invert()
+    end
+
+    if predefined[key] then
+        return predefined[key]:clone()
+    end
+
+    return Vector3[key]
+end
+
+function Vector3:__newindex(key, value)
+    if aliases[key] then
+        self[aliases[key]] = value
     end
 end
 
@@ -168,12 +199,19 @@ function Vector3:transform(value)
         self.y = self.y + y * value.w + (value.z * x - value.x * z);
         self.z = self.z + z * value.w + (value.x * y - value.y * x);
     else
+        -- Matrix
         self.x = (self.x * value.m11) + (self.y * value.m21) + (self.z * value.m31) + value.m41;
         self.y = (self.x * value.m12) + (self.y * value.m22) + (self.z * value.m32) + value.m42;
         self.z = (self.x * value.m13) + (self.y * value.m23) + (self.z * value.m33) + value.m43;
     end
 
     return self
+end
+
+function Vector3:isNan()
+    return self.x ~= self.x or
+           self.y ~= self.y or
+           self.z ~= self.z
 end
 
 function Vector3:clone()
@@ -189,7 +227,7 @@ function Vector3.dot(v1, v2)
 end
 
 function Vector3.cross(v1, v2)
-    Vector3(
+    return Vector3(
           v1.y * v2.z - v2.y * v1.z,
         -(v1.x * v2.z - v2.x * v1.z),
           v1.x * v2.y - v2.x * v1.y
