@@ -33,32 +33,21 @@ local numberIndexes = {
     "m41", "m42", "m43", "m44",
 }
 
-local vectors = {
-    translation = {"41", "42", "m43"},
-    backward    = {"31", "32", "m33"},
-    up          = {"21", "22", "m23"},
-    right       = {"11", "12", "m13"},
-}
-
-local oppositeVectors = {
-    backward = "forward",
-    down     = "up",
-    left     = "right"
-}
-
 function Matrix:__index(key)
     if numberIndexes[key] then
         return self[numberIndexes[key]]
     end
 
-    if vectors[key] then
-        local vec = vectors[key]
-        return Vector3(self[vec[1]], self[vec[2]], self[vec[3]])
-    end
+    -- Vectors
+    if key == "translation" then return Vector3(self.m41, self.m42, self.m43) end
+    if key == "backward"    then return Vector3(self.m31, self.m32, self.m33) end
+    if key == "up"          then return Vector3(self.m21, self.m22, self.m23) end
+    if key == "right"       then return Vector3(self.m11, self.m12, self.m23) end
 
-    if oppositeVectors[key] then
-        return self[oppositeVectors[key]]:negate()
-    end
+    -- Opposite vectors
+    if key == "backward" then return self.forward:negate() end
+    if key == "down"     then return self.up:negate()      end
+    if key == "left"     then return self.right:negate()   end
 
     return Matrix[key]
 end
