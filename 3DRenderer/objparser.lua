@@ -24,6 +24,8 @@ local function ParseTextureMap(args)
             texture.bumpMultiplier = tonumber(args[i+1])
         elseif args[i] == "-imfchan" then
             texture.bumpChannel = args[i+1]
+        elseif args[i] == "-type" then
+            texture.reflectionMapType = args[i+1]
         else
             texture.texture = args[i]
         end
@@ -37,7 +39,7 @@ local function ParseMtl(filename)
     local current = nil
 
     for line in lfs.lines(filename) do
-        local f = line:gmatch("[^s]+")
+        local f = line:gmatch("[^%s]+")
         local param = f()
         local args = {}
 
@@ -95,18 +97,23 @@ local function ParseMtl(filename)
             current.specularTexture = ParseTextureMap(args)
         end
     end
+
+    return materials
 end
 
-local function Parseobj(filename, options)
-    local options = options or {}
+local function Parseobj(filename, flipU, flipV, recalculateNormals)
+    local materials = {}
+    local objects = {}
+
+    local thisobj = nil
+    local thisobjpart = nil
 
     local positions = {}
     local normals = {}
     local texcoords = {}
-    local vertices = {}
 
     for line in lfs.lines(filename) do
-        local f = line:gmatch("[^s]+")
+        local f = line:gmatch("[^%s]+")
         local param = f()
         local args = {}
 
@@ -114,45 +121,77 @@ local function Parseobj(filename, options)
             Lume.push(args, arg)
         end
 
+        -- Load material file
+        if param == "mtllib" then
+            local path = filename:match("(.+/)") or ""
+            materials = ParseMtl(path..args[1])
+        end
+
+        -- Object definition
+        if param == "o" then
+            -- reset temporary info
+            positions = {}
+            normals = {}
+            texcoords = {}
+
+            thisobj = {}
+            objects[args[1]] = thisobj
+        end
+
+        -- Vertex
         if param == "v" then
             Lume.push(positions, Vector3(tonumber(args[1]), tonumber(args[2]), tonumber(args[3])))
         end
 
+        -- Texture coordinates
         if param == "vt" then
             local u = tonumber(args[1])
             local v = tonumber(args[2])
 
             Lume.push(texcoords, {
-                u = options.flipU and 1 - u or u,
-                v = options.flipV and 1 - v or v
+                u = flipU and 1 - u or u,
+                v = flipV and 1 - v or v
             })
         end
 
+        -- Normals
         if param == "vn" then
             Lume.push(normals, Vector3(tonumber(args[1]), tonumber(args[2]), tonumber(args[3])))
         end
 
+        -- Set material
+        if param == "usemtl" then
+            thisobjpart = {
+                material = materials[args[1]],
+                vertices = {}
+            }
+
+            Lume.push(thisobj, thisobjpart)
+        end
+
+        -- Faces
         if param == "f" then
-            for i=1, 3 do
-                local v, vt, vn = args[1]:match("(d%*)/(d%*)/(d%*)")
+            assert(#args == 3, "Model needs to be triangulated")
+
+            for i, vert in ipairs(args) do
+                local v, vt, vn = vert:match("(d%*)/(d%*)/(d%*)")
 
                 local pos = positions[v]
                 local tex = vt and texcoords[vt] or {u=0, v=0}
                 local norm = vn and normals[vn] or Vector3()
 
-                Lume.push(texcoords, {
+                Lume.push(thisobjpart.vertices, {
                     positon = pos,
                     texcoords = tex,
                     normal = norm
                 })
             end
 
-            assert(not f(), "Model needs to be triangulated")
-
-            if options.calculateNormals then
-                local v1 = vertices[#vertices-2]
-                local v2 = vertices[#vertices-1]
-                local v3 = vertices[#vertices]
+            if recalculateNormals then
+                local verts = thisobjpart.vertices
+                local v1 = verts[#verts-2]
+                local v2 = verts[#verts-1]
+                local v3 = verts[#verts]
 
                 local forward = v1.position - v2.position
                 local right = v1.position - v3.position
@@ -165,7 +204,12 @@ local function Parseobj(filename, options)
         end
     end
 
-    return vertices
+    local model = {
+        materials = materials,
+        objects = objects
+    }
+
+    return model
 end
 
 return Parseobj
