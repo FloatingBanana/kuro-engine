@@ -13,15 +13,6 @@ end
 ----- Metamethods -----
 -----------------------
 
-local predefined = {
-    forward   = Vector3( 0, 0, 1),
-    backwards = Vector3( 0, 0,-1),
-    up        = Vector3( 0, 1, 0),
-    down      = Vector3( 0,-1, 0),
-    left      = Vector3( 1, 0, 0),
-    right     = Vector3(-1, 0, 0),
-}
-
 local aliases = {
     width  = "x", red   = "x", r = "x", pitch = "x",
     height = "y", green = "y", g = "y", yaw   = "y",
@@ -49,9 +40,12 @@ function Vector3:__index(key)
         return self:clone():invert()
     end
 
-    if predefined[key] then
-        return predefined[key]:clone()
-    end
+    if key == "forward"   then return  Vector3( 0, 0, 1) end
+    if key == "backwards" then return  Vector3( 0, 0,-1) end
+    if key == "up"        then return  Vector3( 0, 1, 0) end
+    if key == "down"      then return  Vector3( 0,-1, 0) end
+    if key == "left"      then return  Vector3( 1, 0, 0) end
+    if key == "right"     then return  Vector3(-1, 0, 0) end
 
     return Vector3[key]
 end
@@ -59,7 +53,10 @@ end
 function Vector3:__newindex(key, value)
     if aliases[key] then
         self[aliases[key]] = value
+        return
     end
+
+    rawset(self, key, value)
 end
 
 function Vector3:__add(other)
