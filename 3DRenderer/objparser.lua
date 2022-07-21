@@ -1,5 +1,8 @@
 local Vector3 = require "engine.vector3"
 
+local defaultuv = {u=0, v=0}
+local defaultnormal = Vector3()
+
 local function ParseTextureMap(args)
     local texture = {}
 
@@ -174,11 +177,11 @@ local function Parseobj(filename, flipU, flipV, recalculateNormals)
             assert(#args == 3, "Model needs to be triangulated")
 
             for i, vert in ipairs(args) do
-                local v, vt, vn = vert:match("(d%*)/(d%*)/(d%*)")
+                local v, vt, vn = vert:match("(%d*)/(%d*)/(%d*)")
 
-                local pos = positions[v]
-                local tex = vt and texcoords[vt] or {u=0, v=0}
-                local norm = vn and normals[vn] or Vector3()
+                local pos = positions[tonumber(v)]
+                local tex = vt and texcoords[tonumber(vt)] or defaultuv
+                local norm = vn and normals[tonumber(vn)] or defaultnormal
 
                 Lume.push(thisobjpart.vertices, {
                     positon = pos,
