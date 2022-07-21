@@ -8,17 +8,9 @@ local Matrix = CStruct("matrix", [[
           m41, m42, m43, m44,
 ]])
 
-function Matrix:new(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
-    self.m11, self.m12, self.m13, self.m14 = m11, m12, m13, m14
-    self.m21, self.m22, self.m23, self.m24 = m21, m22, m23, m24
-    self.m31, self.m32, self.m33, self.m34 = m31, m32, m33, m34
-    self.m41, self.m42, self.m43, self.m44 = m41, m42, m43, m44
-
-    -- Fields may not be initialized if the instance is a table
+function Matrix:new(...)
     for i=1, 16 do
-        if self[i] == nil then
-            self[i] = 0
-        end
+        self[i] = select(i, ...) or 0
     end
 end
 
