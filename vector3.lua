@@ -4,9 +4,9 @@ local Vector3 = CStruct("vector3", [[
 ]])
 
 function Vector3:new(x, y, z)
-    self.x = x
-    self.y = y
-    self.z = z
+    self.x = x or 0
+    self.y = y or 0
+    self.z = z or 0
 end
 
 -----------------------
