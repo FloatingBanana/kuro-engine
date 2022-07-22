@@ -1,7 +1,21 @@
-local Vector3 = require "engine.vector3"
-
 local defaultuv = {u=0, v=0}
-local defaultnormal = Vector3()
+local defaultnormal = {x=0, y=0, z=0}
+
+local function crossNormalized(v1x, v1y, v1z, v2x, v2y, v2z)
+    local crossx = v1y * v2z - v2y * v1z
+    local crossy = v1x * v2z - v2x * v1z
+    local crossz = v1x * v2y - v2x * v1y
+
+    local invMag = 1 / math.sqrt(crossx*crossx + crossy*crossy + crossz*crossz)
+
+    return crossx * invMag,
+           crossy * invMag,
+           crossz * invMag
+end
+
+local function push(t, elm)
+    t[#t+1] = elm
+end
 
 local function ParseTextureMap(args)
     local texture = {}
@@ -41,13 +55,13 @@ local function ParseMtl(filename)
     local materials = {}
     local current = nil
 
-    for line in lfs.lines(filename) do
+    for line in love.filesystem.lines(filename) do
         local f = line:gmatch("[^%s]+")
         local param = f()
         local args = {}
 
         for arg in f do
-            Lume.push(args, arg)
+            push(args, arg)
         end
 
         if param == "newmtl" then
@@ -56,15 +70,15 @@ local function ParseMtl(filename)
         end
 
         if param == "Ka" then
-            current.ambientColor = Color(tonumber(args[1]), tonumber(args[2]), tonumber(args[3]))
+            current.ambientColor = {tonumber(args[1]), tonumber(args[2]), tonumber(args[3])}
         end
 
         if param == "Kd" then
-            current.diffuseColor = Color(tonumber(args[1]), tonumber(args[2]), tonumber(args[3]))
+            current.diffuseColor = {tonumber(args[1]), tonumber(args[2]), tonumber(args[3])}
         end
 
         if param == "Ks" then
-            current.specularColor = Color(tonumber(args[1]), tonumber(args[2]), tonumber(args[3]))
+            current.specularColor = {tonumber(args[1]), tonumber(args[2]), tonumber(args[3])}
         end
 
         if param == "d" then
@@ -77,7 +91,7 @@ local function ParseMtl(filename)
 
         if param == "Tf" then
             -- XYZ not supported
-            current.transmissionFilter = Color(tonumber(args[1]), tonumber(args[2]), tonumber(args[3]))
+            current.transmissionFilter = {tonumber(args[1]), tonumber(args[2]), tonumber(args[3])}
         end
 
         if param == "Ni" then
@@ -115,13 +129,13 @@ local function Parseobj(filename, flipU, flipV, recalculateNormals, isCounterClo
     local normals = {}
     local texcoords = {}
 
-    for line in lfs.lines(filename) do
+    for line in love.filesystem.lines(filename) do
         local f = line:gmatch("[^%s]+")
         local param = f()
         local args = {}
 
         for arg in f do
-            Lume.push(args, arg)
+            push(args, arg)
         end
 
         -- Load material file
@@ -143,7 +157,11 @@ local function Parseobj(filename, flipU, flipV, recalculateNormals, isCounterClo
 
         -- Vertex
         if param == "v" then
-            Lume.push(positions, Vector3(tonumber(args[1]), tonumber(args[2]), tonumber(args[3])))
+            push(positions, {
+                x = tonumber(args[1]),
+                y = tonumber(args[2]),
+                z = tonumber(args[3])
+            })
         end
 
         -- Texture coordinates
@@ -151,7 +169,7 @@ local function Parseobj(filename, flipU, flipV, recalculateNormals, isCounterClo
             local u = tonumber(args[1])
             local v = tonumber(args[2])
 
-            Lume.push(texcoords, {
+            push(texcoords, {
                 u = flipU and 1 - u or u,
                 v = flipV and 1 - v or v
             })
@@ -159,7 +177,11 @@ local function Parseobj(filename, flipU, flipV, recalculateNormals, isCounterClo
 
         -- Normals
         if param == "vn" then
-            Lume.push(normals, Vector3(tonumber(args[1]), tonumber(args[2]), tonumber(args[3])))
+            push(normals, {
+                x = tonumber(args[1]),
+                y = tonumber(args[2]),
+                z = tonumber(args[3])
+            })
         end
 
         -- Set material
@@ -169,7 +191,7 @@ local function Parseobj(filename, flipU, flipV, recalculateNormals, isCounterClo
                 vertices = {}
             }
 
-            Lume.push(thisobj, thisobjpart)
+            push(thisobj, thisobjpart)
         end
 
         -- Faces
@@ -183,30 +205,31 @@ local function Parseobj(filename, flipU, flipV, recalculateNormals, isCounterClo
                 local tex = vt and texcoords[tonumber(vt)] or defaultuv
                 local norm = vn and normals[tonumber(vn)] or defaultnormal
 
-                Lume.push(thisobjpart.vertices, {
-                    positon = pos,
-                    texcoords = tex,
-                    normal = norm
+                push(thisobjpart.vertices, {
+                    pos.x, pos.y, pos.z,
+                    tex.u, tex.v,
+                    norm.x, norm.y, norm.z
                 })
             end
 
             if recalculateNormals then
                 local verts = thisobjpart.vertices
+
                 local v1 = verts[#verts-2]
                 local v2 = verts[#verts-1]
                 local v3 = verts[#verts]
 
-                local forward = v2.position - v1.position
-                local left = v3.position - v2.position
-                local normal = Vector3.cross(forward, left):normalize()
+                local vfx, vfy, vfz = v2[1] - v1[1], v2[2] - v1[2], v2[3] - v1[3]
+                local vlx, vly, vlz = v3[1] - v2[1], v3[2] - v2[2], v3[3] - v2[3]
+                local normalx, normaly, normalz = crossNormalized(vfx,vfy,vfz, vlx,vly,vlz)
 
                 if isCounterClockwise then
-                    normal:negate()
+                    normalx, normaly, normalz = -normalx, -normaly, -normalz
                 end
 
-                v1.normal = normal
-                v2.normal = normal
-                v3.normal = normal
+                v1[6], v1[7], v1[8] = normalx, normaly, normalz
+                v2[6], v2[7], v2[8] = normalx, normaly, normalz
+                v3[6], v3[7], v3[8] = normalx, normaly, normalz
             end
         end
     end
