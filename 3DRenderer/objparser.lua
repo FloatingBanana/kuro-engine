@@ -104,7 +104,7 @@ local function ParseMtl(filename)
     return materials
 end
 
-local function Parseobj(filename, flipU, flipV, recalculateNormals)
+local function Parseobj(filename, flipU, flipV, recalculateNormals, isCounterClockwise)
     local materials = {}
     local objects = {}
 
@@ -196,9 +196,13 @@ local function Parseobj(filename, flipU, flipV, recalculateNormals)
                 local v2 = verts[#verts-1]
                 local v3 = verts[#verts]
 
-                local forward = v1.position - v2.position
-                local right = v1.position - v3.position
-                local normal = Vector3.cross(forward, right)
+                local forward = v2.position - v1.position
+                local left = v3.position - v2.position
+                local normal = Vector3.cross(forward, left):normalize()
+
+                if isCounterClockwise then
+                    normal:negate()
+                end
 
                 v1.normal = normal
                 v2.normal = normal
