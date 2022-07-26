@@ -19,6 +19,14 @@ function Rect:testCollision(rect)
     return Utils.vecAABB(self.position, self.size, rect.position, rect.size)
 end
 
+function Rect:clone()
+    return Rect(self.position:clone(), self.size:clone())
+end
+
+function Rect:split()
+    return self.position.x, self.position.y, self.size.width, self.size.height
+end
+
 function Rect:__index(key)
     if key == "topLeft" or key == "pos" then
         return self.position
@@ -55,7 +63,7 @@ function Rect:__newindex(key, value)
 end
 
 function Rect:__tostring()
-    return ("Rect(x: %d, y: %d, w: %d, h: %d)"):format(self.position.x, self.position.y, self.size.x, self.size.y)
+    return ("Rect(x: %d, y: %d, w: %d, h: %d)"):format(self.position.x, self.position.y, self.size.width, self.size.height)
 end
 
 return Rect

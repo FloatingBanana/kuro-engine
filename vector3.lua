@@ -215,6 +215,10 @@ function Vector3:clone()
     return Vector3(self.x, self.y, self.z)
 end
 
+function Vector3:split()
+    return self.x, self.y, self.z
+end
+
 ----------------------------
 ----- Static functions -----
 ----------------------------

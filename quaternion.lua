@@ -137,6 +137,10 @@ function Quaternion:clone()
 	return Quaternion(self.x, self.y, self.z, self.w)
 end
 
+function Quaternion:split()
+	return self.x, self.y, self.z, self.w
+end
+
 --------------------------------
 ------ Static functions---------
 --------------------------------

@@ -182,6 +182,17 @@ function Matrix:decompose()
     return true, translation, scale, rotation;
 end
 
+function Matrix:clone()
+    return Matrix(self:split())
+end
+
+function Matrix:split()
+	return self.m11, self.m12, self.m13, self.m14,
+           self.m21, self.m22, self.m23, self.m24,
+           self.m31, self.m32, self.m33, self.m34,
+           self.m41, self.m42, self.m43, self.m44
+end
+
 ----------------------------
 ----- Static functions -----
 ----------------------------
