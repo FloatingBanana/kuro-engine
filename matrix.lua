@@ -435,6 +435,8 @@ function Matrix.createPerspectiveFOV(fov, aspectRatio, near, far)
     mat.m33 = negFarRange
     mat.m34 = -1
     mat.m43 = near * negFarRange
+
+    return mat
 end
 
 function Matrix.createScale(scale)
