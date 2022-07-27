@@ -28,6 +28,8 @@ function Quaternion:__index(key)
 	if key == "length" then
 		return math.sqrt(self.lengthSquared)
 	end
+
+	return Quaternion[key]
 end
 
 function Quaternion:__add(other)
