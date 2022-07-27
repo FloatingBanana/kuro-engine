@@ -67,7 +67,7 @@ function Vector3:__sub(other)
     return self:clone():subtract(other)
 end
 
-function Vector3:__mult(other)
+function Vector3:__mul(other)
     return self:clone():multiply(other)
 end
 
