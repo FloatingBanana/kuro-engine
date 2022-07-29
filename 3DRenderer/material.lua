@@ -1,28 +1,30 @@
 local Material = Object:extend()
 
 function Material:new(attributes)
-    self.attributes = attributes
+    rawset(self, "attributes", attributes)
+
     self.shader = lg.newShader("engine/3DRenderer/shaders/diffuse.glsl")
 
-    for i=1, 3 do
-        local textureSlot = select(i, "ambientTexture", "diffuseTexture", "specularTexture")
+    for key, value in pairs(attributes) do
+        if key == "ambientTexture" or key == "diffuseTexture" or key == "specularTexture" then
+            self[key] = lg.newImage(value.texture)
 
-        if attributes[textureSlot] then
-            self[textureSlot] = lg.newImage(attributes[textureSlot].texture)
+        elseif self.shader:hasUniform("u_"..key) then
+            self.shader:send("u_"..key, value)
         end
     end
 end
 
--- function Material:__index(key)
---     if Material[key] then return Material[key] end
+function Material:__index(key)
+    if rawget(self, "attributes") and self.attributes[key] then
+        return self.attributes[key]
+    end
 
---     if self.attributes[key] then
---         return self.attributes[key]
---     end
--- end
+    return Material[key]
+end
 
 function Material:__newindex(key, value)
-    if self.attributes and self.attributes[key] then
+    if self.attributes[key] then
         self.attributes[key] = value
         self.shader:send("u_"..key, value)
         return

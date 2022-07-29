@@ -16,6 +16,6 @@ uniform vec3 u_diffuseColor;
 uniform vec3 u_specularColor;
 
 vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
-    return vec4(1,1,1,1);
+    return vec4(u_ambientColor * u_diffuseColor * u_specularColor, 1);
 }
 #endif
