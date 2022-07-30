@@ -41,6 +41,10 @@ function Matrix:__index(key)
     if key == "down"     then return self.up:negate()      end
     if key == "left"     then return self.right:negate()   end
 
+    if key == "transposed" then
+        return self:clone():transpose()
+    end
+
     return Matrix[key]
 end
 
@@ -132,6 +136,30 @@ function Matrix:multiply(other)
     end
 
     return self
+end
+
+function Matrix:transpose()
+    return Matrix(
+        self.m11,
+        self.m21,
+        self.m31,
+        self.m41,
+
+        self.m12,
+        self.m22,
+        self.m32,
+        self.m42,
+
+        self.m13,
+        self.m23,
+        self.m33,
+        self.m43,
+
+        self.m14,
+        self.m24,
+        self.m34,
+        self.m44
+    )
 end
 
 function Matrix:divide(other)
