@@ -504,7 +504,7 @@ function Matrix.createPerspectiveFOV(fov, aspectRatio, near, far)
     local yScale = 1 / math.tan(fov * 0.5)
     local xScale = yScale / aspectRatio
     local negFarRange = far == math.huge and -1 or far / (near - far)
-    local mat = Matrix.identity()
+    local mat = Matrix()
 
     mat.m11 = xScale
     mat.m22 = yScale
