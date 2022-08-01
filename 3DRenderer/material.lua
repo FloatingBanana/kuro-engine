@@ -32,6 +32,7 @@ function Material:__newindex(key, value)
 
     if key == "worldMatrix" then
         self.shader:send("u_world", "column", {value:split()})
+        self.shader:send("u_invTranspWorld", "column", {value.inverse:transpose():split()})
         return
     end
 
@@ -42,6 +43,19 @@ function Material:__newindex(key, value)
 
     if key == "projectionMatrix" then
         self.shader:send("u_proj", "column", {value:split()})
+        return
+    end
+
+    if key == "viewPosition" then
+        self.shader:send("u_viewPosition", {value:split()})
+        return
+    end
+
+    if key == "directionalLight" then
+        self.shader:send("u_dirLight.direction", {value.direction:split()})
+        self.shader:send("u_dirLight.ambient", {value.ambient:split()})
+        self.shader:send("u_dirLight.diffuse", {value.diffuse:split()})
+        self.shader:send("u_dirLight.specular", {value.specular:split()})
         return
     end
 
