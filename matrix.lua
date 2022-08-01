@@ -45,6 +45,10 @@ function Matrix:__index(key)
         return self:clone():transpose()
     end
 
+    if key == "inverse" then
+        return self:clone():invert()
+    end
+
     return Matrix[key]
 end
 
@@ -117,29 +121,52 @@ function Matrix:multiply(other)
             self[i] = self[i] * other
         end
     else
-        self.m11 = (((self.m11 * other.m11) + (self.m12 * other.m21)) + (self.m13 * other.m31)) + (self.m14 * other.m41)
-        self.m12 = (((self.m11 * other.m12) + (self.m12 * other.m22)) + (self.m13 * other.m32)) + (self.m14 * other.m42)
-        self.m13 = (((self.m11 * other.m13) + (self.m12 * other.m23)) + (self.m13 * other.m33)) + (self.m14 * other.m43)
-        self.m14 = (((self.m11 * other.m14) + (self.m12 * other.m24)) + (self.m13 * other.m34)) + (self.m14 * other.m44)
-        self.m21 = (((self.m21 * other.m11) + (self.m22 * other.m21)) + (self.m23 * other.m31)) + (self.m24 * other.m41)
-        self.m22 = (((self.m21 * other.m12) + (self.m22 * other.m22)) + (self.m23 * other.m32)) + (self.m24 * other.m42)
-        self.m23 = (((self.m21 * other.m13) + (self.m22 * other.m23)) + (self.m23 * other.m33)) + (self.m24 * other.m43)
-        self.m24 = (((self.m21 * other.m14) + (self.m22 * other.m24)) + (self.m23 * other.m34)) + (self.m24 * other.m44)
-        self.m31 = (((self.m31 * other.m11) + (self.m32 * other.m21)) + (self.m33 * other.m31)) + (self.m34 * other.m41)
-        self.m32 = (((self.m31 * other.m12) + (self.m32 * other.m22)) + (self.m33 * other.m32)) + (self.m34 * other.m42)
-        self.m33 = (((self.m31 * other.m13) + (self.m32 * other.m23)) + (self.m33 * other.m33)) + (self.m34 * other.m43)
-        self.m34 = (((self.m31 * other.m14) + (self.m32 * other.m24)) + (self.m33 * other.m34)) + (self.m34 * other.m44)
-        self.m41 = (((self.m41 * other.m11) + (self.m42 * other.m21)) + (self.m43 * other.m31)) + (self.m44 * other.m41)
-        self.m42 = (((self.m41 * other.m12) + (self.m42 * other.m22)) + (self.m43 * other.m32)) + (self.m44 * other.m42)
-        self.m43 = (((self.m41 * other.m13) + (self.m42 * other.m23)) + (self.m43 * other.m33)) + (self.m44 * other.m43)
-        self.m44 = (((self.m41 * other.m14) + (self.m42 * other.m24)) + (self.m43 * other.m34)) + (self.m44 * other.m44)
+        self:new(
+            (((self.m11 * other.m11) + (self.m12 * other.m21)) + (self.m13 * other.m31)) + (self.m14 * other.m41),
+            (((self.m11 * other.m12) + (self.m12 * other.m22)) + (self.m13 * other.m32)) + (self.m14 * other.m42),
+            (((self.m11 * other.m13) + (self.m12 * other.m23)) + (self.m13 * other.m33)) + (self.m14 * other.m43),
+            (((self.m11 * other.m14) + (self.m12 * other.m24)) + (self.m13 * other.m34)) + (self.m14 * other.m44),
+            (((self.m21 * other.m11) + (self.m22 * other.m21)) + (self.m23 * other.m31)) + (self.m24 * other.m41),
+            (((self.m21 * other.m12) + (self.m22 * other.m22)) + (self.m23 * other.m32)) + (self.m24 * other.m42),
+            (((self.m21 * other.m13) + (self.m22 * other.m23)) + (self.m23 * other.m33)) + (self.m24 * other.m43),
+            (((self.m21 * other.m14) + (self.m22 * other.m24)) + (self.m23 * other.m34)) + (self.m24 * other.m44),
+            (((self.m31 * other.m11) + (self.m32 * other.m21)) + (self.m33 * other.m31)) + (self.m34 * other.m41),
+            (((self.m31 * other.m12) + (self.m32 * other.m22)) + (self.m33 * other.m32)) + (self.m34 * other.m42),
+            (((self.m31 * other.m13) + (self.m32 * other.m23)) + (self.m33 * other.m33)) + (self.m34 * other.m43),
+            (((self.m31 * other.m14) + (self.m32 * other.m24)) + (self.m33 * other.m34)) + (self.m34 * other.m44),
+            (((self.m41 * other.m11) + (self.m42 * other.m21)) + (self.m43 * other.m31)) + (self.m44 * other.m41),
+            (((self.m41 * other.m12) + (self.m42 * other.m22)) + (self.m43 * other.m32)) + (self.m44 * other.m42),
+            (((self.m41 * other.m13) + (self.m42 * other.m23)) + (self.m43 * other.m33)) + (self.m44 * other.m43),
+            (((self.m41 * other.m14) + (self.m42 * other.m24)) + (self.m43 * other.m34)) + (self.m44 * other.m44)
+        )
+    end
+
+    return self
+end
+
+function Matrix:divide(other)
+    if type(other) == "number"then
+        self:multiply(1 / other)
+    else
+        for i=1, 16 do
+            self[i] = self[i] / other[i]
+        end
+    end
+
+    return self
+end
+
+function Matrix:negate()
+    for i=1, 16 do
+        self[i] = -self[i]
     end
 
     return self
 end
 
 function Matrix:transpose()
-    return Matrix(
+    -- Calling the raw constructor just assigns the arguments to the matrix
+    self:new(
         self.m11,
         self.m21,
         self.m31,
@@ -160,24 +187,45 @@ function Matrix:transpose()
         self.m34,
         self.m44
     )
-end
-
-function Matrix:divide(other)
-    if type(other) == "number"then
-        self:multiply(1 / other)
-    else
-        for i=1, 16 do
-            self[i] = self[i] / other[i]
-        end
-    end
 
     return self
 end
 
-function Matrix:negate()
-    for i=1, 16 do
-        self[i] = -self[i]
-    end
+function Matrix:invert()
+    -- Determinants
+    local det1 = self.m11 * self.m22 - self.m12 * self.m21;
+    local det2 = self.m11 * self.m23 - self.m13 * self.m21;
+    local det3 = self.m11 * self.m24 - self.m14 * self.m21;
+    local det4 = self.m12 * self.m23 - self.m13 * self.m22;
+    local det5 = self.m12 * self.m24 - self.m14 * self.m22;
+    local det6 = self.m13 * self.m24 - self.m14 * self.m23;
+    local det7 = self.m31 * self.m42 - self.m32 * self.m41;
+    local det8 = self.m31 * self.m43 - self.m33 * self.m41;
+    local det9 = self.m31 * self.m44 - self.m34 * self.m41;
+    local det10 = self.m32 * self.m43 - self.m33 * self.m42;
+    local det11 = self.m32 * self.m44 - self.m34 * self.m42;
+    local det12 = self.m33 * self.m44 - self.m34 * self.m43;
+    local major = (det1*det12 - det2*det11 + det3*det10 + det4*det9 - det5*det8 + det6*det7);
+    local invMajor = 1 / major
+
+    self:new(
+        (self.m22*det12 - self.m23*det11 + self.m24*det10) * invMajor,
+        (-self.m12*det12 + self.m13*det11 - self.m14*det10) * invMajor,
+        (self.m42*det6 - self.m43*det5 + self.m44*det4) * invMajor,
+        (-self.m32*det6 + self.m33*det5 - self.m34*det4) * invMajor,
+        (-self.m21*det12 + self.m23*det9 - self.m24*det8) * invMajor,
+        (self.m11*det12 - self.m13*det9 + self.m14*det8) * invMajor,
+        (-self.m41*det6 + self.m43*det3 - self.m44*det2) * invMajor,
+        (self.m31*det6 - self.m33*det3 + self.m34*det2) * invMajor,
+        (self.m21*det11 - self.m22*det9 + self.m24*det7) * invMajor,
+        (-self.m11*det11 + self.m12*det9 - self.m14*det7) * invMajor,
+        (self.m41*det5 - self.m42*det3 + self.m44*det1) * invMajor,
+        (-self.m31*det5 + self.m32*det3 - self.m34*det1) * invMajor,
+        (-self.m21*det10 + self.m22*det8 - self.m23*det7) * invMajor,
+        (self.m11*det10 - self.m12*det8 + self.m13*det7) * invMajor,
+        (-self.m41*det4 + self.m42*det2 - self.m43*det1) * invMajor,
+        (self.m31*det4 - self.m32*det2 + self.m33*det1) * invMajor
+    )
 
     return self
 end
