@@ -69,7 +69,7 @@ function Matrix:__sub(value)
     return self:clone():sub(value)
 end
 
-function Matrix:__mult(value)
+function Matrix:__mul(value)
     return self:clone():mult(value)
 end
 

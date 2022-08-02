@@ -40,7 +40,7 @@ function Quaternion:__sub(other)
 	return self:clone():subtract(other)
 end
 
-function Quaternion:__mult(other)
+function Quaternion:__mul(other)
 	return self:clone():multiply(other)
 end
 
