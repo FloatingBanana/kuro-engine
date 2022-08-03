@@ -156,11 +156,6 @@ local function Parseobj(filename, flipU, flipV, recalculateNormals)
 
         -- Object definition
         if param == "o" then
-            -- reset temporary info
-            positions = {}
-            normals = {}
-            texcoords = {}
-
             thisobj = {}
             objects[args[1]] = thisobj
         end
