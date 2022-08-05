@@ -16,7 +16,7 @@ function Queue:push(item)
 end
 
 function Queue:pop()
-    assert(self:getLenght() > 0, "Queue is empty")
+    assert(self:getLength() > 0, "Queue is empty")
 
     local item = self:peek()
     self[self.first] = nil
@@ -30,7 +30,7 @@ function Queue:peek()
 end
 
 -- Reusing some functions from Deque since they would have the same logic
-Queue.getLength = Deque.getLenght
+Queue.getLength = Deque.getLength
 Queue.getItem = Deque.getItem
 Queue.iterate = Deque.iterate
 
