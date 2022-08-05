@@ -7,11 +7,11 @@ function Stack:new(...)
 end
 
 function Stack:push(item)
-    self[#self+1] = item
+    table.insert(self, item)
 end
 
 function Stack:pop()
-    table.remove(self)
+    return table.remove(self)
 end
 
 function Stack:peek()
