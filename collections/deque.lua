@@ -20,7 +20,7 @@ function Deque:pushRight(item)
 end
 
 function Deque:popLeft()
-    assert(self:getLenght() > 0, "Deque is empty")
+    assert(self:getLength() > 0, "Deque is empty")
 
     local item = self:peekLeft()
     self[self.first] = nil
@@ -30,7 +30,7 @@ function Deque:popLeft()
 end
 
 function Deque:popRight()
-    assert(self:getLenght() > 0, "Deque is empty")
+    assert(self:getLength() > 0, "Deque is empty")
 
     local item = self:peekRight()
     self[self.last] = nil
@@ -40,15 +40,15 @@ function Deque:popRight()
 end
 
 function Deque:peekLeft()
-    return self[self.last]
-end
-
-function Deque:peekRight()
     return self[self.first]
 end
 
-function Deque:getLenght()
-    return math.abs(self.first - self.last + 1)
+function Deque:peekRight()
+    return self[self.last]
+end
+
+function Deque:getLength()
+    return math.abs(self.last - self.first + 1)
 end
 
 function Deque:getItem(index)
