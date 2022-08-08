@@ -171,9 +171,9 @@ end
 function Vector3:reflect(normal)
     local dot = Vector3.dot(self, normal)
 
-    self.X = self.X - (2 * normal.X) * dot;
-    self.Y = self.Y - (2 * normal.Y) * dot;
-    self.Z = self.Z - (2 * normal.Z) * dot;
+    self.x = self.x - (2 * normal.x) * dot;
+    self.y = self.y - (2 * normal.y) * dot;
+    self.z = self.z - (2 * normal.z) * dot;
 
     return self
 end
@@ -206,9 +206,7 @@ function Vector3:transform(value)
 end
 
 function Vector3:isNan()
-    return self.x ~= self.x or
-           self.y ~= self.y or
-           self.z ~= self.z
+    return self ~= self
 end
 
 function Vector3:clone()
