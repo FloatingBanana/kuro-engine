@@ -105,6 +105,12 @@ function PriorityQueue:remove(index)
     self:pop()
 end
 
+function PriorityQueue:clear()
+    self.items = {}
+    self.priorities = {}
+    self.pointer = -1
+end
+
 function PriorityQueue:getSize()
     return self.pointer + 2
 end
