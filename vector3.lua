@@ -3,6 +3,14 @@ local Vector3 = CStruct("vector3", [[
     float x, y, z;
 ]])
 
+-- See [engine/vector2.lua] for explanation
+local function commutative_reorder(object, number)
+    if type(object) == "number" then
+        return number, object
+    end
+    return object, number
+end
+
 function Vector3:new(x, y, z)
     self.x = x or 0
     self.y = y or 0
@@ -60,18 +68,26 @@ function Vector3:__newindex(key, value)
 end
 
 function Vector3:__add(other)
+    self, other = commutative_reorder(self, other)
     return self:clone():add(other)
 end
 
 function Vector3:__sub(other)
+    if type(self) == "number" then
+        return Vector3(self - other.x, self - other.y, self - other.z)
+    end
     return self:clone():subtract(other)
 end
 
 function Vector3:__mul(other)
+    self, other = commutative_reorder(self, other)
     return self:clone():multiply(other)
 end
 
 function Vector3:__div(other)
+    if type(self) == "number" then
+        return Vector3(self / other.x, self / other.y, self / other.z)
+    end
     return self:clone():divide(other)
 end
 

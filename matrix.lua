@@ -8,6 +8,14 @@ local Matrix = CStruct("matrix", [[
           m41, m42, m43, m44;
 ]])
 
+-- See [engine/vector2.lua] for explanation
+local function commutative_reorder(object, number)
+    if type(object) == "number" then
+        return number, object
+    end
+    return object, number
+end
+
 function Matrix:new(...)
     for i=1, 16 do
         self[i] = select(i, ...) or 0
@@ -70,10 +78,12 @@ function Matrix:__sub(value)
 end
 
 function Matrix:__mul(value)
+    self, value = commutative_reorder(self, value)
     return self:clone():mult(value)
 end
 
 function Matrix:__div(value)
+    self, value = commutative_reorder(self, value)
     return self:clone():divide(value)
 end
 

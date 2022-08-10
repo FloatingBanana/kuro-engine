@@ -3,6 +3,16 @@ local Vector2 = CStruct("vector2", [[
     float x, y;
 ]])
 
+-- Helper function for overloads of commutative operations to ensure that the order
+-- of the arguments will always be the same (first the object, then the number), so we
+-- don't need to worry if the operation was done "object * number" or "number * object"
+local function commutative_reorder(object, number)
+    if type(object) == "number" then
+        return number, object
+    end
+    return object, number
+end
+
 function Vector2:new(x, y)
     self.x = x or 0
     self.y = y or 0
@@ -60,18 +70,26 @@ function Vector2:__newindex(key, value)
 end
 
 function Vector2:__add(other)
+    self, other = commutative_reorder(self, other)
     return self:clone():add(other)
 end
 
 function Vector2:__sub(other)
+    if type(self) == "number" then
+        return Vector2(self - other.x, self - other.y)
+    end
     return self:clone():subtract(other)
 end
 
 function Vector2:__mul(other)
+    self, other = commutative_reorder(self, other)
     return self:clone():multiply(other)
 end
 
 function Vector2:__div(other)
+    if type(self) == "number" then
+        return Vector2(self / other.x, self / other.y)
+    end
     return self:clone():divide(other)
 end
 

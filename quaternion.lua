@@ -5,6 +5,14 @@ local Quaternion = CStruct("quaternion", [[
 	double x, y, z, w;
 ]])
 
+-- See [engine/vector2.lua] for explanation
+local function commutative_reorder(object, number)
+    if type(object) == "number" then
+        return number, object
+    end
+    return object, number
+end
+
 function Quaternion:new(x, y, z, w)
 	self.x = x or 0
 	self.y = y or 0
@@ -41,10 +49,12 @@ function Quaternion:__sub(other)
 end
 
 function Quaternion:__mul(other)
+	self, other = commutative_reorder(self, other)
 	return self:clone():multiply(other)
 end
 
 function Quaternion:__div(other)
+	self, other = commutative_reorder(self, other)
 	return self:clone():divide(other)
 end
 
