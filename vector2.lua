@@ -183,6 +183,15 @@ function Vector2:setAngle(angle)
     return self
 end
 
+function Vector2:rotateBy(angle)
+    self:new(
+        self.x * math.cos(angle) - self.y * math.sin(angle),
+        self.x * math.sin(angle) + self.y * math.cos(angle)
+    )
+
+    return self
+end
+
 function Vector2:isNan()
     return self ~= self
 end
