@@ -250,9 +250,10 @@ function Vector3.cross(v1, v2)
 end
 
 function Vector3.distanceSquared(v1, v2)
-    return (v2.x - v1.x) *
-           (v2.y - v1.y) *
-           (v2.z - v1.z)
+    local x = v2.x - v1.x
+    local y = v2.y - v1.y
+    local z = v2.z - v1.z
+    return x*x + y*y + z*z
 end
 
 function Vector3.distance(v1, v2)

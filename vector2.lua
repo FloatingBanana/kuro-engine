@@ -238,7 +238,9 @@ function Vector2.createAngled(angle, magnitude)
 end
 
 function Vector2.distanceSquared(v1, v2)
-    return (v2.x - v1.x) * (v2.y - v1.y)
+    local x = v2.x - v1.x
+    local y = v2.y - v1.y
+    return x*x + y*y
 end
 
 function Vector2.distance(v1, v2)
