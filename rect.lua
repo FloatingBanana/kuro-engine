@@ -1,3 +1,4 @@
+local Inter2d = require "engine.intersection2d"
 local CStruct = require "engine.cstruct"
 local Rect = CStruct("Rect", [[
     brinevector position;
@@ -12,11 +13,11 @@ function Rect:new(pos, size)
 end
 
 function Rect:isPointInside(pos)
-    return Utils.vecAABB(self.position, self.size, pos, zero)
+    return Inter2d.point_AABB(pos, self.topLeft, self.bottomRight)
 end
 
 function Rect:testCollision(rect)
-    return Utils.vecAABB(self.position, self.size, rect.position, rect.size)
+    return Inter2d.AABB_AABB(self.topLeft, self.bottomRight, rect.topLeft, rect.bottomRight)
 end
 
 function Rect:clone()
@@ -36,7 +37,7 @@ function Rect:__index(key)
         return self.position + (self.size / 2)
     end
 
-    if key == "rightBottom" then
+    if key == "bottomRight" then
         return self.position + self.size
     end
 
@@ -54,7 +55,7 @@ function Rect:__newindex(key, value)
         return
     end
 
-    if key == "rightBottom" then
+    if key == "bottomRight" then
         self.position = value - self.size
         return
     end
