@@ -1,3 +1,4 @@
+local Vector2 = require "engine.vector2"
 local CStruct = require "engine.cstruct"
 local Vector3 = CStruct("vector3", [[
     float x, y, z;
@@ -46,6 +47,16 @@ function Vector3:__index(key)
 
     if key == "inverse" then
         return self:clone():invert()
+    end
+
+    if not key:match("[^xyz]") then
+        local ax1, ax2, ax3 = key:sub(1,1), key:sub(2,2), key:sub(3,3)
+        
+        if #key == 2 then
+            return Vector2(ax1, ax2)
+        elseif #key == 3 then
+            return Vector3(ax1, ax2, ax3)
+        end
     end
 
     if key == "forward"   then return  Vector3( 0, 0, 1) end
