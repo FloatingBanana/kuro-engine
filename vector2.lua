@@ -52,6 +52,11 @@ function Vector2:__index(key)
         return self:clone():invert()
     end
 
+    if not key:match("[^xy]") then
+        local ax1, ax2 = key:sub(1,1), key:sub(2,2)
+        return Vector2(ax1, ax2)
+    end
+
     if key == "up"    then return  Vector2( 0,-1) end
     if key == "down"  then return  Vector2( 0, 1) end
     if key == "right" then return  Vector2(-1, 0) end
