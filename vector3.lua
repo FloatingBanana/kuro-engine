@@ -14,8 +14,8 @@ end
 
 function Vector3:new(x, y, z)
     self.x = x or 0
-    self.y = y or 0
-    self.z = z or 0
+    self.y = y or x or 0
+    self.z = z or x or 0
 end
 
 -----------------------

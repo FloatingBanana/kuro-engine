@@ -15,7 +15,7 @@ end
 
 function Vector2:new(x, y)
     self.x = x or 0
-    self.y = y or 0
+    self.y = y or x or 0
 end
 
 -----------------------
