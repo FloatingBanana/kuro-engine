@@ -252,4 +252,18 @@ function Vector2.distance(v1, v2)
     return math.sqrt(Vector2.distanceSquared(v1, v2))
 end
 
+function Vector2.min(v1, v2)
+    return Vector2(
+        math.min(v1.x, v2.x),
+        math.min(v1.y, v2.y)
+    )
+end
+
+function Vector2.max(v1, v2)
+    return Vector2(
+        math.max(v1.x, v2.x),
+        math.max(v1.y, v2.y)
+    )
+end
+
 return Vector2
