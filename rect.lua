@@ -5,8 +5,6 @@ local Rect = CStruct("Rect", [[
     brinevector size;
 ]])
 
-local zero = Vector()
-
 function Rect:new(pos, size)
     self.position = pos
     self.size = size

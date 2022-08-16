@@ -2,6 +2,7 @@ local Camera = Object:extend()
 
 local Easing = require "engine.easing"
 local Rect = require "engine.rect"
+local Vector2 = require "engine.vector2"
 
 function Camera:new(position, zoom)
     self.position = position
@@ -13,7 +14,7 @@ function Camera:new(position, zoom)
 end
 
 function Camera:getBounds()
-    local size = Vector(WIDTH, HEIGHT) * (1 / self.zoom)
+    local size = Vector2(WIDTH, HEIGHT) * (1 / self.zoom)
     local topleft = self.position - (size / 2)
 
     return Rect(topleft, size)
