@@ -102,7 +102,7 @@ function Vector3:__div(other)
     return self:clone():divide(other)
 end
 
-function Vector:__unm()
+function Vector3:__unm()
     return self:clone():negate()
 end
 

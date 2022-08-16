@@ -98,7 +98,7 @@ function Vector2:__div(other)
     return self:clone():divide(other)
 end
 
-function Vector:__unm()
+function Vector2:__unm()
     return self:clone():negate()
 end
 
