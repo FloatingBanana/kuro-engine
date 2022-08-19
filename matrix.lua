@@ -243,9 +243,9 @@ end
 function Matrix:decompose()
     local translation = self.translation
 
-    local xs = (Lume.sign(self.m11 * self.m12 * self.m13 * self.m14) < 0) and -1 or 1
-    local ys = (Lume.sign(self.m21 * self.m22 * self.m23 * self.m24) < 0) and -1 or 1
-    local zs = (Lume.sign(self.m31 * self.m32 * self.m33 * self.m34) < 0) and -1 or 1
+    local xs = (self.m11 * self.m12 * self.m13 * self.m14 < 0) and -1 or 1
+    local ys = (self.m21 * self.m22 * self.m23 * self.m24 < 0) and -1 or 1
+    local zs = (self.m31 * self.m32 * self.m33 * self.m34 < 0) and -1 or 1
 
     local scale = Vector3(
         xs * math.sqrt(self.m11 * self.m11 + self.m12 * self.m12 + self.m13 * self.m13),
