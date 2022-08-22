@@ -3,7 +3,7 @@ local Material = Object:extend()
 function Material:new(attributes)
     rawset(self, "attributes", attributes)
 
-    self.shader = lg.newShader("engine/3DRenderer/shaders/diffuse.glsl")
+    self.shader = lg.newShader("engine/3DRenderer/shaders/3drendering.vert", "engine/3DRenderer/shaders/diffuselighting.frag")
 
     for key, value in pairs(attributes) do
         if key == "ambientTexture" or key == "diffuseTexture" or key == "specularTexture" then
@@ -32,7 +32,9 @@ function Material:__newindex(key, value)
 
     if key == "worldMatrix" then
         self.shader:send("u_world", "column", {value:split()})
-        self.shader:send("u_invTranspWorld", "column", {value.inverse:transpose():split()})
+
+        local itm = value.inverse:transpose()
+        self.shader:send("u_invTranspWorld", "column", {itm.m11, itm.m12, itm.m13, itm.m21, itm.m22, itm.m23, itm.m31, itm.m32, itm.m33})
         return
     end
 

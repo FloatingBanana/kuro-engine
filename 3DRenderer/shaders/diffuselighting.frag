@@ -1,26 +1,3 @@
-varying highp vec3 v_VertexNormal;
-varying highp vec3 v_FragPos;
-
-#ifdef VERTEX
-uniform mat4 u_world;
-uniform mat4 u_invTranspWorld;
-uniform mat4 u_view;
-uniform mat4 u_proj;
-
-attribute vec3 VertexNormal;
-
-vec4 position(mat4 transformProjection, vec4 position) {
-    v_VertexNormal = mat3(u_invTranspWorld) * VertexNormal;
-
-    vec4 worldPos = u_world * position;
-
-    v_FragPos = vec3(worldPos);
-
-    return u_proj * u_view * worldPos;
-}
-#endif
-
-#ifdef PIXEL
 struct DirectionalLight {
     vec3 direction;
     
@@ -34,6 +11,9 @@ uniform vec3 u_diffuseColor;
 uniform vec3 u_specularColor;
 uniform vec3 u_viewPosition;
 uniform DirectionalLight u_dirLight;
+
+varying vec3 v_vertexNormal;
+varying vec3 v_fragPos;
 
 vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
     vec3 lightDir = normalize(-light.direction);
@@ -53,11 +33,10 @@ vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir
 }
 
 vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
-    vec3 normal = normalize(v_VertexNormal);
-    vec3 viewDir = normalize(u_viewPosition - v_FragPos);
+    vec3 normal = normalize(v_vertexNormal);
+    vec3 viewDir = normalize(u_viewPosition - v_fragPos);
 
     vec3 result = CalculateDirectionalLight(u_dirLight, normal, viewDir);
 
     return vec4(result, 1.0);
 }
-#endif
