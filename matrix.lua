@@ -359,7 +359,7 @@ end
 
 function Matrix.createLookAt(position, target, up)
     local forward = (position - target):normalize()
-    local right = Vector3.cross(up, forward)
+    local right = Vector3.cross(up, forward):normalize()
     local up = Vector3.cross(forward, right)
 
     return Matrix(
