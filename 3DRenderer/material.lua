@@ -53,11 +53,8 @@ function Material:__newindex(key, value)
         return
     end
 
-    if key == "directionalLight" then
-        self.shader:send("u_dirLight.direction", {value.direction:split()})
-        self.shader:send("u_dirLight.ambient", {value.ambient:split()})
-        self.shader:send("u_dirLight.diffuse", {value.diffuse:split()})
-        self.shader:send("u_dirLight.specular", {value.specular:split()})
+    if key == "shininess" then
+        self.shader:send("u_shininess", value)
         return
     end
 
