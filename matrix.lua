@@ -79,7 +79,7 @@ end
 
 function Matrix:__mul(value)
     self, value = commutative_reorder(self, value)
-    return self:clone():mult(value)
+    return self:clone():multiply(value)
 end
 
 function Matrix:__div(value)
