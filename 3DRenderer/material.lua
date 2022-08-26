@@ -31,7 +31,7 @@ function Material:__newindex(key, value)
     end
 
     if key == "worldMatrix" then
-        self.shader:send("u_world", "column", {value:split()})
+        self.shader:send("u_world", "column", value:toFlatTable())
 
         local itm = value.inverse:transpose()
         self.shader:send("u_invTranspWorld", "column", {itm.m11, itm.m12, itm.m13, itm.m21, itm.m22, itm.m23, itm.m31, itm.m32, itm.m33})
@@ -39,17 +39,17 @@ function Material:__newindex(key, value)
     end
 
     if key == "viewMatrix" then
-        self.shader:send("u_view", "column", {value:split()})
+        self.shader:send("u_view", "column", value:toFlatTable())
         return
     end
 
     if key == "projectionMatrix" then
-        self.shader:send("u_proj", "column", {value:split()})
+        self.shader:send("u_proj", "column", value:toFlatTable())
         return
     end
 
     if key == "viewPosition" then
-        self.shader:send("u_viewPosition", {value:split()})
+        self.shader:send("u_viewPosition", value:toFlatTable())
         return
     end
 
