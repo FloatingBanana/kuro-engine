@@ -3,7 +3,7 @@ local Material = Object:extend()
 function Material:new(attributes)
     rawset(self, "attributes", attributes)
 
-    self.shader = lg.newShader("engine/3DRenderer/shaders/3drendering.vert", "engine/3DRenderer/shaders/diffuselighting.frag")
+    self.shader = lg.newShader("engine/3DRenderer/shaders/shadowmapping.vert", "engine/3DRenderer/shaders/shadowmapping.frag")
 
     for key, value in pairs(attributes) do
         if key == "ambientTexture" or key == "diffuseTexture" or key == "specularTexture" then
