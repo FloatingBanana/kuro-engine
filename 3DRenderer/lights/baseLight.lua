@@ -44,8 +44,6 @@ function BaseLight:new(position, ambient, diffuse, specular, shadowMapSize)
     self.shadowmap = lg.newCanvas(shadowMapSize.width, shadowMapSize.height, {format = "depth16", readable = true})
     self.shadowmap:setFilter("nearest", "nearest")
     self.shadowmap:setWrap("clamp")
-
-    self.depthShader = depthShader
 end
 
 local currCanvas = nil
@@ -53,7 +51,7 @@ local currCullMode = nil
 local currBlendMode = nil
 local currAlphaBlendMode = nil
 local currShader = nil
-function BaseLight:beginLighting()
+function BaseLight:beginLighting(viewProj, lightDir)
     currCanvas = lg.getCanvas()
     currCullMode = lg.getMeshCullMode()
     currBlendMode, currAlphaBlendMode = lg.getBlendMode()
@@ -65,6 +63,16 @@ function BaseLight:beginLighting()
     lg.setMeshCullMode("none")
     lg.setBlendMode("replace")
     lg.setShader(depthShader)
+
+    depthShader:send("u_viewProj", "column", viewProj:toFlatTable())
+    depthShader:send("lightDir", lightDir:toFlatTable())
+end
+
+function BaseLight:setWorldMatrix(world)
+    local itw = world.inverse:transpose()
+
+    depthShader:send("u_world", "column", world:toFlatTable())
+    depthShader:send("u_invTranspWorld", "column", {itw.m11, itw.m12, itw.m13, itw.m21, itw.m22, itw.m23, itw.m31, itw.m32, itw.m33})
 end
 
 function BaseLight:endLighting()

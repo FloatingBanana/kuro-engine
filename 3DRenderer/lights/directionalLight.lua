@@ -15,15 +15,10 @@ function Dirlight:applyLighting(parts, index)
     local lightDir = self.position:clone():normalize()
     local fieldName = ("u_directionalLights[%d]"):format(index)
 
-    self:beginLighting(view, proj, lightDir)
+    self:beginLighting(viewProj, lightDir)
 
     for part, worldMatrix in pairs(parts) do
-        local itw = worldMatrix.inverse:transpose()
-
-        self.depthShader:send("u_world", "column", worldMatrix:toFlatTable())
-        self.depthShader:send("u_invTranspWorld", "column", {itw.m11, itw.m12, itw.m13, itw.m21, itw.m22, itw.m23, itw.m31, itw.m32, itw.m33})
-        self.depthShader:send("u_viewProj", "column", viewProj:toFlatTable())
-        self.depthShader:send("lightDir", lightDir:toFlatTable())
+        self:setWorldMatrix(worldMatrix)
 
         lg.draw(part.mesh)
 

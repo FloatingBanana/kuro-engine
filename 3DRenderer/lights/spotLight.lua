@@ -11,25 +11,21 @@ function Spotlight:new(position, direction, innerAngle, outerAngle, ambient, dif
     self.innerAngle = innerAngle
     self.outerAngle = outerAngle
 
-    self.near = 2
+    self.near = 1
     self.far = 50
 end
 
 function Spotlight:applyLighting(parts, index)
     local view = Matrix.createLookAt(self.position, self.position + self.direction, Vector3(0,1,0))
-    local proj = Matrix.createPerspectiveOffCenter(-10, 10, 10, -10, self.near, self.far)
+    -- local proj = Matrix.createPerspectiveFOV(math.rad(45), 1, self.near, self.far)
+    local proj = Matrix.createPerspectiveOffCenter(-1, 1, 1, -1, self.near, self.far)
     local viewProj = view * proj
     local fieldName = ("u_spotLights[%d]"):format(index)
 
-    self:beginLighting(view, proj, self.direction)
+    self:beginLighting(viewProj, self.direction)
 
     for part, worldMatrix in pairs(parts) do
-        local itw = worldMatrix.inverse:transpose()
-
-        self.depthShader:send("u_world", "column", worldMatrix:toFlatTable())
-        self.depthShader:send("u_invTranspWorld", "column", {itw.m11, itw.m12, itw.m13, itw.m21, itw.m22, itw.m23, itw.m31, itw.m32, itw.m33})
-        self.depthShader:send("u_viewProj", "column", viewProj:toFlatTable())
-        self.depthShader:send("lightDir", self.direction:toFlatTable())
+        self:setWorldMatrix(worldMatrix)
 
         lg.draw(part.mesh)
 
