@@ -4,6 +4,8 @@ local Vector2   = require "engine.vector2"
 local BaseLight = require "engine.3DRenderer.lights.baseLight"
 local Spotlight = BaseLight:extend()
 
+local depthShader = lg.newShader("engine/3DRenderer/lights/shaders/depthMapping.glsl")
+
 function Spotlight:new(position, direction, innerAngle, outerAngle, ambient, diffuse, specular)
     BaseLight.new(self, position, ambient, diffuse, specular, Vector2(2048))
 
@@ -22,10 +24,12 @@ function Spotlight:applyLighting(parts, index)
     local viewProj = view * proj
     local fieldName = ("u_spotLights[%d]"):format(index)
 
-    self:beginLighting(viewProj, self.direction)
+    self:beginLighting(depthShader, viewProj)
+    depthShader:send("lightDir", self.direction:toFlatTable())
 
     for part, worldMatrix in pairs(parts) do
-        self:setWorldMatrix(worldMatrix)
+        depthShader:send("u_world", "column", worldMatrix:toFlatTable())
+        depthShader:send("u_invTranspWorld", "column", worldMatrix.inverse:transpose():to3x3():toFlatTable())
 
         lg.draw(part.mesh)
 
@@ -41,6 +45,7 @@ function Spotlight:applyLighting(parts, index)
         part.material.shader:send(fieldName..".diffuse",     self.diffuse)
         part.material.shader:send(fieldName..".specular",    self.specular)
 
+        -- FIXME: this should be in the light instance
         part.material.shader:send("u_lightViewProj", "column", viewProj:toFlatTable())
     end
     self:endLighting()

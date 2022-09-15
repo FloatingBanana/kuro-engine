@@ -4,6 +4,8 @@ local Vector2   = require "engine.vector2"
 local BaseLight = require "engine.3DRenderer.lights.baseLight"
 local Dirlight = BaseLight:extend()
 
+local depthShader = lg.newShader("engine/3DRenderer/lights/shaders/depthMapping.glsl")
+
 function Dirlight:new(position, ambient, diffuse, specular)
     BaseLight.new(self, position, ambient, diffuse, specular, Vector2(2048))
 end
@@ -12,13 +14,14 @@ function Dirlight:applyLighting(parts, index)
     local view = Matrix.createLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
     local proj = Matrix.createOrthographicOffCenter(-10, 10, 10, -10, self.near, self.far)
     local viewProj = view * proj
-    local lightDir = self.position:clone():normalize()
     local fieldName = ("u_directionalLights[%d]"):format(index)
 
-    self:beginLighting(viewProj, lightDir)
+    self:beginLighting(depthShader, viewProj)
+    depthShader:send("lightDir", self.position.normalized:toFlatTable())
 
     for part, worldMatrix in pairs(parts) do
-        self:setWorldMatrix(worldMatrix)
+        depthShader:send("u_world", "column", worldMatrix:toFlatTable())
+        depthShader:send("u_invTranspWorld", "column", worldMatrix.inverse:transpose():to3x3():toFlatTable())
 
         lg.draw(part.mesh)
 
@@ -29,6 +32,7 @@ function Dirlight:applyLighting(parts, index)
         part.material.shader:send(fieldName..".diffuse",   self.diffuse)
         part.material.shader:send(fieldName..".specular",  self.specular)
 
+        -- FIXME: this should be in the light instance
         part.material.shader:send("u_lightViewProj", "column", viewProj:toFlatTable())
     end
     self:endLighting()

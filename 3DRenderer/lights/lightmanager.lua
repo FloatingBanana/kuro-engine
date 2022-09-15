@@ -1,5 +1,5 @@
 local DirLight = require "engine.3DRenderer.lights.directionalLight"
-local PointLight = nil
+local PointLight = require "engine.3DRenderer.lights.pointLight"
 local SpotLight = require "engine.3DRenderer.lights.spotLight"
 local Lightmng = Object:extend()
 
