@@ -240,6 +240,17 @@ function Matrix:invert()
     return self
 end
 
+function Matrix:to3x3()
+    self:new(
+        self.m11, self.m12, self.m13,
+        self.m21, self.m22, self.m23,
+        self.m31, self.m32, self.m33,
+        0,0,0,0,0,0,0
+    )
+
+    return self
+end
+
 function Matrix:decompose()
     local translation = self.translation
 
