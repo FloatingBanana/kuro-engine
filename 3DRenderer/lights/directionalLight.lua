@@ -7,7 +7,7 @@ local Dirlight = BaseLight:extend()
 local depthShader = lg.newShader("engine/3DRenderer/lights/shaders/depthMapping.glsl")
 
 function Dirlight:new(position, ambient, diffuse, specular)
-    BaseLight.new(self, position, ambient, diffuse, specular, Vector2(2048))
+    BaseLight.new(self, position, ambient, diffuse, specular, 2048)
 end
 
 function Dirlight:applyLighting(parts, index)
@@ -27,10 +27,13 @@ function Dirlight:applyLighting(parts, index)
 
         part.material.shader:send(fieldName..".enabled",   self.enabled)
         part.material.shader:send(fieldName..".shadowMap", self.shadowmap)
-        part.material.shader:send(fieldName..".position",  self.position:toFlatTable())
-        part.material.shader:send(fieldName..".ambient",   self.ambient)
-        part.material.shader:send(fieldName..".diffuse",   self.diffuse)
-        part.material.shader:send(fieldName..".specular",  self.specular)
+        part.material.shader:send(fieldName..".mapSize",   self.shadowmap:getWidth())
+
+        part.material.shader:send(fieldName..".position", self.position:toFlatTable())
+        
+        part.material.shader:send(fieldName..".ambient",  self.ambient)
+        part.material.shader:send(fieldName..".diffuse",  self.diffuse)
+        part.material.shader:send(fieldName..".specular", self.specular)
 
         -- FIXME: this should be in the light instance
         part.material.shader:send("u_lightViewProj", "column", viewProj:toFlatTable())

@@ -12,7 +12,7 @@ function BaseLight:new(position, ambient, diffuse, specular, shadowMapSize)
 
     self.enabled = true
 
-    self.shadowmap = lg.newCanvas(shadowMapSize.width, shadowMapSize.height, {format = "depth16", readable = true})
+    self.shadowmap = lg.newCanvas(shadowMapSize, shadowMapSize, {format = "depth16", readable = true})
     self.shadowmap:setFilter("nearest", "nearest")
     self.shadowmap:setWrap("clamp")
 end

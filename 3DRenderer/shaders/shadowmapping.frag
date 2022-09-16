@@ -12,6 +12,7 @@ uniform struct DirectionalLight {
     bool enabled;
 
     sampler2D shadowMap;
+    int mapSize;
 };
 
 uniform struct PointLight {
@@ -46,6 +47,7 @@ uniform struct SpotLight {
     bool enabled;
 
     sampler2D shadowMap;
+    int mapSize;
 };
 
 uniform DirectionalLight u_directionalLights[MAX_DIRECTIONAL_LIGHTS];
@@ -62,7 +64,7 @@ varying vec3 v_vertexNormal;
 varying vec3 v_fragPos;
 varying vec4 v_lightFragPos;
 
-float ShadowCalculation(vec4 lightFragPos, sampler2D shadowMap) {
+float ShadowCalculation(vec4 lightFragPos, sampler2D shadowMap, int mapSize) {
     vec3 projCoords = (lightFragPos.xyz / lightFragPos.w) * 0.5 + 0.5;
     float currentDepth = projCoords.z;
 
@@ -70,7 +72,7 @@ float ShadowCalculation(vec4 lightFragPos, sampler2D shadowMap) {
         return 0.0;
     
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / vec2(2048);
+    vec2 texelSize = 1.0 / vec2(mapSize);
 
     for (int x = -1; x <= 1; ++x) {
         for (int y = -1; y <= 1; ++y) {
@@ -95,7 +97,6 @@ vec3 sampleOffsetDirections[20] = vec3[] (
 
 float ShadowCalculation(samplerCube shadowMap, vec3 lightPos, float farPlane) {
     vec3 fragToLight = v_fragPos - lightPos;
-    // float closestDepth = Texel(shadowMap, fragToLight).r * farPlane;
     float currentDepth = length(fragToLight);
 
     float bias = 0.05;
@@ -132,7 +133,7 @@ vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir
     vec3 diffuse  = light.diffuse  * diff * u_diffuseColor;
     vec3 specular = light.specular * spec * u_specularColor;
 
-    float shadow = ShadowCalculation(v_lightFragPos, light.shadowMap);
+    float shadow = ShadowCalculation(v_lightFragPos, light.shadowMap, light.mapSize);
     return ambient + (1.0 - shadow) * (diffuse + specular);
 }
 
@@ -182,7 +183,7 @@ vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 viewDir) {
         vec3 halfwayDir = normalize(lightDir + viewDir);
         float specular = pow(max(dot(normal, halfwayDir), 0.0), u_shininess);
         
-        float shadow = ShadowCalculation(v_lightFragPos, light.shadowMap);
+        float shadow = ShadowCalculation(v_lightFragPos, light.shadowMap, light.mapSize);
 
         color += light.diffuse  * diffuse  * u_diffuseColor  * intensity * (1.0 - shadow);
         color += light.specular * specular * u_specularColor * intensity * (1.0 - shadow);

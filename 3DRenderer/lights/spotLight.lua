@@ -7,7 +7,7 @@ local Spotlight = BaseLight:extend()
 local depthShader = lg.newShader("engine/3DRenderer/lights/shaders/depthMapping.glsl")
 
 function Spotlight:new(position, direction, innerAngle, outerAngle, ambient, diffuse, specular)
-    BaseLight.new(self, position, ambient, diffuse, specular, Vector2(2048))
+    BaseLight.new(self, position, ambient, diffuse, specular, 1024)
 
     self.direction = direction
     self.innerAngle = innerAngle
@@ -20,7 +20,7 @@ end
 function Spotlight:applyLighting(parts, index)
     local view = Matrix.createLookAt(self.position, self.position + self.direction, Vector3(0,1,0))
     -- local proj = Matrix.createPerspectiveFOV(math.rad(45), 1, self.near, self.far)
-    local proj = Matrix.createPerspectiveOffCenter(-1, 1, 1, -1, self.near, self.far)
+    local proj = Matrix.createPerspectiveOffCenter(-1, 1, 1, -1, self.near, self.far) -- TODO: Find a better way to calculate the projection
     local viewProj = view * proj
     local fieldName = ("u_spotLights[%d]"):format(index)
 
@@ -33,17 +33,18 @@ function Spotlight:applyLighting(parts, index)
 
         lg.draw(part.mesh)
 
-        part.material.shader:send(fieldName..".enabled",     self.enabled)
-        part.material.shader:send(fieldName..".shadowMap",   self.shadowmap)
+        part.material.shader:send(fieldName..".enabled",   self.enabled)
+        part.material.shader:send(fieldName..".shadowMap", self.shadowmap)
+        part.material.shader:send(fieldName..".mapSize",   self.shadowmap:getWidth())
 
         part.material.shader:send(fieldName..".position",    self.position:toFlatTable())
         part.material.shader:send(fieldName..".direction",   self.direction:toFlatTable())
         part.material.shader:send(fieldName..".cutOff",      math.cos(self.innerAngle))
         part.material.shader:send(fieldName..".outerCutOff", math.cos(self.outerAngle))
 
-        part.material.shader:send(fieldName..".ambient",     self.ambient)
-        part.material.shader:send(fieldName..".diffuse",     self.diffuse)
-        part.material.shader:send(fieldName..".specular",    self.specular)
+        part.material.shader:send(fieldName..".ambient",  self.ambient)
+        part.material.shader:send(fieldName..".diffuse",  self.diffuse)
+        part.material.shader:send(fieldName..".specular", self.specular)
 
         -- FIXME: this should be in the light instance
         part.material.shader:send("u_lightViewProj", "column", viewProj:toFlatTable())
