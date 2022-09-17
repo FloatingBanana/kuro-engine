@@ -7,7 +7,7 @@ local PointLight = BaseLight:extend()
 local depthShader = lg.newShader("engine/3DRenderer/lights/shaders/pointDepthMapping.glsl")
 
 function PointLight:new(position, linear, constant, quadratic, ambient, diffuse, specular)
-    BaseLight.new(self, position, ambient, diffuse, specular, Vector2(1))
+    BaseLight.new(self, position, ambient, diffuse, specular, 1)
 
     self.linear = linear
     self.constant = constant
