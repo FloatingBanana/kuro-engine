@@ -105,6 +105,10 @@ function Matrix:__len()
     return 16
 end
 
+function Matrix:__tostring()
+    return ("Matrix(\n\t%03f, %03f, %03f, %03f,\n\t%03f, %03f, %03f, %03f,\n\t%03f, %03f, %03f, %03f,\n\t%03f, %03f, %03f, %03f\n)"):format(self:split())
+end
+
 ---------------------
 ------ Methods ------
 ---------------------

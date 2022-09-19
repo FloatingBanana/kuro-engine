@@ -65,6 +65,10 @@ function Quaternion:__eq(other)
 		   self.w == other.w
 end
 
+function Quaternion:__tostring()
+    return ("Quaternion(x: %f, y: %f, z: %f, w: %f)"):format(self.x, self.y, self.z, self.w)
+end
+
 --------------------
 ------ Methods------
 --------------------
