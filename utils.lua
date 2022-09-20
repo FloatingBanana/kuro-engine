@@ -54,4 +54,67 @@ function Utils.setFont(name, size)
 	currFont = filename
 end
 
+
+
+
+local function preprocessShader(shader, defines)
+	local processed = {}
+	local lineNumber = 0
+
+	-- Add default defines
+	for k, v in pairs(defines) do
+		if type(k) == "number" then
+			table.insert(processed, ("#define %s\n"):format(v))
+		else
+			table.insert(processed, ("#define %s %s\n"):format(k, v))
+		end
+
+		table.insert(processed, "#line 0\n")
+	end
+
+	-- Iterate through every line
+	for line in shader:gmatch("(.-)[\n$]") do
+		local result = line
+		lineNumber = lineNumber + 1
+
+		-- Match line that starts with #pragma include "filename"
+		local includePath = line:match("^#%s*pragma include \"(.-)\"")
+		if includePath then
+			-- Try reading the included file
+			local included = lfs.read("string", includePath)
+			assert(included, ("Error on line %d: include file not found"):format(lineNumber))
+
+			-- Resets the line number, then paste the included file contents
+			-- to the current line, and after that restore the line count
+			result = ("\n#line 0\n%s\n#line %d\n"):format(preprocessShader(included, {}), lineNumber)
+		end
+
+		table.insert(processed, result)
+	end
+
+	return table.concat(processed)
+end
+
+function Utils.newPreprocessedShader(fragmentShader, vertexShader, defines)
+	local processedFragmentShader = nil
+	local processedVertexShader = nil
+
+	-- Read the file if the string is a file path
+	if lfs.getInfo(fragmentShader, "file") then
+		fragmentShader = lfs.read("string", fragmentShader)
+	end
+	processedFragmentShader = preprocessShader(fragmentShader, defines)
+
+	-- Vertex shader is optional
+	if vertexShader then
+		if lfs.getInfo(vertexShader, "file") then
+			vertexShader = lfs.read("string", vertexShader)
+		end
+
+		processedVertexShader = preprocessShader(vertexShader, defines)
+	end
+
+	return lg.newShader(processedFragmentShader, processedVertexShader)
+end
+
 return Utils
