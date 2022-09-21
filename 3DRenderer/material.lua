@@ -3,7 +3,7 @@ local Material = Object:extend()
 function Material:new(attributes)
     rawset(self, "attributes", attributes)
 
-    self.shader = lg.newShader("engine/3DRenderer/shaders/shadowmapping.vert", "engine/3DRenderer/shaders/shadowmapping.frag")
+    self.shader = lg.newShader("engine/shaders/3D/forwardRendering/forwardRendering.vert", "engine/shaders/3D/forwardRendering/forwardRendering.frag")
 
     for key, value in pairs(attributes) do
         if key == "ambientTexture" or key == "diffuseTexture" or key == "specularTexture" then
@@ -32,9 +32,7 @@ function Material:__newindex(key, value)
 
     if key == "worldMatrix" then
         self.shader:send("u_world", "column", value:toFlatTable())
-
-        local itm = value.inverse:transpose()
-        self.shader:send("u_invTranspWorld", "column", {itm.m11, itm.m12, itm.m13, itm.m21, itm.m22, itm.m23, itm.m31, itm.m32, itm.m33})
+        self.shader:send("u_invTranspWorld", "column", value.inverse:transpose():to3x3():toFlatTable())
         return
     end
 

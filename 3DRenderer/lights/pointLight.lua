@@ -4,7 +4,7 @@ local Vector2   = require "engine.vector2"
 local BaseLight = require "engine.3DRenderer.lights.baseLight"
 local PointLight = BaseLight:extend()
 
-local depthShader = lg.newShader("engine/3DRenderer/lights/shaders/pointDepthMapping.glsl")
+local depthShader = lg.newShader("engine/shaders/3D/shadowMap/pointShadowMapRenderer.glsl")
 
 function PointLight:new(position, linear, constant, quadratic, ambient, diffuse, specular)
     BaseLight.new(self, position, ambient, diffuse, specular, 1)

@@ -4,7 +4,7 @@ local Vector2   = require "engine.vector2"
 local BaseLight = require "engine.3DRenderer.lights.baseLight"
 local Dirlight = BaseLight:extend()
 
-local depthShader = lg.newShader("engine/3DRenderer/lights/shaders/depthMapping.glsl")
+local depthShader = lg.newShader("engine/shaders/3D/shadowMap/shadowMapRenderer.glsl")
 
 function Dirlight:new(position, ambient, diffuse, specular)
     BaseLight.new(self, position, ambient, diffuse, specular, 2048)

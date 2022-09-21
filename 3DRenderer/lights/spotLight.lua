@@ -4,10 +4,10 @@ local Vector2   = require "engine.vector2"
 local BaseLight = require "engine.3DRenderer.lights.baseLight"
 local Spotlight = BaseLight:extend()
 
-local depthShader = lg.newShader("engine/3DRenderer/lights/shaders/depthMapping.glsl")
+local depthShader = lg.newShader("engine/shaders/3D/shadowMap/shadowMapRenderer.glsl")
 
 function Spotlight:new(position, direction, innerAngle, outerAngle, ambient, diffuse, specular)
-    BaseLight.new(self, position, ambient, diffuse, specular, 1024)
+    BaseLight.new(self, position, ambient, diffuse, specular, 2048)
 
     self.direction = direction
     self.innerAngle = innerAngle
