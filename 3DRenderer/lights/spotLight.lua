@@ -46,8 +46,7 @@ function Spotlight:applyLighting(parts, index)
         part.material.shader:send(fieldName..".diffuse",  self.diffuse)
         part.material.shader:send(fieldName..".specular", self.specular)
 
-        -- FIXME: this should be in the light instance
-        part.material.shader:send("u_lightViewProj", "column", viewProj:toFlatTable())
+        part.material.shader:send(fieldName..".lightMatrix", "column", viewProj:toFlatTable())
     end
     self:endLighting()
 end

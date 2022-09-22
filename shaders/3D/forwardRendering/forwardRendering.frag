@@ -2,8 +2,8 @@
 #define MAX_POINT_LIGHTS 5
 #define MAX_SPOT_LIGHTS 5
 
-uniform struct DirectionalLight {
-    vec3 position;
+struct DirectionalLight {
+    vec3 direction;
     
     vec3 ambient;
     vec3 diffuse;
@@ -13,9 +13,10 @@ uniform struct DirectionalLight {
 
     sampler2D shadowMap;
     int mapSize;
+    mat4 lightMatrix;
 };
 
-uniform struct PointLight {
+struct PointLight {
     vec3 position;
     
     vec3 ambient;
@@ -33,7 +34,7 @@ uniform struct PointLight {
     samplerCube shadowMap;
 };
 
-uniform struct SpotLight {
+struct SpotLight {
     vec3 position;
     vec3 direction;
 
@@ -48,7 +49,11 @@ uniform struct SpotLight {
 
     sampler2D shadowMap;
     int mapSize;
+    mat4 lightMatrix;
 };
+
+varying vec3 v_vertexNormal;
+varying vec3 v_fragPos;
 
 uniform DirectionalLight u_directionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight u_pointLights[MAX_POINT_LIGHTS];
@@ -60,18 +65,17 @@ uniform vec3 u_specularColor;
 uniform float u_shininess;
 uniform vec3 u_viewPosition;
 
-varying vec3 v_vertexNormal;
-varying vec3 v_fragPos;
-varying vec4 v_lightFragPos;
-
-vec3 sampleOffsetDirections[20] = vec3[] (
+const vec3 sampleOffsetDirections[20] = vec3[] (
    vec3( 1, 1, 1), vec3( 1,-1, 1), vec3(-1,-1, 1), vec3(-1, 1, 1), 
    vec3( 1, 1,-1), vec3( 1,-1,-1), vec3(-1,-1,-1), vec3(-1, 1,-1),
    vec3( 1, 1, 0), vec3( 1,-1, 0), vec3(-1,-1, 0), vec3(-1, 1, 0),
    vec3( 1, 0, 1), vec3(-1, 0, 1), vec3( 1, 0,-1), vec3(-1, 0,-1),
    vec3( 0, 1, 1), vec3( 0,-1, 1), vec3( 0,-1,-1), vec3( 0, 1,-1)
-);   
+);
 
+////////////////////////
+// Shadow calculation //
+////////////////////////
 // Point light
 float ShadowCalculation(PointLight light) {
     vec3 fragToLight = v_fragPos - light.position;
@@ -94,7 +98,9 @@ float ShadowCalculation(PointLight light) {
 }
 
 // Directional and spot lights
-float ShadowCalculation(vec4 lightFragPos, sampler2D shadowMap, int mapSize) {
+float ShadowCalculation(mat4 lightMatrix, sampler2D shadowMap, int mapSize) {
+    // TODO: avoid doing this operation on fragment shader
+    vec4 lightFragPos = lightMatrix * vec4(v_fragPos, 1.0);
     vec3 projCoords = (lightFragPos.xyz / lightFragPos.w) * 0.5 + 0.5;
     float currentDepth = projCoords.z;
 
@@ -114,26 +120,57 @@ float ShadowCalculation(vec4 lightFragPos, sampler2D shadowMap, int mapSize) {
     return shadow / 9.0;
 }
 
+
+///////////////////////
+// Light calculation //
+///////////////////////
 vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
     if (!light.enabled)
         return vec3(0);
-    
-    vec3 lightDir = normalize(light.position);
 
     // Diffuse
-    float lightDot = dot(normal, lightDir);
-    float diff = max(lightDot, 0.0);
+    float diff = max(dot(normal, light.direction), 0.0);
 
     // Specular
-    vec3 halfwayDir = normalize(lightDir + viewDir);
+    vec3 halfwayDir = normalize(light.direction + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), u_shininess);
 
     vec3 ambient  = light.ambient  * u_diffuseColor;
     vec3 diffuse  = light.diffuse  * diff * u_diffuseColor;
     vec3 specular = light.specular * spec * u_specularColor;
 
-    float shadow = ShadowCalculation(v_lightFragPos, light.shadowMap, light.mapSize);
+    float shadow = ShadowCalculation(light.lightMatrix, light.shadowMap, light.mapSize);
     return ambient + (1.0 - shadow) * (diffuse + specular);
+}
+
+vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 viewDir) {
+    if (!light.enabled)
+        return vec3(0);
+
+    vec3 lightDir = normalize(light.position - v_fragPos);
+
+    vec3 color = light.ambient * u_diffuseColor;
+    float theta = dot(lightDir, -light.direction);
+
+    if (theta > light.outerCutOff) {
+        float epsilon = light.cutOff - light.outerCutOff;
+        float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+
+        // Diffuse
+        float diffuse = max(dot(normal, lightDir), 0.0);
+
+        // Specular
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float specular = pow(max(dot(normal, halfwayDir), 0.0), u_shininess);
+        
+        float shadow = ShadowCalculation(light.lightMatrix, light.shadowMap, light.mapSize);
+        float visibility = (1.0 - shadow) * intensity;
+
+        color += light.diffuse  * diffuse  * u_diffuseColor  * visibility;
+        color += light.specular * specular * u_specularColor * visibility;
+    }
+    
+    return color;
 }
 
 vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 viewDir) {
@@ -161,36 +198,10 @@ vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 viewDir) {
     return (ambient + (diffuse + specular) * visibility) * attenuation;
 }
 
-vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 viewDir) {
-    if (!light.enabled)
-        return vec3(0);
-    
-    vec3 lightDir = normalize(light.position - v_fragPos);
 
-    vec3 color = light.ambient * u_diffuseColor;
-    float theta = dot(lightDir, -light.direction);
-
-    if (theta > light.outerCutOff) {
-        float epsilon = light.cutOff - light.outerCutOff;
-        float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
-
-        // Diffuse
-        float diffuse = max(dot(normal, lightDir), 0.0);
-
-        // Specular
-        vec3 halfwayDir = normalize(lightDir + viewDir);
-        float specular = pow(max(dot(normal, halfwayDir), 0.0), u_shininess);
-        
-        float shadow = ShadowCalculation(v_lightFragPos, light.shadowMap, light.mapSize);
-        float visibility = (1.0 - shadow) * intensity;
-
-        color += light.diffuse  * diffuse  * u_diffuseColor  * visibility;
-        color += light.specular * specular * u_specularColor * visibility;
-    }
-    
-    return color;
-}
-
+///////////////////
+// Main function //
+///////////////////
 vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
     vec3 normal = normalize(v_vertexNormal);
     vec3 viewDir = normalize(u_viewPosition - v_fragPos);

@@ -14,10 +14,11 @@ function Dirlight:applyLighting(parts, index)
     local view = Matrix.createLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
     local proj = Matrix.createOrthographicOffCenter(-10, 10, 10, -10, self.near, self.far)
     local viewProj = view * proj
+    local direction = self.position.normalized
     local fieldName = ("u_directionalLights[%d]"):format(index)
 
     self:beginLighting(depthShader, viewProj)
-    depthShader:send("lightDir", self.position.normalized:toFlatTable())
+    depthShader:send("lightDir", direction:toFlatTable())
 
     for part, worldMatrix in pairs(parts) do
         depthShader:send("u_world", "column", worldMatrix:toFlatTable())
@@ -29,14 +30,13 @@ function Dirlight:applyLighting(parts, index)
         part.material.shader:send(fieldName..".shadowMap", self.shadowmap)
         part.material.shader:send(fieldName..".mapSize",   self.shadowmap:getWidth())
 
-        part.material.shader:send(fieldName..".position", self.position:toFlatTable())
+        part.material.shader:send(fieldName..".direction", direction:toFlatTable())
         
         part.material.shader:send(fieldName..".ambient",  self.ambient)
         part.material.shader:send(fieldName..".diffuse",  self.diffuse)
         part.material.shader:send(fieldName..".specular", self.specular)
 
-        -- FIXME: this should be in the light instance
-        part.material.shader:send("u_lightViewProj", "column", viewProj:toFlatTable())
+        part.material.shader:send(fieldName..".lightMatrix", "column", viewProj:toFlatTable())
     end
     self:endLighting()
 end
