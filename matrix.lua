@@ -372,8 +372,8 @@ function Matrix.createFromQuaternion(quat)
     )
 end
 
-function Matrix.createLookAt(position, target, up)
-    local forward = (position - target):normalize()
+function Matrix.createLookAtDirection(position, direction, up)
+    local forward = -direction
     local right = Vector3.cross(up, forward):normalize()
     local up = Vector3.cross(forward, right)
 
@@ -395,6 +395,10 @@ function Matrix.createLookAt(position, target, up)
         -Vector3.dot(forward, position),
         1
     )
+end
+
+function Matrix.createLookAt(position, target, up)
+    return Matrix.createLookAtDirection(position, (target - position):normalize(), up)
 end
 
 function Matrix.createBillboard(objectPosition, cameraPosition, cameraUp, cameraForward)

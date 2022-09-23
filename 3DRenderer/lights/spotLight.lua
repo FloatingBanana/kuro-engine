@@ -18,7 +18,7 @@ function Spotlight:new(position, direction, innerAngle, outerAngle, ambient, dif
 end
 
 function Spotlight:applyLighting(parts, index)
-    local view = Matrix.createLookAt(self.position, self.position + self.direction, Vector3(0,1,0))
+    local view = Matrix.createLookAtDirection(self.position, self.direction, Vector3(0,1,0))
     -- local proj = Matrix.createPerspectiveFOV(math.rad(45), 1, self.near, self.far)
     local proj = Matrix.createPerspectiveOffCenter(-1, 1, 1, -1, self.near, self.far) -- TODO: Find a better way to calculate the projection
     local viewProj = view * proj

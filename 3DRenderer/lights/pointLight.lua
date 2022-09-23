@@ -33,7 +33,7 @@ function PointLight:applyLighting(parts, index)
     local fieldName = ("u_pointLights[%d]"):format(index)
 
     for i = 1, 6 do
-        local view = Matrix.createLookAt(self.position, self.position + dirs[i].dir, dirs[i].up)
+        local view = Matrix.createLookAtDirection(self.position, dirs[i].dir, dirs[i].up)
         local viewProj = view * proj
 
         self:beginLighting(depthShader, viewProj, i)
