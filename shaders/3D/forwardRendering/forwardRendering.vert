@@ -5,8 +5,7 @@ varying vec3 v_fragPos;
 
 uniform mat4 u_world;
 uniform mat3 u_invTranspWorld;
-uniform mat4 u_view;
-uniform mat4 u_proj;
+uniform mat4 u_viewProj;
 uniform mat4 u_lightViewProj;
 
 vec4 position(mat4 transformProjection, vec4 position) {
@@ -15,5 +14,5 @@ vec4 position(mat4 transformProjection, vec4 position) {
     v_fragPos = worldPos.xyz;
     v_vertexNormal = u_invTranspWorld * VertexNormal;
 
-    return u_proj * u_view * worldPos;
+    return u_viewProj * worldPos;
 }

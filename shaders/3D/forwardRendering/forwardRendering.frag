@@ -59,7 +59,6 @@ uniform DirectionalLight u_directionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight u_pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight u_spotLights[MAX_SPOT_LIGHTS];
 
-uniform vec3 u_ambientColor;
 uniform vec3 u_diffuseColor;
 uniform vec3 u_specularColor;
 uniform float u_shininess;

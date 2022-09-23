@@ -36,13 +36,8 @@ function Material:__newindex(key, value)
         return
     end
 
-    if key == "viewMatrix" then
-        self.shader:send("u_view", "column", value:toFlatTable())
-        return
-    end
-
-    if key == "projectionMatrix" then
-        self.shader:send("u_proj", "column", value:toFlatTable())
+    if key == "viewProjectionMatrix" then
+        self.shader:send("u_viewProj", "column", value:toFlatTable())
         return
     end
 
