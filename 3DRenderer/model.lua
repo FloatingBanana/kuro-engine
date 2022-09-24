@@ -1,4 +1,4 @@
-local Parseobj = require "engine.3DRenderer.objparser"
+local Parseobj = require "engine.contents.objparser"
 local Mesh = require "engine.3DRenderer.mesh"
 local Meshpart = require "engine.3DRenderer.meshpart"
 local Material = require "engine.3DRenderer.material"
