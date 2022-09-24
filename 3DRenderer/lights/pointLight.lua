@@ -32,13 +32,14 @@ function PointLight:applyLighting(parts, index)
     local proj = Matrix.createPerspectiveFOV(math.rad(90), 1, self.near, self.far)
     local fieldName = ("u_pointLights[%d]"):format(index)
 
+    depthShader:send("lightPos", self.position:toFlatTable())
+    depthShader:send("farPlane", self.far)
+
     for i = 1, 6 do
         local view = Matrix.createLookAtDirection(self.position, dirs[i].dir, dirs[i].up)
         local viewProj = view * proj
 
         self:beginLighting(depthShader, viewProj, i)
-        depthShader:send("lightPos", self.position:toFlatTable())
-        depthShader:send("farPlane", self.far)
 
         for part, worldMatrix in pairs(parts) do
             depthShader:send("u_world", "column", worldMatrix:toFlatTable())
