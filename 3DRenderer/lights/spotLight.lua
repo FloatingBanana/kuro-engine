@@ -7,7 +7,7 @@ local Spotlight = BaseLight:extend()
 local depthShader = lg.newShader("engine/shaders/3D/shadowMap/shadowMapRenderer.glsl")
 
 function Spotlight:new(position, direction, innerAngle, outerAngle, ambient, diffuse, specular)
-    BaseLight.new(self, position, ambient, diffuse, specular, 2048)
+    BaseLight.new(self, position, ambient, diffuse, specular, 512)
 
     self.direction = direction
     self.innerAngle = innerAngle
@@ -19,8 +19,7 @@ end
 
 function Spotlight:applyLighting(parts, index)
     local view = Matrix.createLookAtDirection(self.position, self.direction, Vector3(0,1,0))
-    -- local proj = Matrix.createPerspectiveFOV(math.rad(45), 1, self.near, self.far)
-    local proj = Matrix.createPerspectiveOffCenter(-1, 1, 1, -1, self.near, self.far) -- TODO: Find a better way to calculate the projection
+    local proj = Matrix.createPerspectiveFOV(self.outerAngle * 2, -1, self.near, self.far)
     local viewProj = view * proj
     local fieldName = ("u_spotLights[%d]"):format(index)
 
