@@ -1,8 +1,8 @@
 local Camera = Object:extend()
 
-local Easing = require "engine.easing"
-local Rect = require "engine.rect"
-local Vector2 = require "engine.vector2"
+local Easing = require "engine.math.easing"
+local Rect = require "engine.math.rect"
+local Vector2 = require "engine.math.vector2"
 
 function Camera:new(position, zoom)
     self.position = position

@@ -1,4 +1,4 @@
-local Inter2d = require "engine.intersection2d"
+local Inter2d = require "engine.math.intersection2d"
 local CStruct = require "engine.cstruct"
 local Rect = CStruct("Rect", [[
     brinevector position;

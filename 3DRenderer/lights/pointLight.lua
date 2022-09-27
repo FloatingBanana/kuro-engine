@@ -1,6 +1,6 @@
-local Matrix = require "engine.matrix"
-local Vector3 = require "engine.vector3"
-local Vector2   = require "engine.vector2"
+local Matrix = require "engine.math.matrix"
+local Vector3 = require "engine.math.vector3"
+local Vector2   = require "engine.math.vector2"
 local BaseLight = require "engine.3DRenderer.lights.baseLight"
 local PointLight = BaseLight:extend()
 

@@ -1,8 +1,10 @@
-local Vector2 = require "engine.vector2"
+local Vector2 = require "engine.math.vector2"
 local CStruct = require "engine.cstruct"
 local Vector3 = CStruct("vector3", [[
     float x, y, z;
 ]])
+
+local double_epsilon = 4.94065645841247E-324
 
 -- See [engine/vector2.lua] for explanation
 local function commutative_reorder(object, number)
@@ -234,6 +236,39 @@ function Vector3:transform(value)
     end
 
     return self
+end
+
+function Vector3:worldToScreen(screenMatrix, screenSize, minDepth, maxDepth)
+	local a = (((self.x * screenMatrix.m14) + (self.y * screenMatrix.m24)) + (self.z * screenMatrix.m34)) + screenMatrix.m44
+
+    self:transform(screenMatrix)
+
+    if math.abs(a-1) > double_epsilon then
+        self:divide(a)
+    end
+
+    self.x = (((self.x + 1) * 0.5) * screenSize.width)
+	self.y = (((-self.y + 1) * 0.5) * screenSize.height)
+	self.z = (self.z * (maxDepth - minDepth)) + minDepth;
+
+    return self;
+end
+
+function Vector3:screenToWorld(screenMatrix, screenSize, minDepth, maxDepth)
+    self.x = (((self.x) / (screenSize.width)) * 2) - 1
+	self.y = -((((self.y) / (screenSize.height)) * 2) - 1)
+	self.z = (self.z - minDepth) / (maxDepth - minDepth)
+
+    local mat = screenMatrix.inverse
+	local a = (((self.x * mat.m14) + (self.y * mat.m24)) + (self.z * mat.m34)) + mat.m44;
+
+    self:transform(mat)
+
+	if math.abs(a-1) > double_epsilon then
+        self:divide(a)
+    end
+
+	return self;
 end
 
 function Vector3:isNan()

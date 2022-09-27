@@ -1,5 +1,5 @@
-local Vector3 = require "engine.vector3"
-local Quaternion = require "engine.quaternion"
+local Vector3 = require "engine.math.vector3"
+local Quaternion = require "engine.math.quaternion"
 local CStruct = require "engine.cstruct"
 local Matrix = CStruct("matrix", [[
     float m11, m12, m13, m14,
