@@ -564,4 +564,12 @@ function Matrix.createTranslation(position)
     return mat
 end
 
+function Matrix.createTransformationMatrix(rotation, scale, translation)
+    local matRot = Matrix.createFromQuaternion(rotation)
+    local matScale = Matrix.createScale(scale)
+    local matTranslation = Matrix.createTranslation(translation)
+
+    return matRot:multiply(matScale):multiply(matTranslation)
+end
+
 return Matrix
