@@ -49,6 +49,30 @@ function Matrix:__index(key)
     if key == "down"     then return self.up:negate()      end
     if key == "left"     then return self.right:negate()   end
 
+    if key == "scale" then
+        local xs = (self.m11 * self.m12 * self.m13 * self.m14 < 0) and -1 or 1
+        local ys = (self.m21 * self.m22 * self.m23 * self.m24 < 0) and -1 or 1
+        local zs = (self.m31 * self.m32 * self.m33 * self.m34 < 0) and -1 or 1
+
+        return Vector3(
+            xs * math.sqrt(self.m11 * self.m11 + self.m12 * self.m12 + self.m13 * self.m13),
+            ys * math.sqrt(self.m21 * self.m21 + self.m22 * self.m22 + self.m23 * self.m23),
+            zs * math.sqrt(self.m31 * self.m31 + self.m32 * self.m32 + self.m33 * self.m33)
+        )
+    end
+
+    if key == "rotation" then
+        local scale = self.scale
+
+        local m1 = Matrix(self.m11 / scale.x, self.m12 / scale.x, self.m13 / scale.x, 0,
+                          self.m21 / scale.y, self.m22 / scale.y, self.m23 / scale.y, 0,
+                          self.m31 / scale.z, self.m32 / scale.z, self.m33 / scale.z, 0,
+                          0, 0, 0, 1
+        )
+
+        return Quaternion.createFromRotationMatrix(m1);
+    end
+
     if key == "transposed" then
         return self:clone():transpose()
     end
@@ -64,6 +88,10 @@ function Matrix:__newindex(key, value)
     if numberIndexes[key] then
         self[numberIndexes[key]] = value
         return
+    end
+
+    if key == "translation" then
+        self.m41, self.m42, self.m43 = value:split()
     end
 
     rawset(self, key, value)
@@ -255,32 +283,13 @@ function Matrix:to3x3()
     return self
 end
 
+function Matrix:isDecomposable()
+    local scale = self.scale
+    return scale.x ~= 0 and scale.y ~= 0 and scale.z ~= 0
+end
+
 function Matrix:decompose()
-    local translation = self.translation
-
-    local xs = (self.m11 * self.m12 * self.m13 * self.m14 < 0) and -1 or 1
-    local ys = (self.m21 * self.m22 * self.m23 * self.m24 < 0) and -1 or 1
-    local zs = (self.m31 * self.m32 * self.m33 * self.m34 < 0) and -1 or 1
-
-    local scale = Vector3(
-        xs * math.sqrt(self.m11 * self.m11 + self.m12 * self.m12 + self.m13 * self.m13),
-        ys * math.sqrt(self.m21 * self.m21 + self.m22 * self.m22 + self.m23 * self.m23),
-        zs * math.sqrt(self.m31 * self.m31 + self.m32 * self.m32 + self.m33 * self.m33)
-    )
-
-    if (scale.x == 0.0 or scale.y == 0.0 or scale.z == 0.0) then
-        return false
-    end
-
-    local m1 = Matrix(self.m11 / scale.x, self.m12 / scale.x, self.m13 / scale.x, 0,
-                      self.m21 / scale.y, self.m22 / scale.y, self.m23 / scale.y, 0,
-                      self.m31 / scale.z, self.m32 / scale.z, self.m33 / scale.z, 0,
-                      0, 0, 0, 1
-    )
-
-    local rotation = Quaternion.createFromRotationMatrix(m1);
-
-    return true, translation, scale, rotation;
+    return self.translation, self.scale, self.rotation;
 end
 
 function Matrix:clone()
