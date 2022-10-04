@@ -40,7 +40,7 @@ function Matrix:__index(key)
 
     -- Vectors
     if key == "translation" then return Vector3(self.m41, self.m42, self.m43) end
-    if key == "backward"    then return Vector3(self.m31, self.m32, self.m33) end
+    if key == "forward"     then return Vector3(self.m31, self.m32, self.m33) end
     if key == "up"          then return Vector3(self.m21, self.m22, self.m23) end
     if key == "right"       then return Vector3(self.m11, self.m12, self.m23) end
 
