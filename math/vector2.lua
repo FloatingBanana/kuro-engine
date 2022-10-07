@@ -57,11 +57,6 @@ function Vector2:__index(key)
         return Vector2(ax1, ax2)
     end
 
-    if key == "up"    then return  Vector2( 0,-1) end
-    if key == "down"  then return  Vector2( 0, 1) end
-    if key == "right" then return  Vector2(-1, 0) end
-    if key == "left"  then return  Vector2( 1, 0) end
-
     return Vector2[key]
 end
 

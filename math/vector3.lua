@@ -61,13 +61,6 @@ function Vector3:__index(key)
         end
     end
 
-    if key == "forward"   then return  Vector3( 0, 0, 1) end
-    if key == "backwards" then return  Vector3( 0, 0,-1) end
-    if key == "up"        then return  Vector3( 0, 1, 0) end
-    if key == "down"      then return  Vector3( 0,-1, 0) end
-    if key == "left"      then return  Vector3( 1, 0, 0) end
-    if key == "right"     then return  Vector3(-1, 0, 0) end
-
     return Vector3[key]
 end
 

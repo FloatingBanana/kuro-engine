@@ -456,8 +456,8 @@ function Matrix.createConstrainedBillboard(objectPosition, cameraPosition, rotat
 	    dot = Vector3.dot(rotateAxis, forward, dot)
 
         if (math.abs(dot) > threshold) then
-	        dot = Vector3.dot(rotateAxis, Vector3.forward)
-	        forward = (math.abs(dot) > threshold) and Vector3.right or Vector3.forward
+	        dot = Vector3.dot(rotateAxis, Vector3(0,0,-1))
+	        forward = (math.abs(dot) > threshold) and Vector3(1,0,0) or Vector3(0,0,-1)
         end
 
 	    right = Vector3.cross(rotateAxis, forward)
