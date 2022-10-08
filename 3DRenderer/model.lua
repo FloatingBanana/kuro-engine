@@ -1,23 +1,34 @@
-local Parseobj = require "engine.contents.objparser"
+local Assimp = require "moonassimp"
 local Mesh = require "engine.3DRenderer.mesh"
 local Meshpart = require "engine.3DRenderer.meshpart"
-local Material = require "engine.3DRenderer.material"
 local Model = Object:extend()
 
 function Model:new(file)
     self.meshes = {}
 
-    local model = Parseobj(file)
+    local data = lfs.read("string", file)
+    local model, err = Assimp.import_file_from_memory(data, "triangulate", "gen smooth normals", "join identical vertices")
 
-    for k, mesh in pairs(model.objects) do
+    assert(model, err)
+
+    local root = model:root_node()
+
+    self:__loadNode(root, model)
+end
+
+function Model:__loadNode(node, model)
+    if node:num_meshes() > 0 then
         local parts = {}
 
-        for i, part in ipairs(mesh) do
-            local mat = Material(part.material)
-            parts[i] = Meshpart(part.vertices, mat)
+        for i, part in pairs(node:meshes()) do
+            parts[i] = Meshpart(part)
         end
+        
+        self.meshes[node:name()] = Mesh(parts)
+    end
 
-        self.meshes[k] = Mesh(parts)
+    for i, child in ipairs(node:children()) do
+        self:__loadNode(child, model)
     end
 end
 
