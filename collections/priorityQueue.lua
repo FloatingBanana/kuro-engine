@@ -23,7 +23,7 @@ function PriorityQueue:new()
     self.pointer = -1
 end
 
-function PriorityQueue:swap(index1, index2)
+function PriorityQueue:__swap(index1, index2)
     local priorities = self.priorities
     local items = self.items
 
@@ -32,22 +32,17 @@ function PriorityQueue:swap(index1, index2)
     priorities[index2], items[index2] = tempPriority, tempItem
 end
 
-function PriorityQueue:peek()
-    assert(self.pointer > -1, "Queue is empty")
-    return self.items[0], self.priorities[0]
-end
-
-function PriorityQueue:shiftUp(index)
+function PriorityQueue:__shiftUp(index)
     local priorities = self.priorities
 
     while (index > 0 and priorities[parent(index)] < priorities[index]) do
-        self:swap(parent(index), index)
+        self:__swap(parent(index), index)
 
         index = parent(index)
     end
 end
 
-function PriorityQueue:shiftDown(index)
+function PriorityQueue:__shiftDown(index)
     local priorities = self.priorities
     local max = index
 
@@ -62,9 +57,14 @@ function PriorityQueue:shiftDown(index)
     end
 
     if index ~= max then
-        self:swap(max, index)
-        self:shiftDown(max)
+        self:__swap(max, index)
+        self:__shiftDown(max)
     end
+end
+
+function PriorityQueue:peek()
+    assert(self.pointer > -1, "Queue is empty")
+    return self.priorities[0], self.items[0]
 end
 
 function PriorityQueue:push(priotity, item)
@@ -73,18 +73,18 @@ function PriorityQueue:push(priotity, item)
     self.priorities[self.pointer] = priotity
     self.items[self.pointer] = item
 
-    self:shiftUp(self.pointer)
+    self:__shiftUp(self.pointer)
 end
 
 function PriorityQueue:pop()
-    local item, priority = self:peek()
-    self:swap(0, self.pointer)
+    local priority, item = self:peek()
+    self:__swap(0, self.pointer)
 
     self.priorities[self.pointer] = nil -- Free item in case it's a reference type
     self.pointer = self.pointer - 1
 
-    self:shiftDown(0)
-    return item, priority
+    self:__shiftDown(0)
+    return priority, item
 end
 
 function PriorityQueue:changePriority(index, priority)
@@ -92,17 +92,15 @@ function PriorityQueue:changePriority(index, priority)
     self.priorities[index] = priority
 
     if (priority > oldPriority) then
-        self:shiftUp(index)
+        self:__shiftUp(index)
     else
-        self:shiftDown(index)
+        self:__shiftDown(index)
     end
 end
 
 function PriorityQueue:remove(index)
-    self.priorities[index] = self.priorities[0] + 1
-
-    self:shiftUp(index)
-    self:pop()
+    self:changePriority(index, self.priorities[0] + 1)
+    return self:pop()
 end
 
 function PriorityQueue:clear()
@@ -111,8 +109,27 @@ function PriorityQueue:clear()
     self.pointer = -1
 end
 
-function PriorityQueue:getSize()
+function PriorityQueue:getLength()
     return self.pointer + 2
+end
+
+function PriorityQueue:getItem(index)
+    return self.priorities[index], self.items[index]
+end
+
+
+
+local function iter(this, i)
+    i = i+1
+    local priority, item = this:getItem(i)
+
+    if item then
+        return i, priority, item
+    end
+end
+
+function PriorityQueue:iterate()
+    return iter, self, -1
 end
 
 return PriorityQueue
