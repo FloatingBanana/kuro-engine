@@ -52,17 +52,18 @@ struct SpotLight {
     mat4 lightMatrix;
 };
 
-varying vec3 v_vertexNormal;
+varying vec3 v_normal;
+varying vec2 v_texCoords;
 varying vec3 v_fragPos;
 
 uniform DirectionalLight u_directionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight u_pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight u_spotLights[MAX_SPOT_LIGHTS];
 
-uniform vec3 u_diffuseColor;
 uniform vec3 u_specularColor;
 uniform float u_shininess;
 uniform vec3 u_viewPosition;
+uniform sampler2D u_diffuseTexture;
 
 const vec3 sampleOffsetDirections[20] = vec3[] (
    vec3( 1, 1, 1), vec3( 1,-1, 1), vec3(-1,-1, 1), vec3(-1, 1, 1), 
@@ -123,7 +124,7 @@ float ShadowCalculation(mat4 lightMatrix, sampler2D shadowMap, int mapSize) {
 ///////////////////////
 // Light calculation //
 ///////////////////////
-vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
+vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, vec3 diffuseColor) {
     if (!light.enabled)
         return vec3(0);
 
@@ -134,21 +135,21 @@ vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir
     vec3 halfwayDir = normalize(light.direction + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), u_shininess);
 
-    vec3 ambient  = light.ambient  * u_diffuseColor;
-    vec3 diffuse  = light.diffuse  * diff * u_diffuseColor;
+    vec3 ambient  = light.ambient  * diffuseColor;
+    vec3 diffuse  = light.diffuse  * diff * diffuseColor;
     vec3 specular = light.specular * spec * u_specularColor;
 
     float shadow = ShadowCalculation(light.lightMatrix, light.shadowMap, light.mapSize);
     return ambient + (1.0 - shadow) * (diffuse + specular);
 }
 
-vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 viewDir) {
+vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 viewDir, vec3 diffuseColor) {
     if (!light.enabled)
         return vec3(0);
 
     vec3 lightDir = normalize(light.position - v_fragPos);
 
-    vec3 color = light.ambient * u_diffuseColor;
+    vec3 color = light.ambient * diffuseColor;
     float theta = dot(lightDir, -light.direction);
 
     if (theta > light.outerCutOff) {
@@ -165,14 +166,14 @@ vec3 CalculateSpotLight(SpotLight light, vec3 normal, vec3 viewDir) {
         float shadow = ShadowCalculation(light.lightMatrix, light.shadowMap, light.mapSize);
         float visibility = (1.0 - shadow) * intensity;
 
-        color += light.diffuse  * diffuse  * u_diffuseColor  * visibility;
+        color += light.diffuse  * diffuse  * diffuseColor * visibility;
         color += light.specular * specular * u_specularColor * visibility;
     }
     
     return color;
 }
 
-vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 viewDir) {
+vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 diffuseColor) {
     if (!light.enabled)
         return vec3(0);
     
@@ -188,8 +189,8 @@ vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 viewDir) {
     float dist = length(light.position - v_fragPos);
     float attenuation = 1.0 / (light.constant  + light.linear * dist + light.quadratic * (dist * dist));
 
-    vec3 ambient  = light.ambient  * u_diffuseColor;
-    vec3 diffuse  = light.diffuse  * diff * u_diffuseColor;
+    vec3 ambient  = light.ambient  * diffuseColor;
+    vec3 diffuse  = light.diffuse  * diff * diffuseColor;
     vec3 specular = light.specular * spec * u_specularColor;
 
     float visibility = 1.0 - ShadowCalculation(light);
@@ -201,23 +202,25 @@ vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 viewDir) {
 ///////////////////
 // Main function //
 ///////////////////
-vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
-    vec3 normal = normalize(v_vertexNormal);
+void effect() {
+    vec3 normal = normalize(v_normal);
     vec3 viewDir = normalize(u_viewPosition - v_fragPos);
 
-    vec3 result = CalculateDirectionalLight(u_directionalLights[0], normal, viewDir);
+    vec3 diffuseColor = Texel(u_diffuseTexture, v_texCoords).xyz;
 
-    result += CalculatePointLight(u_pointLights[0], normal, viewDir);
-    result += CalculatePointLight(u_pointLights[1], normal, viewDir);
-    result += CalculatePointLight(u_pointLights[2], normal, viewDir);
-    result += CalculatePointLight(u_pointLights[3], normal, viewDir);
-    result += CalculatePointLight(u_pointLights[4], normal, viewDir);
+    vec3 result = CalculateDirectionalLight(u_directionalLights[0], normal, viewDir, diffuseColor);
+
+    result += CalculatePointLight(u_pointLights[0], normal, viewDir, diffuseColor);
+    result += CalculatePointLight(u_pointLights[1], normal, viewDir, diffuseColor);
+    result += CalculatePointLight(u_pointLights[2], normal, viewDir, diffuseColor);
+    result += CalculatePointLight(u_pointLights[3], normal, viewDir, diffuseColor);
+    result += CalculatePointLight(u_pointLights[4], normal, viewDir, diffuseColor);
     
-    result += CalculateSpotLight(u_spotLights[0], normal, viewDir);
-    result += CalculateSpotLight(u_spotLights[1], normal, viewDir);
-    result += CalculateSpotLight(u_spotLights[2], normal, viewDir);
-    result += CalculateSpotLight(u_spotLights[3], normal, viewDir);
-    result += CalculateSpotLight(u_spotLights[4], normal, viewDir);
+    result += CalculateSpotLight(u_spotLights[0], normal, viewDir, diffuseColor);
+    result += CalculateSpotLight(u_spotLights[1], normal, viewDir, diffuseColor);
+    result += CalculateSpotLight(u_spotLights[2], normal, viewDir, diffuseColor);
+    result += CalculateSpotLight(u_spotLights[3], normal, viewDir, diffuseColor);
+    result += CalculateSpotLight(u_spotLights[4], normal, viewDir, diffuseColor);
 
-    return vec4(result, 1.0);
+    gl_FragColor = vec4(result, 1.0);
 }

@@ -15,7 +15,7 @@ function Meshpart:new(part)
         local v = {}
 
         v[1], v[2], v[3] = part:position(i)
-        v[4], v[5]       = 0, 0--part:texture_coords(1, i)
+        v[4], v[5]       = part:texture_coords(1, i)
         v[6], v[7], v[8] = part:normal(i)
 
         vertices[i] = v
