@@ -554,7 +554,7 @@ function Matrix.createPerspectiveFOV(fov, aspectRatio, near, far)
 end
 
 function Matrix.createScale(scale)
-    local mat = Matrix()
+    local mat = Matrix.identity()
 
     mat.m11 = scale.width
     mat.m22 = scale.height
