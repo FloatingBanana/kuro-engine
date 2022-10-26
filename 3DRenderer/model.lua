@@ -7,7 +7,7 @@ function Model:new(file)
     self.meshes = {}
 
     local data = lfs.read("string", file)
-    local model, err = Assimp.import_file_from_memory(data, "triangulate", "sort by p type", "optimize meshes", "flip uvs")
+    local model, err = Assimp.import_file_from_memory(data, "triangulate", "sort by p type", "optimize meshes", "flip uvs", "calc tangent space")
 
     assert(model, err)
 

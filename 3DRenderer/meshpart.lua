@@ -7,6 +7,8 @@ local vertexFormat = {
     {"VertexPosition", "float", 3},
     {"VertexTexCoords", "float", 2},
     {"VertexNormal", "float", 3},
+    {"VertexTangent", "float", 3},
+    {"VertexBitangent", "float", 3},
 }
 
 local jitEnabled = jit and jit.status()
@@ -19,6 +21,8 @@ if jitEnabled then
             vector3 position;
             vector2 uv;
             vector3 normal;
+            vector3 tangent;
+            vector3 bitangent;
         }
     ]]
 end
@@ -45,9 +49,11 @@ function Meshpart:__loadVertices(part)
         for i=1, part:num_vertices() do
             local index = i-1
 
-            pointer[index].position = Vector3(part:position(i))
-            pointer[index].uv       = Vector2(part:texture_coords(1, i))
-            pointer[index].normal   = Vector3(part:normal(i))
+            pointer[index].position  = Vector3(part:position(i))
+            pointer[index].uv        = Vector2(part:texture_coords(1, i))
+            pointer[index].normal    = Vector3(part:normal(i))
+            pointer[index].tangent   = Vector3(part:tangent(i))
+            pointer[index].bitangent = Vector3(part:bitangent(i))
         end
     else
         -- Slower alternative if JIT is not enabled
@@ -56,13 +62,14 @@ function Meshpart:__loadVertices(part)
         for i=1, part:num_vertices() do
             local v = {}
 
-            v[1], v[2], v[3] = part:position(i)
-            v[4], v[5]       = part:texture_coords(1, i)
-            v[6], v[7], v[8] = part:normal(i)
+            v[1],  v[2],  v[3]  = part:position(i)
+            v[4],  v[5]         = part:texture_coords(1, i)
+            v[6],  v[7],  v[8]  = part:normal(i)
+            v[9],  v[10], v[11] = part:tangent(i)
+            v[12], v[13], v[14] = part:bitangent(i)
 
             vertices[i] = v
         end
-
     end
 
     -- Indices

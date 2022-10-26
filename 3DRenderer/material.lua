@@ -2,12 +2,20 @@ local Material = Object:extend()
 
 local textures = {}
 
+local function getTexture(path)
+    if not textures[path] then
+        textures[path] = lg.newImage("assets/models/"..path)
+    end
+    return textures[path]
+end
+
 function Material:new(mat)
     rawset(self, "__attrs", {
         diffuseColor = {1,1,1},
         specularColor = {1,1,1},
         shininess = 32,
-        diffuseTexture = 0
+        diffuseTexture = 0,
+        normalMap = 0,
     })
 
     self.shader = lg.newShader(
@@ -17,10 +25,12 @@ function Material:new(mat)
 
     local diffuseTexPath = mat:texture_path("diffuse", 1)
     if diffuseTexPath then
-        if not textures[diffuseTexPath] then
-            textures[diffuseTexPath] = lg.newImage("assets/models/"..diffuseTexPath)
-        end
-        self.diffuseTexture = textures[diffuseTexPath]
+        self.diffuseTexture = getTexture(diffuseTexPath)
+    end
+
+    local normalTexPath = mat:texture_path("normals", 1)
+    if normalTexPath then
+        self.normalMap = getTexture(normalTexPath)
     end
 
     -- self.diffuseColor = {1,1,1,1}
@@ -45,7 +55,6 @@ function Material:__newindex(key, value)
     if key == "worldMatrix" then
         --- @cast value Matrix
         self.shader:send("u_world", "column", value:toFlatTable())
-        self.shader:send("u_invTranspWorld", "column", value.inverse:transpose():to3x3():toFlatTable())
         return
     end
 

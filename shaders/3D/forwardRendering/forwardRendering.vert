@@ -1,12 +1,13 @@
 attribute vec2 VertexTexCoords;
 attribute vec3 VertexNormal;
+attribute vec3 VertexTangent;
+attribute vec3 VertexBitangent;
 
-varying vec3 v_normal;
 varying vec3 v_fragPos;
 varying vec2 v_texCoords;
+varying mat3 v_tbnMatrix;
 
 uniform mat4 u_world;
-uniform mat3 u_invTranspWorld;
 uniform mat4 u_viewProj;
 uniform mat4 u_lightViewProj;
 
@@ -15,7 +16,11 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
     v_texCoords = VertexTexCoords;
     v_fragPos = worldPos.xyz;
-    v_normal = u_invTranspWorld * VertexNormal;
+
+    vec3 T = normalize(vec3(u_world * vec4(VertexTangent,   0.0)));
+    vec3 B = normalize(vec3(u_world * vec4(VertexBitangent, 0.0)));
+    vec3 N = normalize(vec3(u_world * vec4(VertexNormal,    0.0)));
+    v_tbnMatrix = transpose(mat3(T, B, N));
 
     return u_viewProj * worldPos;
 }

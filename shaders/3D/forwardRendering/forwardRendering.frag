@@ -52,9 +52,9 @@ struct SpotLight {
     mat4 lightMatrix;
 };
 
-varying vec3 v_normal;
 varying vec2 v_texCoords;
 varying vec3 v_fragPos;
+varying mat3 v_tbnMatrix;
 
 uniform DirectionalLight u_directionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight u_pointLights[MAX_POINT_LIGHTS];
@@ -64,6 +64,7 @@ uniform vec3 u_specularColor;
 uniform float u_shininess;
 uniform vec3 u_viewPosition;
 uniform sampler2D u_diffuseTexture;
+uniform sampler2D u_normalMap;
 
 const vec3 sampleOffsetDirections[20] = vec3[] (
    vec3( 1, 1, 1), vec3( 1,-1, 1), vec3(-1,-1, 1), vec3(-1, 1, 1), 
@@ -203,7 +204,7 @@ vec3 CalculatePointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 diffu
 // Main function //
 ///////////////////
 void effect() {
-    vec3 normal = normalize(v_normal);
+    vec3 normal = normalize(v_tbnMatrix * (Texel(u_normalMap, v_texCoords).rgb * 2.0 - 1.0));
     vec3 viewDir = normalize(u_viewPosition - v_fragPos);
 
     vec3 diffuseColor = Texel(u_diffuseTexture, v_texCoords).xyz;
