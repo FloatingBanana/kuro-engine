@@ -18,9 +18,13 @@ vec4 position(mat4 transformProjection, vec4 position) {
     v_fragPos = worldPos.xyz;
 
     vec3 T = normalize(vec3(u_world * vec4(VertexTangent,   0.0)));
-    vec3 B = normalize(vec3(u_world * vec4(VertexBitangent, 0.0)));
     vec3 N = normalize(vec3(u_world * vec4(VertexNormal,    0.0)));
-    v_tbnMatrix = transpose(mat3(T, B, N));
+    // vec3 B = normalize(vec3(u_world * vec4(VertexBitangent, 0.0)));
+
+    T = normalize(T - dot(T, N) * N);
+    vec3 B = cross(N, T);
+
+    v_tbnMatrix = mat3(T, B, N);
 
     return u_viewProj * worldPos;
 }
