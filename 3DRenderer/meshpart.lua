@@ -83,6 +83,7 @@ end
 
 function Meshpart:draw()
     self.material:apply()
+    self.material.shader:send("u_isCanvasEnabled", lg.getCanvas() ~= nil)
     lg.draw(self.mesh)
 end
 
