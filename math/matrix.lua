@@ -92,6 +92,7 @@ function Matrix:__newindex(key, value)
 
     if key == "translation" then
         self.m41, self.m42, self.m43 = value:split()
+        return
     end
 
     rawset(self, key, value)
