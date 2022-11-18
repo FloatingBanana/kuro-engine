@@ -99,3 +99,5 @@ function Transform:removeChild(child)
     self.children[child] = nil
     child.parent = nil
 end
+
+return Transform
