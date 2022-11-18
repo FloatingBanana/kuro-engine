@@ -65,17 +65,9 @@ function Skybox:render(view, projection)
     skyboxShader:send("viewProj", "column", viewProj:toFlatTable())
     skyboxShader:send("skyTex", self.texture)
 
-    local comparemode, write = lg.getDepthMode()
-    local cullmode = lg.getMeshCullMode()
-
-    lg.setDepthMode("always", false)
-    lg.setMeshCullMode("none")
-
+    lg.setMeshCullMode("back")
     lg.setShader(skyboxShader)
     lg.draw(cube)
-    
-    lg.setDepthMode(comparemode, write)
-    lg.setMeshCullMode(cullmode)
 end
 
 return Skybox

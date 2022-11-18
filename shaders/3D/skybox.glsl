@@ -8,7 +8,7 @@ vec4 position(mat4 _, vec4 position) {
     vec4 screen = viewProj * position;
 
     screen.y *= -1.0;
-    return screen;
+    return screen.xyww;
 }
 #endif
 
