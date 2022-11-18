@@ -1,72 +1,46 @@
 local Material = Object:extend()
 
-local textures = {}
+function Material:new(shader, attributes)
+    rawset(self, "__attrs", attributes)
+    self.shader = shader
 
-local function getTexture(path)
-    if not textures[path] then
-        textures[path] = lg.newImage("assets/models/"..path)
+    -- Small trick to properly setup the initial values
+    for key, attr in pairs(attributes) do
+        self[key] = attr.value
     end
-    return textures[path]
-end
-
-function Material:new(mat)
-    rawset(self, "__attrs", {
-        diffuseColor = {1,1,1},
-        specularColor = {1,1,1},
-        shininess = 32,
-        diffuseTexture = 0,
-        normalMap = 0,
-    })
-
-    self.shader = lg.newShader(
-        "engine/shaders/3D/forwardRendering/forwardRendering.vert",
-        "engine/shaders/3D/forwardRendering/forwardRendering.frag"
-    )
-
-    local diffuseTexPath = mat:texture_path("diffuse", 1)
-    if diffuseTexPath then
-        self.diffuseTexture = getTexture(diffuseTexPath)
-    end
-
-    local normalTexPath = mat:texture_path("normals", 1)
-    if normalTexPath then
-        self.normalMap = getTexture(normalTexPath)
-    end
-
-    -- self.diffuseColor = {1,1,1,1}
-    self.specularColor = {1,1,1,1}
-    self.shininess = mat:shininess()
 end
 
 function Material:__index(key)
     if rawget(self, "__attrs") and self.__attrs[key] then
-        return self.__attrs[key]
+        return self.__attrs[key].value
     end
 
     return Material[key]
 end
 
 function Material:__newindex(key, value)
-    if self.__attrs[key] then
-        self.__attrs[key] = value
-        self.shader:send("u_"..key, value)
-    end
+    if rawget(self, "__attrs") and self.__attrs[key] then
+        local attr = self.__attrs[key]
 
-    if key == "worldMatrix" then
-        --- @cast value Matrix
-        self.shader:send("u_world", "column", value:toFlatTable())
-        return
-    end
+        if not value then
+            print("Attempt to assign nil to '"..key.."' material attribute")
+            return
+        end
 
-    if key == "viewProjectionMatrix" then
-        --- @cast value Matrix
-        self.shader:send("u_viewProj", "column", value:toFlatTable())
-        return
-    end
+        attr.value = value
+        local sendValue = value
 
-    if key == "viewPosition" then
-        --- @cast value Vector3
-        self.shader:send("u_viewPosition", value:toFlatTable())
+        if type(value) == "cdata" then
+            sendValue = value:toFlatTable()
+
+            local ffi = require "ffi"
+            if ffi.istype("matrix", value) then
+                self.shader:send(attr.uniform, "column", sendValue)
+                return
+            end
+        end
+
+        self.shader:send(attr.uniform, sendValue)
         return
     end
 

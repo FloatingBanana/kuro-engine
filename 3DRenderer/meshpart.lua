@@ -1,7 +1,7 @@
-local Material = require "engine.3DRenderer.material"
-local Vector2  = require "engine.math.vector2"
-local Vector3  = require "engine.math.vector3"
-local Meshpart = Object:extend()
+local FRMaterial = require "engine.3DRenderer.forwardRenderingMaterial"
+local Vector2    = require "engine.math.vector2"
+local Vector3    = require "engine.math.vector3"
+local Meshpart   = Object:extend()
 
 local vertexFormat = {
     {"VertexPosition", "float", 3},
@@ -31,8 +31,8 @@ function Meshpart:new(part)
     local indices = {}
 
     self.mesh = lg.newMesh(vertexFormat, part:num_vertices(), "triangles", "static")
-    self.material = Material(part:material())
-    
+    self.material = FRMaterial(part:material())
+
     self:__loadVertices(part)
 end
 
