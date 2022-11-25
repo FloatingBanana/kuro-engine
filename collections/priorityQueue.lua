@@ -110,7 +110,7 @@ function PriorityQueue:clear()
 end
 
 function PriorityQueue:getLength()
-    return self.pointer + 2
+    return self.pointer + 1
 end
 
 function PriorityQueue:getItem(index)
