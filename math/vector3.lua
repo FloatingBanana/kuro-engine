@@ -264,6 +264,22 @@ function Vector3:screenToWorld(screenMatrix, screenSize, minDepth, maxDepth)
 	return self;
 end
 
+function Vector3:floor()
+    self.x = math.floor(self.x)
+    self.y = math.floor(self.y)
+    self.z = math.floor(self.z)
+
+    return self
+end
+
+function Vector3:ceil()
+    self.x = math.ceil(self.x)
+    self.y = math.ceil(self.y)
+    self.z = math.ceil(self.z)
+
+    return self
+end
+
 function Vector3:isNan()
     return self ~= self
 end

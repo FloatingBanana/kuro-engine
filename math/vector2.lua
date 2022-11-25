@@ -214,6 +214,20 @@ function Vector2:rotateBy(angle)
     return self
 end
 
+function Vector2:floor()
+    self.x = math.floor(self.x)
+    self.y = math.floor(self.y)
+
+    return self
+end
+
+function Vector2:ceil()
+    self.x = math.ceil(self.x)
+    self.y = math.ceil(self.y)
+
+    return self
+end
+
 function Vector2:isNan()
     return self ~= self
 end
