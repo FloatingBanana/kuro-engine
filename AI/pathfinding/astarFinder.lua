@@ -44,7 +44,7 @@ function Finder:findPath(grid, from, to)
                 total_cost[nextHash] = newCost
                 came_from[nextHash] = currPos
 
-                frontier:push(newCost - manhattan(to, nextPos), nextPos)
+                frontier:push(-newCost - manhattan(to, nextPos), nextPos)
 
                 Lume.push(self.searched, nextPos)
             end
