@@ -25,6 +25,22 @@ function EM.exist(entity)
     return not not EM.entities[entity]
 end
 
+function EM.query(unique, func, ...)
+    local list = unique and nil or {}
+
+    for entity in pairs(EM.entities) do
+        if func(entity, ...) then
+            if unique then
+                return entity
+            end
+
+            list[#list+1] = entity
+        end
+    end
+
+    return list
+end
+
 function EM.clear()
     for entity in pairs(EM.entities) do
         EM.remove(entity)
