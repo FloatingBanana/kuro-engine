@@ -1,8 +1,8 @@
 local Inter2d = require "engine.math.intersection2d"
 local CStruct = require "engine.cstruct"
 local Rect = CStruct("Rect", [[
-    brinevector position;
-    brinevector size;
+    vector2 position;
+    vector2 size;
 ]])
 
 function Rect:new(pos, size)
