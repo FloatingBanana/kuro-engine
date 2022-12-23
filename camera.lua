@@ -25,6 +25,30 @@ function Camera:setInterpolation(easing, speed)
     self.speed = speed
 end
 
+function Camera:shake(time, intensity, shakeSpeed)
+    local defaultPos = self.actualPosition
+    local shakeTimer = shakeSpeed
+    local remainingTime = time
+    local shakeOffset = Vector2()
+
+    Timer.during(time, function(dt)
+        shakeTimer = shakeTimer - dt
+        remainingTime = remainingTime - dt
+
+        if shakeTimer <= 0 then
+            local int = intensity * (remainingTime / time)
+            shakeOffset.x = math.random(-int, int)
+            shakeOffset.y = math.random(-int, int)
+
+            shakeTimer = shakeSpeed
+            self.actualPosition = defaultPos + shakeOffset
+        end
+    end,
+    function()
+        self.actualPosition = defaultPos
+    end)
+end
+
 function Camera:update(dt)
     self.actualPosition = self.easing(self.actualPosition, self.position, self.speed * dt)
 end
