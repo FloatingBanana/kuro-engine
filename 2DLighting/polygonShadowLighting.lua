@@ -19,9 +19,8 @@ uniform float u_radius;
 
 vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
     float dist = distance(screencoords, u_lightpos);
-    float attenuation = 1.0 - dist / u_radius;
-    color.a = attenuation;
-
+    float attenuation = max(1.0 - dist / u_radius, 0.0);
+    color.a = attenuation*attenuation;
     return color;
 }
 ]]
@@ -31,13 +30,13 @@ local vformat = {
     {"a_distance", "float", 1},
 }
 local shadowMesh = lg.newMesh(vformat, 4, "strip", "stream")
-local lightMesh = lg.newMesh(4, "strip", "stream")
 
 
-function PolyShadow:new(ambientColor)
+function PolyShadow:new(size, ambientColor)
     self.occluders = {}
     self.lights = {}
-    self.lightMap = lg.newCanvas(WIDTH, HEIGHT)
+    self.size = size
+    self.lightMap = lg.newCanvas(size.width, size.height)
     self.ambientColor = ambientColor
 end
 
@@ -71,6 +70,14 @@ function PolyShadow:addLight(position, radius, color)
 
     self.lights[light] = true
     return light
+end
+
+function PolyShadow:removeOccluder(occluder)
+    self.occluders[occluder] = nil
+end
+
+function PolyShadow:removeLight(light)
+    self.lights[light] = nil
 end
 
 local occluders, currLight
@@ -116,19 +123,21 @@ end
 function PolyShadow:bakeLightmap()
     occluders, lights = self.occluders, self.lights
 
+    lg.push("all")
+    lg.origin()
     lg.setCanvas({self.lightMap, stencil = true})
     lg.clear(self.ambientColor)
     lg.setBlendMode("add")
 
     for light in pairs(self.lights) do
         currLight = light
-        shadowShader:send("u_lightpos", {light.position:split()})
+        shadowShader:send("u_lightpos", light.position:toFlatTable())
         lg.stencil(stencilShadow, "replace", 1)
         lg.setStencilTest("equal", 0)
 
         lg.setColor(light.color)
         lg.setShader(lightShader)
-        lightShader:send("u_lightpos", {light.position:split()})
+        lightShader:send("u_lightpos", light.position:toFlatTable())
         lightShader:send("u_radius", light.radius)
 
         local pos = light.position - light.radius
@@ -136,10 +145,7 @@ function PolyShadow:bakeLightmap()
         lg.rectangle("fill", pos.x, pos.y, size, size)
     end
 
-    lg.setBlendMode("alpha")
-    lg.setShader()
-    lg.setStencilTest()
-    lg.setCanvas()
+    lg.pop()
 end
 
 function PolyShadow:renderLighting()
