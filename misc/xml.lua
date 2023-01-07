@@ -107,7 +107,7 @@ local function parse()
 
             eatMatch(whitespacePattern)
 
-            if eat("/>") then
+            if eat("/>") or eat("?>") then
                 element.type = "single_element"
                 break
             end
