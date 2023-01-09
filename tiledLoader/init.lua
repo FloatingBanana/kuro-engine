@@ -41,13 +41,11 @@ function tiled.loadTable(t)
 end
 
 function tiled.loadTmx(file)
-    local f, err = io.open(file, "r")
-    assert(f, ("Could not open %s: %s"):format(file, err))
+    local xml, err = lfs.read(file)
+    assert(xml, ("Could not open %s: %s"):format(file, err))
 
-    local xml = f:read("*a")
     local obj = tmxLoader(xml)
 
-    f:close()
     set_layer_methods(obj.layers, obj)
     merge_tables(obj, layerFuncs)
 
