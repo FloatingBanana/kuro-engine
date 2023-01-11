@@ -10,32 +10,74 @@ local get_layer = nil
 local function get_properties(elm)
     local properties = {}
 
-    for _, prop in pairs(elm.children)do
+    for _, prop in pairs(elm.children) do
         if prop.name == "property" then
-            local attr = prop.attributes
+            local props = prop.properties
             local val = nil
 
-            if attr.type == "bool" then
-                val = attr.value == "true"
-
-            elseif attr.type == "int" or attr.type == "float" then
-                val = tonumber(attr.value)
+            if props.type == "bool" then
+                val = props.value == "true"
+            elseif props.type == "int" or props.type == "float" then
+                val = tonumber(props.value)
             else
-                val = attr.value
+                val = props.value
             end
 
-            properties[attr.name] = val
+            properties[props.name] = val
         end
     end
 
     return properties
 end
 
+local function get_tileset(element)
+    local props = element.properties
+    local tileset = {
+        name            = props.name,
+        firstgid       = tonumber(props.firstgid),
+        class           = "", -- TODO
+        tilewidth       = tonumber(props.tilewidth),
+        tileheight      = tonumber(props.tileheight),
+        spacing         = tonumber(props.spacing or 0),
+        margin          = tonumber(props.margin or 0),
+        columns         = tonumber(props.columns),
+        tilecount       = tonumber(props.tilecount),
+        objectalignment = props.objectalignment or "unspecified",
+        tilerendersize  = props.tilerendersize or "tile",
+        fillmode        = props.fillmode or "stretch",
+        properties      = {}, -- TODO
+        wangsets        = {}, -- TODO
+        tiles           = {}, -- TODO
+        tileoffset = { -- TODO
+            x = 0,
+            y = 0
+        },
+        grid = {
+            orientation = "orthogonal", -- TODO
+            width = props.tilewidth,
+            height = props.tileheight,
+        },
+    }
+
+    local propertiesElm = Lume.filter(element.children, function(elm) return elm.name == "properties" end)[1]
+    tileset.properties = propertiesElm and get_properties(propertiesElm) or {}
+
+    local imageElm = Lume.filter(element.children, function(elm) return elm.name == "image" end)[1]
+    local imageProps = imageElm.properties
+    tileset.image = imageProps.source
+    tileset.imagewidth = imageProps.width
+    tileset.imageheight = imageProps.height
+
+    return tileset
+end
+
 local function process_tilemap_layer(layer, element)
     local dataElm = Lume.filter(element.children, function(elm) return elm.name == "data" end)[1]
-    local csvdata = csv.parse(dataElm[1])
+    local csvdata = csv.parse(dataElm.children[1])
+    local encoding = dataElm.properties.encoding
 
     layer.type = "tilelayer"
+    layer.encoding = (encoding == "csv" and "lua" or encoding)
     layer.data = Lume.map(csvdata, tonumber)
 end
 
@@ -47,7 +89,7 @@ local function process_objectgroup_layer(layer, element)
         local props = objectElm.properties
 
         local object = {
-            id = tonumber(props.id),
+            id         = tonumber(props.id),
             name       = props.name or "",
             type       = props.type or "",
             shape      = "rectangle",
@@ -60,7 +102,7 @@ local function process_objectgroup_layer(layer, element)
             properties = {}
         }
 
-        for _, child in ipairs(element.child or {}) do
+        for _, child in ipairs(objectElm.children or {}) do
             if shape_types[child.name] then
                 object.shape = child.name
             end
@@ -107,24 +149,23 @@ get_layer = function(layerElm)
     local layerType = layerElm.name
     local props = layerElm.properties
     local layer = {
-        type = layerType,
-        x = 0,
-        y = 0,
-        width = tonumber(props.width),
-        height = tonumber(props.height),
-        id = tonumber(props.id),
-        name = props.name,
-        visible = not props.visible or props.visible == 1,
-        opacity = tonumber(props.opacity or 1),
-        offsetx = tonumber(props.offsetx or 0),
-        offsety = tonumber(props.offsety or 0),
-        parallaxx = tonumber(props.parallaxx or 1),
-        parallaxy = tonumber(props.parallaxy or 1),
-
+        type       = layerType,
+        x          = 0,
+        y          = 0,
+        width      = tonumber(props.width),
+        height     = tonumber(props.height),
+        id         = tonumber(props.id),
+        name       = props.name,
+        visible    = not props.visible or props.visible == 1,
+        opacity    = tonumber(props.opacity or 1),
+        offsetx    = tonumber(props.offsetx or 0),
+        offsety    = tonumber(props.offsety or 0),
+        parallaxx  = tonumber(props.parallaxx or 1),
+        parallaxy  = tonumber(props.parallaxy or 1),
         properties = {}
     }
 
-    if layerType == "tilelayer" then
+    if layerType == "layer" then
         process_tilemap_layer(layer, layerElm)
     end
 
@@ -178,7 +219,7 @@ local function tmxLoader(code)
 
         -- Tilesets
         if elm.name == "tileset" then
-            -- TODO
+            table.insert(result.tilesets, get_tileset(elm))
         end
 
         -- Layers
