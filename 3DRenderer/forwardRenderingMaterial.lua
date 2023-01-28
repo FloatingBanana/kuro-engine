@@ -30,9 +30,12 @@ function FRMaterial:new(mat)
         viewPosition         = {uniform = "u_viewPosition",   value = Vector3()},
     }
 
+    local frag = lfs.read("engine/shaders/3D/forwardRendering/forwardRendering.frag")
+    local preProcessedFrag = Utils.preprocessShader(frag)
+
     local shader = lg.newShader(
         "engine/shaders/3D/forwardRendering/forwardRendering.vert",
-        "engine/shaders/3D/forwardRendering/forwardRendering.frag"
+        preProcessedFrag
     )
 
     Material.new(self, shader, attributes)

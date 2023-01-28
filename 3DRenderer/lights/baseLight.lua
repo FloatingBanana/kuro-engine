@@ -1,11 +1,13 @@
 local BaseLight = Object:extend()
 
-function BaseLight:new(position, ambient, diffuse, specular, shadowMapSize)
+function BaseLight:new(position, ambient, diffuse, specular, depthShader, shadowMapSize)
     self.position = position
 
     self.ambient = ambient
     self.diffuse = diffuse
     self.specular = specular
+
+    self.depthShader = depthShader
 
     self.near = 1
     self.far = 15
@@ -22,7 +24,7 @@ local currCullMode = nil
 local currBlendMode = nil
 local currAlphaBlendMode = nil
 local currShader = nil
-function BaseLight:beginLighting(shader, viewProj, mapFace)
+function BaseLight:beginLighting(viewProj, mapFace)
     currCanvas = lg.getCanvas()
     currCullMode = lg.getMeshCullMode()
     currBlendMode, currAlphaBlendMode = lg.getBlendMode()
@@ -33,9 +35,9 @@ function BaseLight:beginLighting(shader, viewProj, mapFace)
     lg.setDepthMode("lequal", true)
     lg.setMeshCullMode("none")
     lg.setBlendMode("replace")
-    lg.setShader(shader)
+    lg.setShader(self.depthShader)
 
-    shader:send("u_viewProj", "column", viewProj:toFlatTable())
+    self.depthShader:send("u_viewProj", "column", viewProj:toFlatTable())
 end
 
 function BaseLight:endLighting()
@@ -43,6 +45,10 @@ function BaseLight:endLighting()
     lg.setMeshCullMode(currCullMode)
     lg.setBlendMode(currBlendMode, currAlphaBlendMode)
     lg.setShader(currShader)
+end
+
+function BaseLight:setupLightData(dataList, index)
+    error("Not implemented")
 end
 
 return BaseLight

@@ -7,7 +7,7 @@ local PointLight = BaseLight:extend()
 local depthShader = lg.newShader("engine/shaders/3D/shadowMap/pointShadowMapRenderer.glsl")
 
 function PointLight:new(position, linear, constant, quadratic, ambient, diffuse, specular)
-    BaseLight.new(self, position, ambient, diffuse, specular, 1)
+    BaseLight.new(self, position, ambient, diffuse, specular, depthShader, 1)
 
     self.linear = linear
     self.constant = constant
@@ -28,9 +28,8 @@ local dirs = {
     {dir = Vector3( 0, 0,-1), up = Vector3(0,-1, 0)},
 }
 
-function PointLight:applyLighting(parts, index)
+function PointLight:setupLightData(meshparts, dataList, index)
     local proj = Matrix.createPerspectiveFOV(math.rad(90), 1, self.near, self.far)
-    local fieldName = ("u_pointLights[%d]"):format(index)
 
     depthShader:send("lightPos", self.position:toFlatTable())
     depthShader:send("farPlane", self.far)
@@ -39,33 +38,28 @@ function PointLight:applyLighting(parts, index)
         local view = Matrix.createLookAtDirection(self.position, dirs[i].dir, dirs[i].up)
         local viewProj = view * proj
 
-        self:beginLighting(depthShader, viewProj, i)
+        self:beginLighting(viewProj, i)
 
-        for part, worldMatrix in pairs(parts) do
+        for part, worldMatrix in pairs(meshparts) do ---@cast worldMatrix Matrix
             depthShader:send("u_world", "column", worldMatrix:toFlatTable())
 
             lg.draw(part.mesh)
-
-            if i == 6 then
-                part.material.shader:send(fieldName..".enabled",   self.enabled)
-                part.material.shader:send(fieldName..".shadowMap", self.shadowmap)
-
-                part.material.shader:send(fieldName..".position", self.position:toFlatTable())
-
-                part.material.shader:send(fieldName..".constant",  self.constant)
-                part.material.shader:send(fieldName..".linear",    self.linear)
-                part.material.shader:send(fieldName..".quadratic", self.quadratic)
-
-                part.material.shader:send(fieldName..".farPlane",  self.far)
-
-                part.material.shader:send(fieldName..".ambient",  self.ambient)
-                part.material.shader:send(fieldName..".diffuse",  self.diffuse)
-                part.material.shader:send(fieldName..".specular", self.specular)
-            end
         end
 
         self:endLighting()
     end
+
+    dataList.u_pointLightShadowMap[index] = self.shadowmap
+    dataList.u_lightMapSize[index] = self.shadowmap:getWidth()
+
+    dataList.u_lightPosition[index] = {self.position:split()}
+    dataList.u_lightVars[index] = {self.constant, self.linear, self.quadratic, self.far}
+
+    dataList.u_lightColor[index] = {
+        ambient = self.ambient,
+        diffuse = self.diffuse,
+        specular = self.specular
+    }
 end
 
 return PointLight
