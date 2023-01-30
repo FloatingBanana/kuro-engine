@@ -36,25 +36,27 @@ float ShadowCalculation(vec3 position, float farPlane, samplerCube shadowMap, ve
 float ShadowCalculation(sampler2D shadowMap, int mapSize, vec4 lightFragPos);
 #pragma include "engine/shaders/3D/forwardRendering/_shadowCalculation.glsl"
 
-
 ///////////////////////
 // Light calculation //
 ///////////////////////
+vec3 CaculatePhongLighting(vec3 direction, vec3 normal, vec3 viewDir, float visibility, PhongColor lightColor, PhongColor matColor) {
+    vec3 ambient = lightColor.ambient  * matColor.diffuse;
+    vec3 diffuse = max(dot(normal, direction), 0.0) * lightColor.diffuse * matColor.diffuse;
+    
+    vec3 halfwayDir = normalize(direction + viewDir);
+    vec3 specular = pow(max(dot(normal, halfwayDir), 0.0), u_shininess) * lightColor.specular * matColor.specular;
+
+    return ambient + (diffuse + specular) * visibility;
+}
+
 vec3 CalculateDirectionalLight(int index, vec3 normal, vec3 viewDir, sampler2D shadowMap, PhongColor matColor) {
     PhongColor lightColor = u_lightColor[index];
     vec3 lightDir = u_lightDirection[index];
     vec4 lightFragPos = v_lightSpaceFragPos[index];
     int mapSize = u_lightMapSize[index];
 
-    vec3 ambient = lightColor.ambient  * matColor.diffuse;
-    vec3 diffuse = max(dot(normal, lightDir), 0.0) * lightColor.diffuse * matColor.diffuse;
-
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    vec3 specular = pow(max(dot(normal, halfwayDir), 0.0), u_shininess) * lightColor.diffuse * matColor.diffuse;
-
-
     float shadow = ShadowCalculation(shadowMap, mapSize, lightFragPos);
-    return ambient + (1.0 - shadow) * (diffuse + specular);
+    return CaculatePhongLighting(lightDir, normal, viewDir, 1.0 - shadow, lightColor, matColor);
 }
 
 vec3 CalculateSpotLight(int index, vec3 normal, vec3 viewDir, sampler2D shadowMap, PhongColor matColor) {
@@ -68,49 +70,33 @@ vec3 CalculateSpotLight(int index, vec3 normal, vec3 viewDir, sampler2D shadowMa
     
     vec3 lightDir = normalize(lightPos - v_fragPos);
     float theta = dot(lightDir, -spotDir);
-    vec3 color = lightColor.ambient * matColor.diffuse;
 
     if (theta > outerCutOff) {
         float epsilon = cutOff - outerCutOff;
         float intensity = clamp((theta - outerCutOff) / epsilon, 0.0, 1.0);
-
-        float diffuse = max(dot(normal, lightDir), 0.0);
-
-        vec3 halfwayDir = normalize(lightDir + viewDir);
-        float specular = pow(max(dot(normal, halfwayDir), 0.0), u_shininess);
-        
         float shadow = ShadowCalculation(shadowMap, mapSize, lightFragPos);
-        float visibility = (1.0 - shadow) * intensity;
 
-        color += lightColor.diffuse  * diffuse  * matColor.diffuse  * visibility;
-        color += lightColor.specular * specular * matColor.specular * visibility;
+        return CaculatePhongLighting(lightDir, normal, viewDir, (1.0-shadow) * intensity, lightColor, matColor);
     }
     
-    return color;
+    return lightColor.ambient * matColor.diffuse;
 }
 
 vec3 CalculatePointLight(int index, vec3 normal, vec3 viewDir, samplerCube shadowMap, PhongColor matColor) {
     PhongColor lightColor = u_lightColor[index];
     vec3 lightPos = u_lightPosition[index];
-    int mapSize = u_lightMapSize[index];
     float linear = u_lightVars[index].x;
     float constant = u_lightVars[index].y;
     float quadratic = u_lightVars[index].z;
     float farPlane = u_lightVars[index].w;
     
     vec3 lightDir = normalize(lightPos - v_fragPos);
-    vec3 diffuse = max(dot(normal, lightDir), 0.0) * lightColor.diffuse * matColor.diffuse;
-
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    vec3 specular = pow(max(dot(normal, halfwayDir), 0.0), u_shininess) * lightColor.specular * matColor.specular;
-
     float dist = length(lightPos - v_fragPos);
+
     float attenuation = 1.0 / (constant  + linear * dist + quadratic * (dist * dist));
+    float shadow = ShadowCalculation(u_lightPosition[index], farPlane, shadowMap, u_viewPosition, v_fragPos);
 
-    float visibility = 1.0 - ShadowCalculation(u_lightPosition[index], farPlane, shadowMap, u_viewPosition, v_fragPos);
-    vec3 ambient = lightColor.ambient * matColor.diffuse;
-
-    return (ambient + (diffuse + specular) * visibility) * attenuation;
+    return CaculatePhongLighting(lightDir, normal, viewDir, 1.0-shadow, lightColor, matColor) * attenuation;
 }
 
 
