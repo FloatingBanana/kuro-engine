@@ -40,9 +40,9 @@ float ShadowCalculation(sampler2D shadowMap, int mapSize, vec4 lightFragPos);
 // Light calculation //
 ///////////////////////
 vec3 CaculatePhongLighting(vec3 direction, vec3 normal, vec3 viewDir, float visibility, PhongColor lightColor, PhongColor matColor) {
-    vec3 ambient = lightColor.ambient  * matColor.diffuse;
+    vec3 ambient = lightColor.ambient * matColor.diffuse;
     vec3 diffuse = max(dot(normal, direction), 0.0) * lightColor.diffuse * matColor.diffuse;
-    
+
     vec3 halfwayDir = normalize(direction + viewDir);
     vec3 specular = pow(max(dot(normal, halfwayDir), 0.0), u_shininess) * lightColor.specular * matColor.specular;
 
@@ -76,7 +76,7 @@ vec3 CalculateSpotLight(int index, vec3 normal, vec3 viewDir, sampler2D shadowMa
         float intensity = clamp((theta - outerCutOff) / epsilon, 0.0, 1.0);
         float shadow = ShadowCalculation(shadowMap, mapSize, lightFragPos);
 
-        return CaculatePhongLighting(lightDir, normal, viewDir, (1.0-shadow) * intensity, lightColor, matColor);
+        return CaculatePhongLighting(lightDir, normal, viewDir, (1.0 - shadow) * intensity, lightColor, matColor);
     }
     
     return lightColor.ambient * matColor.diffuse;
@@ -96,7 +96,7 @@ vec3 CalculatePointLight(int index, vec3 normal, vec3 viewDir, samplerCube shado
     float attenuation = 1.0 / (constant  + linear * dist + quadratic * (dist * dist));
     float shadow = ShadowCalculation(u_lightPosition[index], farPlane, shadowMap, u_viewPosition, v_fragPos);
 
-    return CaculatePhongLighting(lightDir, normal, viewDir, 1.0-shadow, lightColor, matColor) * attenuation;
+    return CaculatePhongLighting(lightDir, normal, viewDir, 1.0 - shadow, lightColor, matColor) * attenuation;
 }
 
 
@@ -124,7 +124,7 @@ void effect() {
 
             if (u_lightType[INDEX] == LIGHT_TYPE_POINT)
                 result += CalculatePointLight(INDEX, normal, viewDir, u_pointLightShadowMap[INDEX], matColor);
-    }
+        }
 #   pragma endfor
 
     gl_FragColor = vec4(result, 1.0);
