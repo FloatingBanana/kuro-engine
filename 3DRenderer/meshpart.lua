@@ -8,7 +8,6 @@ local vertexFormat = {
     {"VertexTexCoords", "float", 2},
     {"VertexNormal", "float", 3},
     {"VertexTangent", "float", 3},
-    {"VertexBitangent", "float", 3},
 }
 
 local jitEnabled = jit and jit.status()
@@ -22,14 +21,11 @@ if jitEnabled then
             vector2 uv;
             vector3 normal;
             vector3 tangent;
-            vector3 bitangent;
         }
     ]]
 end
 
 function Meshpart:new(part)
-    local indices = {}
-
     self.mesh = lg.newMesh(vertexFormat, part:num_vertices(), "triangles", "static")
     self.material = FRMaterial(part:material())
 
@@ -53,7 +49,6 @@ function Meshpart:__loadVertices(part)
             pointer[index].uv        = Vector2(part:texture_coords(1, i))
             pointer[index].normal    = Vector3(part:normal(i))
             pointer[index].tangent   = Vector3(part:tangent(i))
-            pointer[index].bitangent = Vector3(part:bitangent(i))
         end
     else
         -- Slower alternative if JIT is not enabled
@@ -66,7 +61,6 @@ function Meshpart:__loadVertices(part)
             v[4],  v[5]         = part:texture_coords(1, i)
             v[6],  v[7],  v[8]  = part:normal(i)
             v[9],  v[10], v[11] = part:tangent(i)
-            v[12], v[13], v[14] = part:bitangent(i)
 
             vertices[i] = v
         end

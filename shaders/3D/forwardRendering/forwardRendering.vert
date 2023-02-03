@@ -3,7 +3,6 @@
 attribute vec2 VertexTexCoords;
 attribute vec3 VertexNormal;
 attribute vec3 VertexTangent;
-attribute vec3 VertexBitangent;
 
 varying vec3 v_fragPos;
 varying vec2 v_texCoords;
