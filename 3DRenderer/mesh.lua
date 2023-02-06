@@ -1,7 +1,8 @@
 local Mesh = Object:extend()
 
-function Mesh:new(meshparts)
+function Mesh:new(meshparts, transformation)
     self.parts = meshparts
+    self.transformation = transformation
     self.materials = {}
 
     for i, part in ipairs(meshparts) do

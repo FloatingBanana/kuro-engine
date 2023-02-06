@@ -25,10 +25,10 @@ if jitEnabled then
     ]]
 end
 
-function Meshpart:new(part)
+function Meshpart:new(part, model)
     self.mesh = lg.newMesh(vertexFormat, part:num_vertices(), "triangles", "static")
-    self.material = FRMaterial(part:material())
 
+    self.material = model.materials[part:material():name()]
     self:__loadVertices(part)
 end
 

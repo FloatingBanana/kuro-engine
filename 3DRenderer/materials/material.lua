@@ -51,4 +51,19 @@ function Material:apply()
     lg.setShader(self.shader)
 end
 
+local textures = {}
+function Material.GetTexture(mat, type, texIndex, linear)
+    local path = mat:texture_path(type, texIndex)
+
+    if path then
+        if not textures[path] then
+            textures[path] = lg.newImage("assets/models/"..path, {linear = linear})
+        end
+
+        return textures[path]
+    else
+        return nil
+    end
+end
+
 return Material
