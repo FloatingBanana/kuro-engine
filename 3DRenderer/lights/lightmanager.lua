@@ -20,6 +20,7 @@ local dataList = {
 
 function Lightmng:new()
     self.meshparts = {}
+    self.materials = {}
     self.lights = {}
 end
 
@@ -39,6 +40,18 @@ function Lightmng:setMeshPartMatrix(part, matrix)
     assert(self.meshparts[part], "Mesh part not was not added")
 
     self.meshparts[part] = matrix
+end
+
+function Lightmng:addMaterial(...)
+    for i=1, select("#", ...) do
+        self.materials[select(i, ...)] = true
+    end
+end
+
+function Lightmng:removeMaterial(...)
+    for i=1, select("#", ...) do
+        self.materials[select(i, ...)] = nil
+    end
 end
 
 function Lightmng:addLights(...)
@@ -74,17 +87,17 @@ function Lightmng:applyLighting()
         dataList.u_lightEnabled[i] = false
     end
 
-    for part in pairs(self.meshparts) do
+    for material in pairs(self.materials) do
         for name, data in pairs(dataList) do
             if name ~= "u_lightColor" and data[1] then
-                part.material.shader:send(name, unpack(data))
+                material.shader:send(name, unpack(data))
             end
         end
 
         for i=1, #self.lights do
-            part.material.shader:send(("u_lightColor[%d].ambient"):format(i-1),  dataList.u_lightColor[i].ambient)
-            part.material.shader:send(("u_lightColor[%d].diffuse"):format(i-1),  dataList.u_lightColor[i].ambient)
-            part.material.shader:send(("u_lightColor[%d].specular"):format(i-1), dataList.u_lightColor[i].ambient)
+            material.shader:send(("u_lightColor[%d].ambient"):format(i-1),  dataList.u_lightColor[i].ambient)
+            material.shader:send(("u_lightColor[%d].diffuse"):format(i-1),  dataList.u_lightColor[i].ambient)
+            material.shader:send(("u_lightColor[%d].specular"):format(i-1), dataList.u_lightColor[i].ambient)
         end
     end
 end
