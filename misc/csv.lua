@@ -1,47 +1,44 @@
+local ParserHelper = require "engine.misc.parserHelper"
 local csv = {}
 
-local text = ""
-local pos = 1
-
-local function current()
-    return text:sub(pos, pos)
-end
-
-local function isEOF()
-    return pos > #text
-end
-
 function csv.parse(csvtext)
-    text = csvtext
-    pos = 1
-
+    local parser = ParserHelper(csvtext)
     local elements = {}
-    local start = pos
 
-    while not isEOF() do
-        pos = pos + 1
+    local startPos = 1
+    local endPos = 1
 
-        if current() == "," or isEOF() then
-            local value = nil
+    while true do
+        if parser:eat(",") or parser:isEOF() then
+            local value = ""
 
-            if pos > start then
-                value = text:sub(start, pos-1)
-            elseif pos == start then
-                value = ""
+            if startPos < endPos then
+                value = csvtext:sub(startPos, endPos-1)
             end
 
             elements[#elements+1] = value
-            start = pos + 1
+            startPos = parser.pos
+
+            if parser:isEOF() then
+                break
+            end
+        else
+            local quote = parser:eat("\"") or parser:eat("\'")
+            if quote then
+                local escape = false
+
+                while not (parser:eat(quote) and not escape) do
+                    escape = (parser:peek(1) == "\\")
+
+                    assert(not parser:isEOF(), "unmatched quote")
+                    parser:jump(1)
+                end
+            else
+                parser:jump(1)
+            end
         end
 
-        if current() == "\'" or current() == "\"" then
-            local quote = current()
-
-            repeat
-                pos = pos + 1
-                assert(not isEOF(), "unmatched quote")
-            until current() == quote
-        end
+        endPos = parser.pos
     end
 
     return elements
