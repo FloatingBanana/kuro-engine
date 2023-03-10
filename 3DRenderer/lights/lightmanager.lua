@@ -12,9 +12,11 @@ local dataList = {
     u_lightMatrix         = {},
     u_lightColor          = {},
     u_lightVars           = {},
-    u_lightMapSize        = {},
     u_lightEnabled        = {},
     u_lightShadowMap      = {},
+    u_lightAmbient        = {},
+    u_lightDiffuse        = {},
+    u_lightSpecular       = {},
     u_pointLightShadowMap = {}
 }
 
@@ -92,12 +94,6 @@ function Lightmng:applyLighting()
             if name ~= "u_lightColor" and data[1] then
                 material.shader:send(name, unpack(data))
             end
-        end
-
-        for i=1, #self.lights do
-            material.shader:send(("u_lightColor[%d].ambient"):format(i-1),  dataList.u_lightColor[i].ambient)
-            material.shader:send(("u_lightColor[%d].diffuse"):format(i-1),  dataList.u_lightColor[i].ambient)
-            material.shader:send(("u_lightColor[%d].specular"):format(i-1), dataList.u_lightColor[i].ambient)
         end
     end
 end

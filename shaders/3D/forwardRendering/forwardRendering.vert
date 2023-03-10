@@ -1,3 +1,5 @@
+#pragma language glsl3
+
 #define MAX_LIGHTS 10
 
 attribute vec2 VertexTexCoords;

@@ -5,7 +5,6 @@ local FRMaterial = Material:extend()
 
 function FRMaterial:new(mat)
     local attributes = {
-        specularColor        = {uniform = "u_specularColor",  value = {1,1,1}},
         shininess            = {uniform = "u_shininess",      value = 32 --[[mat:shininess()]]},
         diffuseTexture       = {uniform = "u_diffuseTexture", value = Material.GetTexture(mat, "diffuse", 1, false)},
         normalMap            = {uniform = "u_normalMap",      value = Material.GetTexture(mat, "normals", 1, true)},

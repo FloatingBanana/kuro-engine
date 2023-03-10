@@ -50,16 +50,13 @@ function PointLight:setupLightData(meshparts, dataList, index)
     end
 
     dataList.u_pointLightShadowMap[index] = self.shadowmap
-    dataList.u_lightMapSize[index] = self.shadowmap:getWidth()
 
     dataList.u_lightPosition[index] = {self.position:split()}
     dataList.u_lightVars[index] = {self.constant, self.linear, self.quadratic, self.far}
 
-    dataList.u_lightColor[index] = {
-        ambient = self.ambient,
-        diffuse = self.diffuse,
-        specular = self.specular
-    }
+    dataList.u_lightAmbient[index] = self.ambient
+    dataList.u_lightDiffuse[index] = self.diffuse
+    dataList.u_lightSpecular[index] = self.specular
 end
 
 return PointLight

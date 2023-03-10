@@ -35,18 +35,15 @@ function Spotlight:setupLightData(meshparts, dataList, index)
     self:endLighting()
 
     dataList.u_lightShadowMap[index] = self.shadowmap
-    dataList.u_lightMapSize[index] = self.shadowmap:getWidth()
     dataList.u_lightMatrix[index] = {viewProj:transpose():split()}
 
     dataList.u_lightPosition[index] = {self.position:split()}
     dataList.u_lightDirection[index] = {self.direction:split()}
     dataList.u_lightVars[index] = {math.cos(self.innerAngle), math.cos(self.outerAngle), 0, 0}
 
-    dataList.u_lightColor[index] = {
-        ambient = self.ambient,
-        diffuse = self.diffuse,
-        specular = self.specular
-    }
+    dataList.u_lightAmbient[index] = self.ambient
+    dataList.u_lightDiffuse[index] = self.diffuse
+    dataList.u_lightSpecular[index] = self.specular
 end
 
 return Spotlight

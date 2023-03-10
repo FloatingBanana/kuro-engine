@@ -1,14 +1,9 @@
-#define MAX_LIGHTS 10
+#pragma language glsl3
 
+#define MAX_LIGHTS 10
 #define LIGHT_TYPE_DIRECTIONAL 0
 #define LIGHT_TYPE_SPOT 1
 #define LIGHT_TYPE_POINT 2
-
-struct PhongColor {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-};
 
 varying vec2 v_texCoords;
 varying vec3 v_fragPos;
@@ -18,86 +13,45 @@ varying vec4 v_lightSpaceFragPos[MAX_LIGHTS];
 uniform vec3 u_lightPosition[MAX_LIGHTS];
 uniform vec3 u_lightDirection[MAX_LIGHTS];
 uniform int u_lightType[MAX_LIGHTS];
-uniform PhongColor u_lightColor[MAX_LIGHTS];
+uniform vec3 u_lightAmbient[MAX_LIGHTS];
+uniform vec3 u_lightDiffuse[MAX_LIGHTS];
+uniform vec3 u_lightSpecular[MAX_LIGHTS];
 uniform vec4 u_lightVars[MAX_LIGHTS];
-uniform int u_lightMapSize[MAX_LIGHTS];
 uniform bool u_lightEnabled[MAX_LIGHTS];
 uniform sampler2D u_lightShadowMap[MAX_LIGHTS];
 uniform samplerCube u_pointLightShadowMap[MAX_LIGHTS];
 
 uniform vec3 u_viewPosition;
-uniform vec3 u_specularColor;
 uniform float u_shininess;
 uniform sampler2D u_diffuseTexture;
 uniform sampler2D u_normalMap;
 
 
-float ShadowCalculation(vec3 position, float farPlane, samplerCube shadowMap, vec3 viewPos, vec3 fragPos);
-float ShadowCalculation(sampler2D shadowMap, int mapSize, vec4 lightFragPos);
-#pragma include "engine/shaders/3D/forwardRendering/_shadowCalculation.glsl"
+#define PHONG_LIGHT_STRUCT_DECLARED
+struct PhongLight {
+    vec3 position;
+    vec3 direction;
 
-///////////////////////
-// Light calculation //
-///////////////////////
-vec3 CaculatePhongLighting(vec3 direction, vec3 normal, vec3 viewDir, float visibility, PhongColor lightColor, PhongColor matColor) {
-    vec3 ambient = lightColor.ambient * matColor.diffuse;
-    vec3 diffuse = max(dot(normal, direction), 0.0) * lightColor.diffuse * matColor.diffuse;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
 
-    vec3 halfwayDir = normalize(direction + viewDir);
-    vec3 specular = pow(max(dot(normal, halfwayDir), 0.0), u_shininess) * lightColor.specular * matColor.specular;
+    // spot light
+    float cutOff;
+    float outerCutOff;
 
-    return ambient + (diffuse + specular) * visibility;
-}
+    // point light
+    float constant;
+    float linear;
+    float quadratic;
+    float farPlane;
 
-vec3 CalculateDirectionalLight(int index, vec3 normal, vec3 viewDir, sampler2D shadowMap, PhongColor matColor) {
-    PhongColor lightColor = u_lightColor[index];
-    vec3 lightDir = u_lightDirection[index];
-    vec4 lightFragPos = v_lightSpaceFragPos[index];
-    int mapSize = u_lightMapSize[index];
-
-    float shadow = ShadowCalculation(shadowMap, mapSize, lightFragPos);
-    return CaculatePhongLighting(lightDir, normal, viewDir, 1.0 - shadow, lightColor, matColor);
-}
-
-vec3 CalculateSpotLight(int index, vec3 normal, vec3 viewDir, sampler2D shadowMap, PhongColor matColor) {
-    PhongColor lightColor = u_lightColor[index];
-    vec3 lightPos = u_lightPosition[index];
-    vec3 spotDir = u_lightDirection[index];
-    vec4 lightFragPos = v_lightSpaceFragPos[index];
-    int mapSize = u_lightMapSize[index];
-    float cutOff = u_lightVars[index].x;
-    float outerCutOff = u_lightVars[index].y;
-    
-    vec3 lightDir = normalize(lightPos - v_fragPos);
-    float theta = dot(lightDir, -spotDir);
-
-    if (theta > outerCutOff) {
-        float epsilon = cutOff - outerCutOff;
-        float intensity = clamp((theta - outerCutOff) / epsilon, 0.0, 1.0);
-        float shadow = ShadowCalculation(shadowMap, mapSize, lightFragPos);
-
-        return CaculatePhongLighting(lightDir, normal, viewDir, (1.0 - shadow) * intensity, lightColor, matColor);
-    }
-    
-    return lightColor.ambient * matColor.diffuse;
-}
-
-vec3 CalculatePointLight(int index, vec3 normal, vec3 viewDir, samplerCube shadowMap, PhongColor matColor) {
-    PhongColor lightColor = u_lightColor[index];
-    vec3 lightPos = u_lightPosition[index];
-    float linear = u_lightVars[index].x;
-    float constant = u_lightVars[index].y;
-    float quadratic = u_lightVars[index].z;
-    float farPlane = u_lightVars[index].w;
-    
-    vec3 lightDir = normalize(lightPos - v_fragPos);
-    float dist = length(lightPos - v_fragPos);
-
-    float attenuation = 1.0 / (constant  + linear * dist + quadratic * (dist * dist));
-    float shadow = ShadowCalculation(u_lightPosition[index], farPlane, shadowMap, u_viewPosition, v_fragPos);
-
-    return CaculatePhongLighting(lightDir, normal, viewDir, 1.0 - shadow, lightColor, matColor) * attenuation;
-}
+    vec4 fragPos;
+};
+vec3 CalculateDirectionalLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess);
+vec3 CalculateSpotLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess, vec3 fragPos);
+vec3 CalculatePointLight(PhongLight light, vec3 normal, vec3 viewDir, vec3 viewPos, samplerCube shadowMap, vec3 matDiffuseColor, float matShininess, vec3 fragPos);
+#pragma include "engine/shaders/3D/misc/incl_phongLighting.glsl"
 
 
 ///////////////////
@@ -109,21 +63,33 @@ void effect() {
     vec3 diffuseColor = Texel(u_diffuseTexture, v_texCoords).xyz;
 
     vec3 result;
-    PhongColor matColor;
-    matColor.diffuse = diffuseColor;
-    matColor.specular = u_specularColor;
+    PhongLight light;
 
 #   define INDEX 0
 #   pragma for INDEX=0, MAX_LIGHTS, 1
         if (u_lightEnabled[INDEX]) {
+            light.position = u_lightPosition[INDEX];
+            light.direction = u_lightDirection[INDEX];
+            light.ambient = u_lightAmbient[INDEX];
+            light.diffuse = u_lightDiffuse[INDEX];
+            light.specular = u_lightSpecular[INDEX];
+            light.cutOff = u_lightVars[INDEX].x;
+            light.outerCutOff = u_lightVars[INDEX].y;
+            light.constant = u_lightVars[INDEX].x;
+            light.linear = u_lightVars[INDEX].y;
+            light.quadratic = u_lightVars[INDEX].z;
+            light.farPlane = u_lightVars[INDEX].w;
+            light.fragPos = v_lightSpaceFragPos[INDEX];
+
+
             if (u_lightType[INDEX] == LIGHT_TYPE_DIRECTIONAL)
-                result += CalculateDirectionalLight(INDEX, normal, viewDir, u_lightShadowMap[INDEX], matColor);
+                result += CalculateDirectionalLight(light, normal, viewDir, u_lightShadowMap[INDEX], diffuseColor, u_shininess);
 
             if (u_lightType[INDEX] == LIGHT_TYPE_SPOT)
-                result += CalculateSpotLight(INDEX, normal, viewDir, u_lightShadowMap[INDEX], matColor);
+                result += CalculateSpotLight(light, normal, viewDir, u_lightShadowMap[INDEX], diffuseColor, u_shininess, v_fragPos);
 
             if (u_lightType[INDEX] == LIGHT_TYPE_POINT)
-                result += CalculatePointLight(INDEX, normal, viewDir, u_pointLightShadowMap[INDEX], matColor);
+                result += CalculatePointLight(light, normal, viewDir, u_viewPosition, u_pointLightShadowMap[INDEX], diffuseColor, u_shininess, v_fragPos);
         }
 #   pragma endfor
 
