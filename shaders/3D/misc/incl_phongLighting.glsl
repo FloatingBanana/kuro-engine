@@ -32,7 +32,7 @@ vec3 CaculatePhongLighting(PhongLight light, vec3 fragLightDir, vec3 normal, vec
     vec3 diffuse = max(dot(normal, fragLightDir), 0.0) * light.diffuse * matDiffuseColor;
 
     vec3 halfwayDir = normalize(fragLightDir + viewDir);
-    vec3 specular = pow(max(dot(normal, halfwayDir), 0.0), matShininess) * light.specular * vec3(1.0);
+    vec3 specular = pow(max(dot(normal, halfwayDir), 0.0), matShininess) * light.specular;
 
     return ambient + (diffuse + specular) * visibility;
 }
