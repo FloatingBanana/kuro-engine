@@ -1,4 +1,3 @@
-local FRMaterial = require "src.engine.3DRenderer.materials.forwardRenderingMaterial"
 local Vector2    = require "engine.math.vector2"
 local Vector3    = require "engine.math.vector3"
 local Meshpart   = Object:extend()

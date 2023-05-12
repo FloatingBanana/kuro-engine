@@ -31,8 +31,10 @@ function Renderer:new(screensize, msaa, hdrExposure, bloomAmount)
     }
 end
 
+local cvparams = {depth = true}
 function Renderer:beginRendering(clearColor)
-    lg.setCanvas({self.hdrCanvas, depth = true})
+    cvparams[1] = self.hdrCanvas
+    lg.setCanvas(cvparams)
     lg.clear(clearColor or Color.BLACK)
 
     lg.setDepthMode("lequal", true)
@@ -74,7 +76,6 @@ function Renderer:endRendering()
     lg.setBlendMode("alpha", "alphamultiply")
     lg.setMeshCullMode("none")
     lg.setDepthMode()
-
     lg.setShader()
 end
 
