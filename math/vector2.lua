@@ -1,7 +1,4 @@
 local CStruct = require "engine.cstruct"
-local Vector2 = CStruct("vector2", [[
-    float x, y;
-]])
 
 -- Helper function for overloads of commutative operations to ensure that the order
 -- of the arguments will always be the same (first the object, then the number), so we
@@ -12,6 +9,34 @@ local function commutative_reorder(object, number)
     end
     return object, number
 end
+
+---
+--- A 2D vector that can represent a position, direction, etc
+---
+--- @class Vector2: CStruct
+---
+--- @field length number: The magnitude of this vector
+--- @field lengthSquared number: The squared magnitude of this vector
+--- @field normalized Vector3: Gets a new vector with magnitude of 1 pointing to the same direction of this one
+--- @field inverse Vector3: Gets a new vector with the components inverted (i.e `1 / value`)
+--- @field angle number: The angle this vector is pointing at
+--- @field x number: X axis of the vector
+--- @field y number: Y axis of the vector
+---
+--- @field width number: Alias to X
+--- @field height number: Alias to Y
+--- @field u number: Alias to X
+--- @field v number: Alias to Y
+---
+--- @operator call:Vector2
+--- @operator add:Vector2
+--- @operator sub:Vector2
+--- @operator mul:Vector2
+--- @operator div:Vector2
+--- @operator unm:Vector2
+local Vector2 = CStruct("vector2", [[
+    float x, y;
+]])
 
 function Vector2:new(x, y)
     self.x = x or 0
@@ -110,6 +135,10 @@ end
 ------ Methods ------
 ---------------------
 
+
+--- Peforms an addition operation on this vector (`self + other`)
+--- @param other Vector2 | number: The right hand operand
+--- @return Vector2: This vector
 function Vector2:add(other)
     if type(other) == "number" then
         self.x = self.x + other
@@ -122,6 +151,10 @@ function Vector2:add(other)
     return self
 end
 
+
+--- Peforms a subtraction operation on this vector (`self - other`)
+--- @param other Vector2 | number: The right hand operand
+--- @return Vector2: This vector
 function Vector2:subtract(other)
     if type(other) == "number" then
         self.x = self.x - other
@@ -134,6 +167,10 @@ function Vector2:subtract(other)
     return self
 end
 
+
+--- Peforms a multiplication operation on this vector (`self * other`)
+--- @param other Vector2 | number: The right hand operand
+--- @return Vector2: This vector
 function Vector2:multiply(other)
     if type(other) == "number" then
         self.x = self.x * other
@@ -146,6 +183,10 @@ function Vector2:multiply(other)
     return self
 end
 
+
+--- Peforms a division operation on this vector (`self / other`)
+--- @param other Vector2 | number: The right hand operand
+--- @return Vector2: This vector
 function Vector2:divide(other)
     if type(other) == "number" then
         self:multiply(1 / other)
@@ -157,6 +198,9 @@ function Vector2:divide(other)
     return self
 end
 
+
+--- Negates all components of this vector
+--- @return Vector2: This vector
 function Vector2:negate()
     self.x = -self.x
     self.y = -self.y
@@ -164,12 +208,18 @@ function Vector2:negate()
     return self
 end
 
+
+--- Make this vector have a magnitude of 1
+--- @return Vector2: This vector
 function Vector2:normalize()
     self:divide(self.length)
 
     return self
 end
 
+
+--- Invert (i.e make `1 / value`) all components of this vector
+--- @return Vector2: This vector
 function Vector2:invert()
     self.x = 1 / self.x
     self.y = 1 / self.y
@@ -180,6 +230,9 @@ end
 
 -- domo same desu
 
+--- Reflect this vector along a `normal`
+--- @param normal Vector2: Reflection normal
+--- @return Vector2: This vector
 function Vector2:reflect(normal)
     local dot = Vector2.dot(self, normal)
 
@@ -189,6 +242,11 @@ function Vector2:reflect(normal)
     return self
 end
 
+
+--- Clamp this vector's component between `min` and `max`
+--- @param min Vector2: Minimum value
+--- @param max Vector2: Maximum value
+--- @return Vector2: This vector
 function Vector2:clamp(min, max)
     self.x = Lume.clamp(self.x, min.x, max.x)
     self.y = Lume.clamp(self.y, min.y, max.y)
@@ -196,6 +254,10 @@ function Vector2:clamp(min, max)
     return self
 end
 
+
+--- Make this vector point to the specified `angle`
+--- @param angle number: The angle this vector will point at
+--- @return Vector2: This vector
 function Vector2:setAngle(angle)
     local mag = self.length
 
@@ -205,6 +267,10 @@ function Vector2:setAngle(angle)
     return self
 end
 
+
+--- Rotate this vector relative to the current angle
+--- @param angle number: The angle to be applied
+--- @return Vector2: This vector
 function Vector2:rotateBy(angle)
     self:new(
         self.x * math.cos(angle) - self.y * math.sin(angle),
@@ -214,6 +280,9 @@ function Vector2:rotateBy(angle)
     return self
 end
 
+
+--- Rounds down this vector's components
+--- @return Vector2: This vector
 function Vector2:floor()
     self.x = math.floor(self.x)
     self.y = math.floor(self.y)
@@ -221,6 +290,9 @@ function Vector2:floor()
     return self
 end
 
+
+--- Rounds up this vector's components
+--- @return Vector2: This vector
 function Vector2:ceil()
     self.x = math.ceil(self.x)
     self.y = math.ceil(self.y)
@@ -228,14 +300,23 @@ function Vector2:ceil()
     return self
 end
 
+
+--- Checks if any of the components is equal to `Nan`
+--- @return boolean
 function Vector2:isNan()
     return self ~= self
 end
 
+
+--- Creates a new vector with the same component values of this one
+--- @return Vector2: The new vector
 function Vector2:clone()
     return Vector2(self.x, self.y)
 end
 
+
+--- Deconstruct this vector into individual values
+--- @return number X, number Y
 function Vector2:split()
     return self.x, self.y
 end
@@ -244,10 +325,20 @@ end
 ----- Static functions -----
 ----------------------------
 
+
+--- Calculates the dot product between two vectors
+--- @param v1 Vector2: The first vector
+--- @param v2 Vector2: the second vector
+--- @return number: Result
 function Vector2.dot(v1, v2)
     return v1.x*v2.x + v1.y*v2.y
 end
 
+
+--- Creates a new vector with the specified angle and magnitude
+--- @param angle number: The angle of vector
+--- @param magnitude number: The magnitude of vector
+--- @return Vector2: Result
 function Vector2.createAngled(angle, magnitude)
     return Vector2(
           math.cos(angle) * magnitude,
@@ -255,16 +346,31 @@ function Vector2.createAngled(angle, magnitude)
     )
 end
 
+
+--- Calculates the squared distance between two vectors
+--- @param v1 Vector2: The first vector
+--- @param v2 Vector2: the second vector
+--- @return number: The resulting distance
 function Vector2.distanceSquared(v1, v2)
     local x = v2.x - v1.x
     local y = v2.y - v1.y
     return x*x + y*y
 end
 
+
+--- Calculates the distance between two vectors
+--- @param v1 Vector2: The first vector
+--- @param v2 Vector2: the second vector
+--- @return number: The resulting distance
 function Vector2.distance(v1, v2)
     return math.sqrt(Vector2.distanceSquared(v1, v2))
 end
 
+
+--- Creates a vector with the minimum values of two vectors
+--- @param v1 Vector2: The first vector
+--- @param v2 Vector2: The second vector
+--- @return Vector2: The minimum vector
 function Vector2.min(v1, v2)
     return Vector2(
         math.min(v1.x, v2.x),
@@ -272,6 +378,11 @@ function Vector2.min(v1, v2)
     )
 end
 
+
+--- Creates a vector with the maximum values of two vectors
+--- @param v1 Vector2: The first vector
+--- @param v2 Vector2: The second vector
+--- @return Vector2: The maximum vector
 function Vector2.max(v1, v2)
     return Vector2(
         math.max(v1.x, v2.x),

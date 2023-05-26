@@ -1,9 +1,6 @@
 -- Borrowed from https://github.com/MonoGame/MonoGame/blob/develop/MonoGame.Framework/Quaternion.cs
 
 local CStruct = require "engine.cstruct"
-local Quaternion = CStruct("quaternion", [[
-	double x, y, z, w;
-]])
 
 -- See [engine/vector2.lua] for explanation
 local function commutative_reorder(object, number)
@@ -12,6 +9,30 @@ local function commutative_reorder(object, number)
     end
     return object, number
 end
+
+
+---
+--- An object that represents a 3D rotation
+---
+--- @class Quaternion: CStruct
+---
+--- @field x number: The X axis of this quaternion
+--- @field y number: The Y axis of this quaternion
+--- @field z number: The Z axis of this quaternion
+--- @field w number: The rotation component of this quaternion
+--- @field normalized Quaternion: Gets a new, normalized version of this quaternion
+--- @field length number: The magnitude of this quaternion
+--- @field lengthSquared number: The squared magnitude of this quaternion
+---
+--- @operator call: Quaternion
+--- @operator add: Quaternion
+--- @operator sub: Quaternion
+--- @operator mul: Quaternion
+--- @operator div: Quaternion
+local Quaternion = CStruct("quaternion", [[
+	double x, y, z, w;
+]])
+
 
 function Quaternion:new(x, y, z, w)
 	self.x = x or 0
@@ -73,6 +94,10 @@ end
 ------ Methods------
 --------------------
 
+
+--- Peforms an addition operation on this quaternion (`self + other`)
+--- @param other Quaternion: The right hand operand
+--- @return Quaternion: This quaternion
 function Quaternion:add(other)
 	self.x = self.x + other.x
 	self.y = self.y + other.y
@@ -82,6 +107,10 @@ function Quaternion:add(other)
 	return self
 end
 
+
+--- Peforms a subtraction operation on this quaternion (`self - other`)
+--- @param other Quaternion: The right hand operand
+--- @return Quaternion: This quaternion
 function Quaternion:subtract(other)
 	self.x = self.x - other.x
 	self.y = self.y - other.y
@@ -91,6 +120,10 @@ function Quaternion:subtract(other)
 	return self
 end
 
+
+--- Peforms a multiplication operation on this quaternion (`self * other`)
+--- @param other Quaternion | number: The right hand operand
+--- @return Quaternion: This quaternion
 function Quaternion:multiply(other)
 	if type(other) == "number" then
 		self.x = self.x * other
@@ -112,6 +145,10 @@ function Quaternion:multiply(other)
 	return self
 end
 
+
+--- Peforms a division operation on this quaternion (`self / other`)
+--- @param other Quaternion | number: The right hand operand
+--- @return Quaternion: This quaternion
 function Quaternion:divide(other)
 	if type(other) == "number" then
 		self.x = self.x / other.x
@@ -139,6 +176,9 @@ function Quaternion:divide(other)
 	return self
 end
 
+
+--- Make this quaternion have a magnitude of 1
+--- @return Quaternion: This quaternion
 function Quaternion:normalize()
 	local invLength = 1 / self.length
 	self.x = self.x * invLength
@@ -149,10 +189,16 @@ function Quaternion:normalize()
 	return self
 end
 
+
+--- Creates a new quaternion with the same component values of this one
+--- @return Quaternion: The new quaternion
 function Quaternion:clone()
 	return Quaternion(self.x, self.y, self.z, self.w)
 end
 
+
+--- Deconstruct this quaternion into individual values
+--- @return number X, number Y, number Z, number W
 function Quaternion:split()
 	return self.x, self.y, self.z, self.w
 end
@@ -161,10 +207,19 @@ end
 ------ Static functions---------
 --------------------------------
 
+
+--- Creates a quaternion with components (X=0, Y=0, Z=0, W=1)
+--- @return Quaternion
 function Quaternion.identity()
 	return Quaternion(0, 0, 0, 1)
 end
 
+
+--- Creates a quaternion representing a linear interpolation between two quaternions
+--- @param q1 Quaternion: Initial value
+---	@param q2 Quaternion: Final value
+---	@param progress number: Interpolation progress (0-1)
+--- @return Quaternion: The interpolated quaternion
 function Quaternion.lerp(q1, q2, progress)
 	local invAmount = 1 - progress
 	local quaternion = Quaternion()
@@ -185,6 +240,12 @@ function Quaternion.lerp(q1, q2, progress)
 	return quaternion:normalized()
 end
 
+
+--- Creates a quaternion representing a spherical interpolation between two quaternions
+--- @param q1 Quaternion: Initial value
+---	@param q2 Quaternion: Final value
+---	@param amount number: Interpolation progress (0-1)
+--- @return Quaternion: The interpolated quaternion
 function Quaternion.slerp(q1, q2, amount)
 	local num2, num3
 	local opposite = false
@@ -214,10 +275,20 @@ function Quaternion.slerp(q1, q2, amount)
 	)
 end
 
+
+--- Calculates the dot product between two quaternions
+--- @param v1 Quaternion: First quaternion
+--- @param v2 Quaternion: Second quaternion
+--- @return number: Result
 function Quaternion.dot(v1, v2)
 	return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z) + (v1.w * v2.w)
 end
 
+
+--- Creates a quaternion rotated by an `angle` around an `axis` 
+--- @param axis Vector3: The axis of rotation
+--- @param angle number: The angle of rotation
+--- @return Quaternion: Result
 function Quaternion.createFromAxisAngle(axis, angle)
 	local half = angle * 0.5
 	local sin = math.sin(half)
@@ -226,6 +297,12 @@ function Quaternion.createFromAxisAngle(axis, angle)
 	return Quaternion(axis.x * sin, axis.y * sin, axis.z * sin, cos)
 end
 
+
+--- Creates a quaternion with the equivalent yaw, pitch and roll
+--- @param yaw number: Yaw around the Y axis
+--- @param pitch number: Pitch around the X axis
+--- @param roll number: Roll around the Z axis
+--- @return Quaternion: Result
 function Quaternion.createFromYawPitchRoll(yaw, pitch, roll)
 	local halfRoll = roll * 0.5
 	local halfPitch = pitch * 0.5
@@ -246,10 +323,14 @@ function Quaternion.createFromYawPitchRoll(yaw, pitch, roll)
 	)
 end
 
+
+--- Creates a quaternion from a Matrix
+--- @param mat Matrix: The rotation matrix
+--- @return Quaternion: Result
 function Quaternion.createFromRotationMatrix(mat)
     local scale = mat.m11 + mat.m22 + mat.m33;
 
-	if (scale > 0) then
+	if scale > 0 then
         local sqrt = math.sqrt(scale + 1);
         local half = 0.5 / sqrt;
 
@@ -261,7 +342,7 @@ function Quaternion.createFromRotationMatrix(mat)
 		)
 	end
 
-	if ((mat.m11 >= mat.m22) and (mat.m11 >= mat.m33)) then
+	if (mat.m11 >= mat.m22) and (mat.m11 >= mat.m33) then
         local sqrt = math.sqrt(1 + mat.m11 - mat.m22 - mat.m33);
         local half = 0.5 / sqrt;
 
@@ -273,7 +354,7 @@ function Quaternion.createFromRotationMatrix(mat)
 		)
 	end
 
-	if (mat.m22 > mat.m33) then
+	if mat.m22 > mat.m33 then
         local sqrt = math.sqrt(1 + mat.m22 - mat.m11 - mat.m33);
         local half = 0.5 / sqrt;
 
