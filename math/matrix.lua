@@ -146,7 +146,7 @@ function Matrix:__add(value)
 end
 
 function Matrix:__sub(value)
-    return self:clone():sub(value)
+    return self:clone():subtract(value)
 end
 
 function Matrix:__mul(value)
