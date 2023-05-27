@@ -50,6 +50,14 @@ function Quaternion:__index(key)
 		return self:clone():normalize()
 	end
 
+	if key == "conjugated" then
+		return self:clone():conjugate()
+	end
+
+	if key == "inverse" then
+		return self:clone():invert()
+	end
+
 	if key == "lengthSquared" then
 		return (self.x * self.x) + (self.y * self.y) + (self.z * self.z) + (self.w * self.w)
 	end
@@ -189,6 +197,22 @@ function Quaternion:normalize()
 	return self
 end
 
+
+--- Invert the imaginary part of this quaternion
+--- @return Quaternion: This quaternion
+function Quaternion:conjugate()
+	self.x = -self.x
+	self.y = -self.y
+	self.z = -self.z
+
+	return self
+end
+
+--- Rotate this quaternion to the opposite direction
+--- @return Quaternion: This quaternion
+function Quaternion:invert()
+	return self:conjugate():multiply(1 / self.length)
+end
 
 --- Creates a new quaternion with the same component values of this one
 --- @return Quaternion: The new quaternion
