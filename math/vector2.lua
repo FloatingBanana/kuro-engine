@@ -235,7 +235,7 @@ end
 --- @param normal Vector2: Reflection normal
 --- @return Vector2: This vector
 function Vector2:reflect(normal)
-    local dot = Vector2.dot(self, normal)
+    local dot = Vector2.Dot(self, normal)
 
     self.x = self.x - (2 * normal.x) * dot;
     self.y = self.y - (2 * normal.y) * dot;
@@ -331,7 +331,7 @@ end
 --- @param v1 Vector2: The first vector
 --- @param v2 Vector2: the second vector
 --- @return number: Result
-function Vector2.dot(v1, v2)
+function Vector2.Dot(v1, v2)
     return v1.x*v2.x + v1.y*v2.y
 end
 
@@ -340,7 +340,7 @@ end
 --- @param angle number: The angle of vector
 --- @param magnitude number: The magnitude of vector
 --- @return Vector2: Result
-function Vector2.createAngled(angle, magnitude)
+function Vector2.CreateAngled(angle, magnitude)
     return Vector2(
           cos(angle) * magnitude,
           sin(angle) * magnitude
@@ -352,7 +352,7 @@ end
 --- @param v1 Vector2: The first vector
 --- @param v2 Vector2: the second vector
 --- @return number: The resulting distance
-function Vector2.distanceSquared(v1, v2)
+function Vector2.DistanceSquared(v1, v2)
     local x = v2.x - v1.x
     local y = v2.y - v1.y
     return x*x + y*y
@@ -363,8 +363,8 @@ end
 --- @param v1 Vector2: The first vector
 --- @param v2 Vector2: the second vector
 --- @return number: The resulting distance
-function Vector2.distance(v1, v2)
-    return sqrt(Vector2.distanceSquared(v1, v2))
+function Vector2.Distance(v1, v2)
+    return sqrt(Vector2.DistanceSquared(v1, v2))
 end
 
 
@@ -372,7 +372,7 @@ end
 --- @param v1 Vector2: The first vector
 --- @param v2 Vector2: The second vector
 --- @return Vector2: The minimum vector
-function Vector2.min(v1, v2)
+function Vector2.Min(v1, v2)
     return Vector2(
         min(v1.x, v2.x),
         min(v1.y, v2.y)
@@ -384,7 +384,7 @@ end
 --- @param v1 Vector2: The first vector
 --- @param v2 Vector2: The second vector
 --- @return Vector2: The maximum vector
-function Vector2.max(v1, v2)
+function Vector2.Max(v1, v2)
     return Vector2(
         max(v1.x, v2.x),
         max(v1.y, v2.y)

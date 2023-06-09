@@ -46,8 +46,8 @@ function PolyShadow:addOccluder(polygon, cullingOrder)
     for i=1, #polygon, 2 do
         local p = Vector2(polygon[i], polygon[i+1])
 
-        min = Vector2.min(min, p)
-        max = Vector2.max(max, p)
+        min = Vector2.Min(min, p)
+        max = Vector2.Max(max, p)
     end
 
     local occluder = {
@@ -97,7 +97,7 @@ local function stencilShadow()
                     local segNormal = (p2 - p1):rotateBy(normalAngle)
                     local lightDir = (p1 - currLight.position)
 
-                    if Vector2.dot(segNormal, lightDir) > 0 then
+                    if Vector2.Dot(segNormal, lightDir) > 0 then
                         goto ignore
                     end
                 end

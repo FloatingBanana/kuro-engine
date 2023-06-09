@@ -5,7 +5,7 @@ local function rebuildMatrix(matrix, rotation, scale)
     assert(matrix:canDecompose(), "Can't decompose matrix")
 
     local matPosition, matScale, matRotation = matrix:decompose()
-    return Matrix.createTransformationMatrix(rotation or matRotation, scale or matScale, matPosition)
+    return Matrix.CreateTransformationMatrix(rotation or matRotation, scale or matScale, matPosition)
 end
 
 
@@ -42,7 +42,7 @@ function Transform:__index(key)
     end
 
     if key == "parentGlobalMatrix" then
-        return self.parent.globalMatrix or Matrix.identity()
+        return self.parent.globalMatrix or Matrix.Identity()
     end
 
     if key == "globalMatrix" then

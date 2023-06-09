@@ -114,7 +114,7 @@ function Matrix:__index(key)
                           0, 0, 0, 1
         )
 
-        return Quaternion.createFromRotationMatrix(m1);
+        return Quaternion.CreateFromRotationMatrix(m1);
     end
 
     if key == "transposed" then
@@ -397,7 +397,7 @@ end
 
 --- Creates an identity matrix
 --- @return Matrix
-function Matrix.identity()
+function Matrix.Identity()
     return Matrix(
         1, 0, 0, 0,
         0, 1, 0, 0,
@@ -412,9 +412,9 @@ end
 --- @param forward Vector3: The forward direction
 --- @param up Vector3: The up direction
 --- @return Matrix: The resulting world matrix
-function Matrix.createWorld(position, forward, up)
-    local right = Vector3.cross(forward, up)
-    local up = Vector3.cross(right, forward)
+function Matrix.CreateWorld(position, forward, up)
+    local right = Vector3.Cross(forward, up)
+    local up = Vector3.Cross(right, forward)
 
     return Matrix(
         right.x,
@@ -441,9 +441,9 @@ end
 --- @param axis Vector3: The axis of rotation
 --- @param angle number: The angle of rotation
 --- @return Matrix: Result
-function Matrix.createFromAxisAngle(axis, angle)
-	local quat = Quaternion.createFromAxisAngle(axis, angle)
-    return Matrix.createFromQuaternion(quat)
+function Matrix.CreateFromAxisAngle(axis, angle)
+	local quat = Quaternion.CreateFromAxisAngle(axis, angle)
+    return Matrix.CreateFromQuaternion(quat)
 end
 
 
@@ -452,16 +452,16 @@ end
 --- @param pitch number: Pitch around the X axis
 --- @param roll number: Roll around the Z axis
 --- @return Matrix: Result
-function Matrix.createFromYawPitchRoll(yaw, pitch, roll)
-    local quat = Quaternion.createFromYawPitchRoll(yaw, pitch, roll)
-    return Matrix.createFromQuaternion(quat)
+function Matrix.CreateFromYawPitchRoll(yaw, pitch, roll)
+    local quat = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll)
+    return Matrix.CreateFromQuaternion(quat)
 end
 
 
 --- Creates a rotation matrix from a Quaternion
 --- @param quat Quaternion: The Quaternion representing the rotation
 --- @return Matrix: Result
-function Matrix.createFromQuaternion(quat)
+function Matrix.CreateFromQuaternion(quat)
     local squareX = quat.x * quat.x;
 	local squareY = quat.y * quat.y;
 	local squareZ = quat.z * quat.z;
@@ -498,10 +498,10 @@ end
 --- @param direction Vector3: The view direction
 --- @param up Vector3: A vector pointing up from view's position
 --- @return Matrix: Result
-function Matrix.createLookAtDirection(position, direction, up)
+function Matrix.CreateLookAtDirection(position, direction, up)
     local forward = -direction
-    local right = Vector3.cross(up, forward):normalize()
-    local up = Vector3.cross(forward, right)
+    local right = Vector3.Cross(up, forward):normalize()
+    local up = Vector3.Cross(forward, right)
 
     return Matrix(
         right.x,
@@ -516,9 +516,9 @@ function Matrix.createLookAtDirection(position, direction, up)
         up.z,
         forward.z,
         0,
-        -Vector3.dot(right, position),
-        -Vector3.dot(up, position),
-        -Vector3.dot(forward, position),
+        -Vector3.Dot(right, position),
+        -Vector3.Dot(up, position),
+        -Vector3.Dot(forward, position),
         1
     )
 end
@@ -529,8 +529,8 @@ end
 --- @param target Vector3: The view target
 --- @param up Vector3: A vector pointing up from view's position
 --- @return Matrix: Result
-function Matrix.createLookAt(position, target, up)
-    return Matrix.createLookAtDirection(position, (target - position):normalize(), up)
+function Matrix.CreateLookAt(position, target, up)
+    return Matrix.CreateLookAtDirection(position, (target - position):normalize(), up)
 end
 
 
@@ -540,15 +540,15 @@ end
 --- @param cameraUp Vector3: A vector pointing up from view's position
 --- @param cameraForward Vector3: A vector pointing forward from view's position
 --- @return Matrix: Result
-function Matrix.createBillboard(objectPosition, cameraPosition, cameraUp, cameraForward)
+function Matrix.CreateBillboard(objectPosition, cameraPosition, cameraUp, cameraForward)
     local forward = (objectPosition - cameraPosition):normalize()
 
     if forward:isNan() then
         forward = cameraForward
     end
 
-    local right = Vector3.cross(cameraUp, forward)
-    local up = Vector3.cross(forward, right)
+    local right = Vector3.Cross(cameraUp, forward)
+    local up = Vector3.Cross(forward, right)
 
     return Matrix(
         right.x,
@@ -578,7 +578,7 @@ end
 --- @param cameraForward Vector3: A vector pointing forward from view's position
 --- @param objectForward Vector3: A vector pointing forward from billboard's position
 --- @return Matrix: Result
-function Matrix.createConstrainedBillboard(objectPosition, cameraPosition, rotateAxis, cameraForward, objectForward)
+function Matrix.CreateConstrainedBillboard(objectPosition, cameraPosition, rotateAxis, cameraForward, objectForward)
 	local forward, right
 	local direction = (objectPosition - cameraPosition):normalize()
 
@@ -586,23 +586,23 @@ function Matrix.createConstrainedBillboard(objectPosition, cameraPosition, rotat
         direction = cameraForward
     end
 
-	local dot = Vector3.dot(rotateAxis, direction)
+	local dot = Vector3.Dot(rotateAxis, direction)
     local threshold = 0.9982547
 
 	if (abs(dot) > threshold) then
 	    forward = objectForward
-	    dot = Vector3.dot(rotateAxis, forward, dot)
+	    dot = Vector3.Dot(rotateAxis, forward, dot)
 
         if (abs(dot) > threshold) then
-	        dot = Vector3.dot(rotateAxis, Vector3(0,0,-1))
+	        dot = Vector3.Dot(rotateAxis, Vector3(0,0,-1))
 	        forward = (abs(dot) > threshold) and Vector3(1,0,0) or Vector3(0,0,-1)
         end
 
-	    right = Vector3.cross(rotateAxis, forward)
-	    forward = Vector3.cross(right, rotateAxis)
+	    right = Vector3.Cross(rotateAxis, forward)
+	    forward = Vector3.Cross(right, rotateAxis)
 	else
-	    right = Vector3.cross(rotateAxis, direction)
-	    forward = Vector3.cross(right, rotateAxis)
+	    right = Vector3.Cross(rotateAxis, direction)
+	    forward = Vector3.Cross(right, rotateAxis)
     end
 
     return Matrix(
@@ -632,8 +632,8 @@ end
 --- @param near number: Near plane depht
 --- @param far number: Far plane depth
 --- @return Matrix: Result
-function Matrix.createOrtographic(width, height, near, far)
-    local mat = Matrix.identity()
+function Matrix.CreateOrtographic(width, height, near, far)
+    local mat = Matrix.Identity()
 
     mat.m11 = 2 / width
     mat.m22 = 2 / height
@@ -652,8 +652,8 @@ end
 --- @param near number: Near plane depth
 --- @param far number: Far plane depht
 --- @return Matrix: Result
-function Matrix.createOrthographicOffCenter(left, right, bottom, top, near, far)
-    local mat = Matrix.identity()
+function Matrix.CreateOrthographicOffCenter(left, right, bottom, top, near, far)
+    local mat = Matrix.Identity()
 
     mat.m11 = 2 / (right - left)
     mat.m22 = 2 / (top - bottom)
@@ -672,7 +672,7 @@ end
 --- @param near number: Near plane distance
 --- @param far number: Far plane distance
 --- @return Matrix: Result
-function Matrix.createPerspective(width, height, near, far)
+function Matrix.CreatePerspective(width, height, near, far)
     local negFarRange = far == huge and -1 or far / (near - far)
     local mat = Matrix()
 
@@ -694,7 +694,7 @@ end
 --- @param near number: Near plane distance
 --- @param far number: Far plane distance
 --- @return Matrix: Result
-function Matrix.createPerspectiveOffCenter(left, right, bottom, top, near, far)
+function Matrix.CreatePerspectiveOffCenter(left, right, bottom, top, near, far)
     local mat = Matrix()
 
     mat.m11 = (2 * near) / (right - left);
@@ -715,7 +715,7 @@ end
 --- @param near number: Near plane distance
 --- @param far number: Far plane distance. `math.huge` is also acceptable
 --- @return Matrix: Result
-function Matrix.createPerspectiveFOV(fov, aspectRatio, near, far)
+function Matrix.CreatePerspectiveFOV(fov, aspectRatio, near, far)
     local yScale = 1 / tan(fov * 0.5)
     local xScale = yScale / aspectRatio
     local negFarRange = far == huge and -1 or far / (near - far)
@@ -734,8 +734,8 @@ end
 --- Creates a scaling matrix
 --- @param scale Vector3: The scale value on each axis
 --- @return Matrix: Result
-function Matrix.createScale(scale)
-    local mat = Matrix.identity()
+function Matrix.CreateScale(scale)
+    local mat = Matrix.Identity()
 
     mat.m11 = scale.width
     mat.m22 = scale.height
@@ -748,8 +748,8 @@ end
 --- Creates a translation matrix
 --- @param position Vector3: The translation coordinates
 --- @return Matrix: Result
-function Matrix.createTranslation(position)
-    local mat = Matrix.identity()
+function Matrix.CreateTranslation(position)
+    local mat = Matrix.Identity()
 
     mat.m41 = position.x
     mat.m42 = position.y
@@ -764,10 +764,10 @@ end
 --- @param scale Vector3: The scaling factor
 --- @param translation Vector3: The translation coordinates
 --- @return Matrix: Result
-function Matrix.createTransformationMatrix(rotation, scale, translation)
-    local matRot = Matrix.createFromQuaternion(rotation)
-    local matScale = Matrix.createScale(scale)
-    local matTranslation = Matrix.createTranslation(translation)
+function Matrix.CreateTransformationMatrix(rotation, scale, translation)
+    local matRot = Matrix.CreateFromQuaternion(rotation)
+    local matScale = Matrix.CreateScale(scale)
+    local matTranslation = Matrix.CreateTranslation(translation)
 
     return matRot:multiply(matScale):multiply(matTranslation)
 end

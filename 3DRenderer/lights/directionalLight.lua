@@ -10,8 +10,8 @@ function Dirlight:new(position, ambient, diffuse, specular)
 end
 
 function Dirlight:setupLightData(meshparts, dataList, index)
-    local view = Matrix.createLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
-    local proj = Matrix.createOrthographicOffCenter(-10, 10, 10, -10, self.near, self.far)
+    local view = Matrix.CreateLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
+    local proj = Matrix.CreateOrthographicOffCenter(-10, 10, 10, -10, self.near, self.far)
     local viewProj = view * proj
     local direction = self.position.normalized
 

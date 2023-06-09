@@ -32,7 +32,7 @@ function Model:new(file, opts)
 
     -- Start loading from root node
     local root = model:root_node()
-    self:__loadNode(root, model, Matrix.identity())
+    self:__loadNode(root, model, Matrix.Identity())
 end
 
 function Model:__loadNode(node, model, parentTransform)

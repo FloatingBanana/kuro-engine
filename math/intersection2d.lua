@@ -19,8 +19,8 @@ end
 ---------
 function Inter2d.ray_circle(rayPos,rayDir,   circlePos,circleRadius)
     local circleDir = circlePos - rayPos
-    local proj = Vector2.dot(circleDir, rayDir) * rayDir
-    local dist = Vector2.distance(circleDir, proj)
+    local proj = Vector2.Dot(circleDir, rayDir) * rayDir
+    local dist = Vector2.Distance(circleDir, proj)
 
     if dist <= circleRadius then
         local m = math.sqrt(circleRadius*circleRadius - dist*dist)
@@ -54,7 +54,7 @@ end
 ------------
 function Inter2d.circle_circle(pos1,radius1,   pos2,radius2)
     local totalRadius = radius1 + radius2
-    local dist = Vector2.distance(pos1, pos2)
+    local dist = Vector2.Distance(pos1, pos2)
 
     if dist < totalRadius then
         return true, totalRadius - dist

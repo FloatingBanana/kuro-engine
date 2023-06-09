@@ -18,8 +18,8 @@ function Spotlight:new(position, direction, innerAngle, outerAngle, ambient, dif
 end
 
 function Spotlight:setupLightData(meshparts, dataList, index)
-    local view = Matrix.createLookAtDirection(self.position, self.direction, Vector3(0,1,0))
-    local proj = Matrix.createPerspectiveFOV(self.outerAngle * 2, -1, self.near, self.far)
+    local view = Matrix.CreateLookAtDirection(self.position, self.direction, Vector3(0,1,0))
+    local proj = Matrix.CreatePerspectiveFOV(self.outerAngle * 2, -1, self.near, self.far)
     local viewProj = view * proj
 
     self:beginLighting(viewProj)

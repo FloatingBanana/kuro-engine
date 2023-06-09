@@ -234,7 +234,7 @@ end
 
 --- Creates a quaternion with components (X=0, Y=0, Z=0, W=1)
 --- @return Quaternion
-function Quaternion.identity()
+function Quaternion.Identity()
 	return Quaternion(0, 0, 0, 1)
 end
 
@@ -244,9 +244,9 @@ end
 ---	@param q2 Quaternion: Final value
 ---	@param progress number: Interpolation progress (0-1)
 --- @return Quaternion: The interpolated quaternion
-function Quaternion.lerp(q1, q2, progress)
+function Quaternion.Lerp(q1, q2, progress)
 	local invProgress = 1 - progress
-	local dot = Quaternion.dot(q1, q2)
+	local dot = Quaternion.Dot(q1, q2)
 	local dir = (dot >= 0) and 1 or -1
 
 	local quaternion = Quaternion(
@@ -265,11 +265,11 @@ end
 ---	@param q2 Quaternion: Final value
 ---	@param amount number: Interpolation progress (0-1)
 --- @return Quaternion: The interpolated quaternion
-function Quaternion.slerp(q1, q2, amount)
+function Quaternion.Slerp(q1, q2, amount)
 	local progress = 0
 	local invProgress = 0
 	local opposite = false
-	local cosTheta = Quaternion.dot(q1, q2)
+	local cosTheta = Quaternion.Dot(q1, q2)
 
 	if cosTheta < 0 then
 		opposite = true
@@ -300,7 +300,7 @@ end
 --- @param v1 Quaternion: First quaternion
 --- @param v2 Quaternion: Second quaternion
 --- @return number: Result
-function Quaternion.dot(v1, v2)
+function Quaternion.Dot(v1, v2)
 	return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z) + (v1.w * v2.w)
 end
 
@@ -309,7 +309,7 @@ end
 --- @param axis Vector3: The axis of rotation
 --- @param angle number: The angle of rotation
 --- @return Quaternion: Result
-function Quaternion.createFromAxisAngle(axis, angle)
+function Quaternion.CreateFromAxisAngle(axis, angle)
 	local half = angle * 0.5
 	local hsin = sin(half)
 
@@ -322,7 +322,7 @@ end
 --- @param pitch number: Pitch around the X axis
 --- @param roll number: Roll around the Z axis
 --- @return Quaternion: Result
-function Quaternion.createFromYawPitchRoll(yaw, pitch, roll)
+function Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll)
 	local halfRoll = roll * 0.5
 	local halfPitch = pitch * 0.5
 	local halfYaw = yaw * 0.5
@@ -346,7 +346,7 @@ end
 --- Creates a quaternion from a Matrix
 --- @param mat Matrix: The rotation matrix
 --- @return Quaternion: Result
-function Quaternion.createFromRotationMatrix(mat)
+function Quaternion.CreateFromRotationMatrix(mat)
     local scale = mat.m11 + mat.m22 + mat.m33;
 
 	if scale > 0 then
