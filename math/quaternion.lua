@@ -1,6 +1,7 @@
 -- Borrowed from https://github.com/MonoGame/MonoGame/blob/develop/MonoGame.Framework/Quaternion.cs
 
 local CStruct = require "engine.cstruct"
+local sin, cos, acos, sqrt = math.sin, math.cos, math.acos, math.sqrt
 
 -- See [engine/vector2.lua] for explanation
 local function commutative_reorder(object, number)
@@ -21,6 +22,8 @@ end
 --- @field z number: The Z axis of this quaternion
 --- @field w number: The rotation component of this quaternion
 --- @field normalized Quaternion: Gets a new, normalized version of this quaternion
+--- @field conjugated Quaternion: Gets a new, conjugated version of this quaternion
+--- @field inverted Quaternion: Gets a new quaternion facing the opposite direction of this one
 --- @field length number: The magnitude of this quaternion
 --- @field lengthSquared number: The squared magnitude of this quaternion
 ---
@@ -63,7 +66,7 @@ function Quaternion:__index(key)
 	end
 
 	if key == "length" then
-		return math.sqrt(self.lengthSquared)
+		return sqrt(self.lengthSquared)
 	end
 
 	return Quaternion[key]
@@ -139,15 +142,15 @@ function Quaternion:multiply(other)
 		self.z = self.z * other
 		self.w = self.w * other
 	else
-		local value1 = (self.y * other.z) - (self.z * other.y)
-		local value2 = (self.z * other.x) - (self.x * other.z)
-		local value3 = (self.x * other.y) - (self.y * other.x)
-		local value4 = (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
+		local vx = (self.y * other.z) - (self.z * other.y)
+		local vy = (self.z * other.x) - (self.x * other.z)
+		local vz = (self.x * other.y) - (self.y * other.x)
+		local vw = (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
 
-		self.x = (self.x * other.w) + (other.x * self.w) + value1
-		self.y = (self.y * other.w) + (other.y * self.w) + value2
-		self.z = (self.z * other.w) + (other.z * self.w) + value3
-		self.w = (self.w * other.w) - value4
+		self.x = (self.x * other.w) + (other.x * self.w) + vx
+		self.y = (self.y * other.w) + (other.y * self.w) + vy
+		self.z = (self.z * other.w) + (other.z * self.w) + vz
+		self.w = (self.w * other.w) - vw
 	end
 
 	return self
@@ -165,20 +168,16 @@ function Quaternion:divide(other)
 		self.w = self.w / other.w
 	else
 		-- yeah, IDK either...
-		local invLength = 1 / other.length
-		local otX = -other.x * invLength
-		local otY = -other.y * invLength
-		local otZ = -other.z * invLength
-		local otW = other.w * invLength
-		local value1 = (self.y * otZ) - (self.z * otY)
-		local value2 = (self.z * otX) - (self.x * otZ)
-		local value3 = (self.x * otY) - (self.y * otX)
-		local value4 = (self.x * otX) + (self.y * otY) + (self.z * otZ)
+		local invoX, invoY, invoZ, invoW = other.inverted:split()
+		local vx = (self.y * invoZ) - (self.z * invoY)
+		local vy = (self.z * invoX) - (self.x * invoZ)
+		local vz = (self.x * invoY) - (self.y * invoX)
+		local vw = (self.x * invoX) + (self.y * invoY) + (self.z * invoZ)
 
-		self.x = (self.x * otW) + (otX * self.w) + value1
-		self.y = (self.y * otW) + (otY * self.w) + value2
-		self.z = (self.z * otW) + (otZ * self.w) + value3
-		self.w = (self.w * otW) - value4
+		self.x = (self.x * invoW) + (invoX * self.w) + vx
+		self.y = (self.y * invoW) + (invoY * self.w) + vy
+		self.z = (self.z * invoW) + (invoZ * self.w) + vz
+		self.w = (self.w * invoW) - vw
 	end
 
 	return self
@@ -227,10 +226,11 @@ function Quaternion:split()
 	return self.x, self.y, self.z, self.w
 end
 
+
+
 --------------------------------
 ------ Static functions---------
 --------------------------------
-
 
 --- Creates a quaternion with components (X=0, Y=0, Z=0, W=1)
 --- @return Quaternion
@@ -245,21 +245,16 @@ end
 ---	@param progress number: Interpolation progress (0-1)
 --- @return Quaternion: The interpolated quaternion
 function Quaternion.lerp(q1, q2, progress)
-	local invAmount = 1 - progress
-	local quaternion = Quaternion()
+	local invProgress = 1 - progress
 	local dot = Quaternion.dot(q1, q2)
+	local dir = (dot >= 0) and 1 or -1
 
-	if dot >= 0 then
-		quaternion.x = (invAmount * q1.x) + (progress * q2.x)
-		quaternion.y = (invAmount * q1.y) + (progress * q2.y)
-		quaternion.z = (invAmount * q1.z) + (progress * q2.z)
-		quaternion.w = (invAmount * q1.w) + (progress * q2.w)
-	else
-		quaternion.x = (invAmount * q1.x) - (progress * q2.x)
-		quaternion.y = (invAmount * q1.y) - (progress * q2.y)
-		quaternion.z = (invAmount * q1.z) - (progress * q2.z)
-		quaternion.w = (invAmount * q1.w) - (progress * q2.w)
-	end
+	local quaternion = Quaternion(
+		(invProgress * q1.x) + (progress * q2.x * dir),
+		(invProgress * q1.y) + (progress * q2.y * dir),
+		(invProgress * q1.z) + (progress * q2.z * dir),
+		(invProgress * q1.w) + (progress * q2.w * dir)
+	)
 
 	return quaternion:normalized()
 end
@@ -271,7 +266,8 @@ end
 ---	@param amount number: Interpolation progress (0-1)
 --- @return Quaternion: The interpolated quaternion
 function Quaternion.slerp(q1, q2, amount)
-	local num2, num3
+	local progress = 0
+	local invProgress = 0
 	local opposite = false
 	local cosTheta = Quaternion.dot(q1, q2)
 
@@ -281,21 +277,21 @@ function Quaternion.slerp(q1, q2, amount)
 	end
 
 	if cosTheta > 0.999999 then
-		num3 = 1 - amount
-		num2 = opposite and -amount or amount
+		invProgress = 1 - amount
+		progress = opposite and -amount or amount
 	else
-		local angle = math.acos(cosTheta)
-		local num6 = 1 / math.sin(angle)
+		local angle = acos(cosTheta)
+		local invSin = 1 / sin(angle)
 
-		num3 = math.sin((1 - amount) * angle) * num6
-		num2 = opposite and (-math.sin(amount * angle) * num6) or (math.sin(amount * angle) * num6)
+		invProgress = sin((1 - amount) * angle) * invSin
+		progress = sin(amount * angle) * (opposite and -invSin or invSin)
 	end
 
 	return Quaternion(
-		(num3 * q1.x) + (num2 * q2.x),
-		(num3 * q1.y) + (num2 * q2.y),
-		(num3 * q1.z) + (num2 * q2.z),
-		(num3 * q1.w) + (num2 * q2.w)
+		(invProgress * q1.x) + (progress * q2.x),
+		(invProgress * q1.y) + (progress * q2.y),
+		(invProgress * q1.z) + (progress * q2.z),
+		(invProgress * q1.w) + (progress * q2.w)
 	)
 end
 
@@ -315,10 +311,9 @@ end
 --- @return Quaternion: Result
 function Quaternion.createFromAxisAngle(axis, angle)
 	local half = angle * 0.5
-	local sin = math.sin(half)
-	local cos = math.cos(half)
+	local hsin = sin(half)
 
-	return Quaternion(axis.x * sin, axis.y * sin, axis.z * sin, cos)
+	return Quaternion(axis.x * hsin, axis.y * hsin, axis.z * hsin, cos(half))
 end
 
 
@@ -332,12 +327,12 @@ function Quaternion.createFromYawPitchRoll(yaw, pitch, roll)
 	local halfPitch = pitch * 0.5
 	local halfYaw = yaw * 0.5
 
-	local sinRoll = math.sin(halfRoll)
-	local cosRoll = math.cos(halfRoll)
-	local sinPitch = math.sin(halfPitch)
-	local cosPitch = math.cos(halfPitch)
-	local sinYaw = math.sin(halfYaw)
-	local cosYaw = math.cos(halfYaw)
+	local sinRoll = sin(halfRoll)
+	local cosRoll = cos(halfRoll)
+	local sinPitch = sin(halfPitch)
+	local cosPitch = cos(halfPitch)
+	local sinYaw = sin(halfYaw)
+	local cosYaw = cos(halfYaw)
 
 	return Quaternion(
 		(cosYaw * sinPitch * cosRoll) + (sinYaw * cosPitch * sinRoll),
@@ -355,49 +350,38 @@ function Quaternion.createFromRotationMatrix(mat)
     local scale = mat.m11 + mat.m22 + mat.m33;
 
 	if scale > 0 then
-        local sqrt = math.sqrt(scale + 1);
-        local half = 0.5 / sqrt;
+        local scaleSqrt = sqrt(scale + 1);
+        local half = 0.5 / scaleSqrt;
 
 		return Quaternion(
 			(mat.m23 - mat.m32) * half,
 	    	(mat.m31 - mat.m13) * half,
 	    	(mat.m12 - mat.m21) * half,
-	    	sqrt * 0.5
+	    	scaleSqrt * 0.5
 		)
 	end
+	local quat = Quaternion()
+	local scaleSqrt = sqrt(1 + mat.m11 - mat.m22 - mat.m33);
+	local half = 0.5 / scaleSqrt;
 
 	if (mat.m11 >= mat.m22) and (mat.m11 >= mat.m33) then
-        local sqrt = math.sqrt(1 + mat.m11 - mat.m22 - mat.m33);
-        local half = 0.5 / sqrt;
-
-	    return Quaternion(
-			0.5 * sqrt,
-	    	(mat.m12 + mat.m21) * half,
-	    	(mat.m13 + mat.m31) * half,
-	    	(mat.m23 - mat.m32) * half
-		)
+		quat.x = 0.5 * scaleSqrt
+		quat.y = (mat.m12 + mat.m21) * half
+	    quat.z = (mat.m13 + mat.m31) * half
+		quat.w = (mat.m23 - mat.m32) * half
+	elseif mat.m22 > mat.m33 then
+		quat.x = (mat.m21 + mat.m12) * half
+		quat.y = 0.5 * scaleSqrt
+	    quat.z = (mat.m32 + mat.m23) * half
+		quat.w = (mat.m31 - mat.m13) * half
+	else
+		quat.x = (mat.m31 + mat.m13) * half
+		quat.y = (mat.m32 + mat.m23) * half
+		quat.z = 0.5 * scaleSqrt
+		quat.w = (mat.m12 - mat.m21) * half
 	end
 
-	if mat.m22 > mat.m33 then
-        local sqrt = math.sqrt(1 + mat.m22 - mat.m11 - mat.m33);
-        local half = 0.5 / sqrt;
-
-		return Quaternion(
-			(mat.m21 + mat.m12) * half,
-	    	0.5 * sqrt,
-	    	(mat.m32 + mat.m23) * half,
-	    	(mat.m31 - mat.m13) * half
-		)
-	end
-    local sqrt = math.sqrt(1 + mat.m33 - mat.m11 - mat.m22);
-	local half = 0.5 / sqrt;
-
-	return Quaternion(
-		(mat.m31 + mat.m13) * half,
-		(mat.m32 + mat.m23) * half,
-		0.5 * sqrt,
-		(mat.m12 - mat.m21) * half
-	)
+	return quat
 end
 
 return Quaternion

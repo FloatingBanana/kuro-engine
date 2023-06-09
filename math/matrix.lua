@@ -1,6 +1,7 @@
 local Vector3 = require "engine.math.vector3"
 local Quaternion = require "engine.math.quaternion"
 local CStruct = require "engine.cstruct"
+local abs, tan, sqrt, huge = math.abs, math.tan, math.sqrt, math.huge
 
 -- See [engine/vector2.lua] for explanation
 local function commutative_reorder(object, number)
@@ -98,9 +99,9 @@ function Matrix:__index(key)
         local zs = (self.m31 * self.m32 * self.m33 * self.m34 < 0) and -1 or 1
 
         return Vector3(
-            xs * math.sqrt(self.m11 * self.m11 + self.m12 * self.m12 + self.m13 * self.m13),
-            ys * math.sqrt(self.m21 * self.m21 + self.m22 * self.m22 + self.m23 * self.m23),
-            zs * math.sqrt(self.m31 * self.m31 + self.m32 * self.m32 + self.m33 * self.m33)
+            xs * sqrt(self.m11 * self.m11 + self.m12 * self.m12 + self.m13 * self.m13),
+            ys * sqrt(self.m21 * self.m21 + self.m22 * self.m22 + self.m23 * self.m23),
+            zs * sqrt(self.m31 * self.m31 + self.m32 * self.m32 + self.m33 * self.m33)
         )
     end
 
@@ -588,13 +589,13 @@ function Matrix.createConstrainedBillboard(objectPosition, cameraPosition, rotat
 	local dot = Vector3.dot(rotateAxis, direction)
     local threshold = 0.9982547
 
-	if (math.abs(dot) > threshold) then
+	if (abs(dot) > threshold) then
 	    forward = objectForward
 	    dot = Vector3.dot(rotateAxis, forward, dot)
 
-        if (math.abs(dot) > threshold) then
+        if (abs(dot) > threshold) then
 	        dot = Vector3.dot(rotateAxis, Vector3(0,0,-1))
-	        forward = (math.abs(dot) > threshold) and Vector3(1,0,0) or Vector3(0,0,-1)
+	        forward = (abs(dot) > threshold) and Vector3(1,0,0) or Vector3(0,0,-1)
         end
 
 	    right = Vector3.cross(rotateAxis, forward)
@@ -672,7 +673,7 @@ end
 --- @param far number: Far plane distance
 --- @return Matrix: Result
 function Matrix.createPerspective(width, height, near, far)
-    local negFarRange = far == math.huge and -1 or far / (near - far)
+    local negFarRange = far == huge and -1 or far / (near - far)
     local mat = Matrix()
 
     mat.m11 = (2 * near) / width
@@ -715,9 +716,9 @@ end
 --- @param far number: Far plane distance. `math.huge` is also acceptable
 --- @return Matrix: Result
 function Matrix.createPerspectiveFOV(fov, aspectRatio, near, far)
-    local yScale = 1 / math.tan(fov * 0.5)
+    local yScale = 1 / tan(fov * 0.5)
     local xScale = yScale / aspectRatio
-    local negFarRange = far == math.huge and -1 or far / (near - far)
+    local negFarRange = far == huge and -1 or far / (near - far)
     local mat = Matrix()
 
     mat.m11 = xScale

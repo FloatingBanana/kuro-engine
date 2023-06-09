@@ -1,5 +1,6 @@
 local Vector2 = require "engine.math.vector2"
 local CStruct = require "engine.cstruct"
+local abs, sqrt, floor, ceil, min, max = math.abs, math.sqrt, math.floor, math.ceil, math.min, math.max
 
 local double_epsilon = 4.94065645841247E-324
 
@@ -71,7 +72,7 @@ function Vector3:__index(key)
     end
 
     if key == "length" then
-        return math.sqrt(self.lengthSquared)
+        return sqrt(self.lengthSquared)
     end
 
     if key == "normalized" then
@@ -84,7 +85,7 @@ function Vector3:__index(key)
 
     if not key:match("[^xyz]") then
         local ax1, ax2, ax3 = key:sub(1,1), key:sub(2,2), key:sub(3,3)
-        
+
         if #key == 2 then
             return Vector2(ax1, ax2)
         elseif #key == 3 then
@@ -265,13 +266,13 @@ end
 
 
 --- Clamp this vector's component between `min` and `max`
---- @param min Vector3: Minimum value
---- @param max Vector3: Maximum value
+--- @param vmin Vector3: Minimum value
+--- @param vmax Vector3: Maximum value
 --- @return Vector3: This vector
-function Vector3:clamp(min, max)
-    self.x = Lume.clamp(self.x, min.x, max.x)
-    self.y = Lume.clamp(self.y, min.y, max.y)
-    self.z = Lume.clamp(self.z, min.z, max.z)
+function Vector3:clamp(vmin, vmax)
+    self.x = Lume.clamp(self.x, vmin.x, vmax.x)
+    self.y = Lume.clamp(self.y, vmin.y, vmax.y)
+    self.z = Lume.clamp(self.z, vmin.z, vmax.z)
 
     return self
 end
@@ -311,7 +312,7 @@ function Vector3:worldToScreen(screenMatrix, screenSize, minDepth, maxDepth)
 
     self:transform(screenMatrix)
 
-    if math.abs(a-1) > double_epsilon then
+    if abs(a-1) > double_epsilon then
         self:divide(a)
     end
 
@@ -333,7 +334,7 @@ function Vector3:screenToWorld(screenMatrix, screenSize, minDepth, maxDepth)
 
     self:transform(mat)
 
-	if math.abs(a-1) > double_epsilon then
+	if abs(a-1) > double_epsilon then
         self:divide(a)
     end
 
@@ -344,9 +345,9 @@ end
 --- Rounds down this vector's components
 --- @return Vector3: This vector
 function Vector3:floor()
-    self.x = math.floor(self.x)
-    self.y = math.floor(self.y)
-    self.z = math.floor(self.z)
+    self.x = floor(self.x)
+    self.y = floor(self.y)
+    self.z = floor(self.z)
 
     return self
 end
@@ -355,9 +356,9 @@ end
 --- Rounds up this vector's components
 --- @return Vector3: This vector
 function Vector3:ceil()
-    self.x = math.ceil(self.x)
-    self.y = math.ceil(self.y)
-    self.z = math.ceil(self.z)
+    self.x = ceil(self.x)
+    self.y = ceil(self.y)
+    self.z = ceil(self.z)
 
     return self
 end
@@ -427,7 +428,7 @@ end
 --- @param v2 Vector3: the second vector
 --- @return number: The resulting distance
 function Vector3.distance(v1, v2)
-    return math.sqrt(Vector3.distanceSquared(v1, v2))
+    return sqrt(Vector3.distanceSquared(v1, v2))
 end
 
 
@@ -437,9 +438,9 @@ end
 --- @return Vector3: The minimum vector
 function Vector3.min(v1, v2)
     return Vector3(
-        math.min(v1.x, v2.x),
-        math.min(v1.y, v2.y),
-        math.min(v1.z, v2.z)
+        min(v1.x, v2.x),
+        min(v1.y, v2.y),
+        min(v1.z, v2.z)
     )
 end
 
@@ -450,9 +451,9 @@ end
 --- @return Vector3: The maximum vector
 function Vector3.max(v1, v2)
     return Vector3(
-        math.max(v1.x, v2.x),
-        math.max(v1.y, v2.y),
-        math.max(v1.z, v2.z)
+        max(v1.x, v2.x),
+        max(v1.y, v2.y),
+        max(v1.z, v2.z)
     )
 end
 

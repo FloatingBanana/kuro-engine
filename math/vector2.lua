@@ -1,4 +1,5 @@
 local CStruct = require "engine.cstruct"
+local sin, cos, atan2, sqrt, floor, ceil, min, max = math.sin, math.cos, math.atan2, math.sqrt, math.floor, math.ceil, math.min, math.max
 
 -- Helper function for overloads of commutative operations to ensure that the order
 -- of the arguments will always be the same (first the object, then the number), so we
@@ -62,11 +63,11 @@ function Vector2:__index(key)
     end
 
     if key == "length" then
-        return math.sqrt(self.lengthSquared)
+        return sqrt(self.lengthSquared)
     end
 
     if key == "angle" then
-        return math.atan2(self.y, self.x)
+        return atan2(self.y, self.x)
     end
 
     if key == "normalized" then
@@ -244,12 +245,12 @@ end
 
 
 --- Clamp this vector's component between `min` and `max`
---- @param min Vector2: Minimum value
---- @param max Vector2: Maximum value
+--- @param vmin Vector2: Minimum value
+--- @param vmax Vector2: Maximum value
 --- @return Vector2: This vector
-function Vector2:clamp(min, max)
-    self.x = Lume.clamp(self.x, min.x, max.x)
-    self.y = Lume.clamp(self.y, min.y, max.y)
+function Vector2:clamp(vmin, vmax)
+    self.x = Lume.clamp(self.x, vmin.x, vmax.x)
+    self.y = Lume.clamp(self.y, vmin.y, vmax.y)
 
     return self
 end
@@ -261,8 +262,8 @@ end
 function Vector2:setAngle(angle)
     local mag = self.length
 
-    self.x = math.cos(angle) * mag
-    self.y = math.sin(angle) * mag
+    self.x = cos(angle) * mag
+    self.y = sin(angle) * mag
 
     return self
 end
@@ -272,10 +273,10 @@ end
 --- @param angle number: The angle to be applied
 --- @return Vector2: This vector
 function Vector2:rotateBy(angle)
-    self:new(
-        self.x * math.cos(angle) - self.y * math.sin(angle),
-        self.x * math.sin(angle) + self.y * math.cos(angle)
-    )
+    local x, y = self.x, self.y
+
+    self.x = x * cos(angle) - y * sin(angle)
+    self.y = x * sin(angle) + y * cos(angle)
 
     return self
 end
@@ -284,8 +285,8 @@ end
 --- Rounds down this vector's components
 --- @return Vector2: This vector
 function Vector2:floor()
-    self.x = math.floor(self.x)
-    self.y = math.floor(self.y)
+    self.x = floor(self.x)
+    self.y = floor(self.y)
 
     return self
 end
@@ -294,8 +295,8 @@ end
 --- Rounds up this vector's components
 --- @return Vector2: This vector
 function Vector2:ceil()
-    self.x = math.ceil(self.x)
-    self.y = math.ceil(self.y)
+    self.x = ceil(self.x)
+    self.y = ceil(self.y)
 
     return self
 end
@@ -341,8 +342,8 @@ end
 --- @return Vector2: Result
 function Vector2.createAngled(angle, magnitude)
     return Vector2(
-          math.cos(angle) * magnitude,
-          math.sin(angle) * magnitude
+          cos(angle) * magnitude,
+          sin(angle) * magnitude
     )
 end
 
@@ -363,7 +364,7 @@ end
 --- @param v2 Vector2: the second vector
 --- @return number: The resulting distance
 function Vector2.distance(v1, v2)
-    return math.sqrt(Vector2.distanceSquared(v1, v2))
+    return sqrt(Vector2.distanceSquared(v1, v2))
 end
 
 
@@ -373,8 +374,8 @@ end
 --- @return Vector2: The minimum vector
 function Vector2.min(v1, v2)
     return Vector2(
-        math.min(v1.x, v2.x),
-        math.min(v1.y, v2.y)
+        min(v1.x, v2.x),
+        min(v1.y, v2.y)
     )
 end
 
@@ -385,8 +386,8 @@ end
 --- @return Vector2: The maximum vector
 function Vector2.max(v1, v2)
     return Vector2(
-        math.max(v1.x, v2.x),
-        math.max(v1.y, v2.y)
+        max(v1.x, v2.x),
+        max(v1.y, v2.y)
     )
 end
 
