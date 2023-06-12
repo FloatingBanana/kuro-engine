@@ -25,7 +25,7 @@ local function preprocessShader(shader, defaultDefines)
 		table.insert(mainBlock, "#line 0\n")
 	end
 
-	for line in shader:gmatch("[^\r\n]+") do
+	for line in shader:gmatch("[^\n]+") do
 		local result = line
 
 		lineNumber = lineNumber + 1
