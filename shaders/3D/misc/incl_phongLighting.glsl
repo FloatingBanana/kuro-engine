@@ -27,8 +27,8 @@ struct PhongLight {
 };
 #endif
 
-vec3 CaculatePhongLighting(PhongLight light, vec3 fragLightDir, vec3 normal, vec3 viewDir, float visibility, vec3 matDiffuseColor, float matShininess) {
-    vec3 ambient = light.ambient * matDiffuseColor;
+vec3 CaculatePhongLighting(PhongLight light, vec3 fragLightDir, vec3 normal, vec3 viewDir, float visibility, vec3 matDiffuseColor, float matShininess, float ambientOcclusion) {
+    vec3 ambient = light.ambient * matDiffuseColor * ambientOcclusion;
     vec3 diffuse = max(dot(normal, fragLightDir), 0.0) * light.diffuse * matDiffuseColor;
 
     vec3 halfwayDir = normalize(fragLightDir + viewDir);
@@ -37,12 +37,12 @@ vec3 CaculatePhongLighting(PhongLight light, vec3 fragLightDir, vec3 normal, vec
     return ambient + (diffuse + specular) * visibility;
 }
 
-vec3 CalculateDirectionalLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess) {
+vec3 CalculateDirectionalLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess, float ambientOcclusion) {
     float shadow = ShadowCalculation(shadowMap, light.fragPos);
-    return CaculatePhongLighting(light, light.direction, normal, viewDir, 1.0 - shadow, matDiffuseColor, matShininess);
+    return CaculatePhongLighting(light, light.direction, normal, viewDir, 1.0 - shadow, matDiffuseColor, matShininess, ambientOcclusion);
 }
 
-vec3 CalculateSpotLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess, vec3 fragPos) {
+vec3 CalculateSpotLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess, float ambientOcclusion, vec3 fragPos) {
     vec3 fragLightDir = normalize(light.position - fragPos);
     float theta = dot(fragLightDir, -light.direction);
 
@@ -51,18 +51,18 @@ vec3 CalculateSpotLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D s
         float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
         float shadow = ShadowCalculation(shadowMap, light.fragPos);
 
-        return CaculatePhongLighting(light, fragLightDir, normal, viewDir, (1.0 - shadow) * intensity, matDiffuseColor, matShininess);
+        return CaculatePhongLighting(light, fragLightDir, normal, viewDir, (1.0 - shadow) * intensity, matDiffuseColor, matShininess, ambientOcclusion);
     }
     
-    return light.ambient * matDiffuseColor;
+    return light.ambient * matDiffuseColor * ambientOcclusion;
 }
 
-vec3 CalculatePointLight(PhongLight light, vec3 normal, vec3 viewDir, vec3 viewPos, samplerCube shadowMap, vec3 matDiffuseColor, float matShininess, vec3 fragPos) {
+vec3 CalculatePointLight(PhongLight light, vec3 normal, vec3 viewDir, vec3 viewPos, samplerCube shadowMap, vec3 matDiffuseColor, float matShininess, float ambientOcclusion, vec3 fragPos) {
     vec3 fragLightDir = normalize(light.position - fragPos);
     float dist = length(light.position - fragPos);
 
     float attenuation = 1.0 / (light.constant  + light.linear * dist + light.quadratic * (dist * dist));
     float shadow = ShadowCalculation(light.position, light.farPlane, shadowMap, viewPos, fragPos);
 
-    return CaculatePhongLighting(light, fragLightDir, normal, viewDir, 1.0 - shadow, matDiffuseColor, matShininess) * attenuation;
+    return CaculatePhongLighting(light, fragLightDir, normal, viewDir, 1.0 - shadow, matDiffuseColor, matShininess, ambientOcclusion) * attenuation;
 }
