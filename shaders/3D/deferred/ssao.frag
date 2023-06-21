@@ -13,10 +13,9 @@ uniform mat4 u_projection;
 
 const vec2 noiseScale = vec2(800.0/4.0, 600.0/4.0);
 
-//! FIXME: foreground pixels sometimes are counted as occluded
-
 vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
-    vec3 fragPos = (u_view * texture2D(u_gPosition, texcoords)).xyz;
+    vec4 wFragPos = texture2D(u_gPosition, texcoords);
+    vec3 fragPos = (u_view * wFragPos).xyz;
     vec3 normal = mat3(u_view) * texture2D(u_gNormal, texcoords).rgb;
     vec3 randomVec = vec3(texture2D(u_noiseTex, texcoords * noiseScale).xy * 2 - 1, 0);
 
@@ -36,10 +35,12 @@ vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
         offset.xyz /= offset.w;
         offset.xyz = offset.xyz * 0.5 + 0.5;
 
-        float sampleDepth = (u_view * texture2D(u_gPosition, offset.xy)).z;
+        vec4 wSample = texture2D(u_gPosition, offset.xy);
+        float sampleDepth = (u_view * wSample).z;
         float rangeCheck = smoothstep(0.0, 1.0, KERNEL_RADIUS / abs(fragPos.z - sampleDepth));
 
-        occlusion += ((sampleDepth >= samplePos.z + bias) ? 1.0 : 0.0) * rangeCheck;
+        float backFilter = (wFragPos.xyz == vec3(0) || wSample.xyz == vec3(0)) ? 0.0 : 1.0; // Discards background pixels
+        occlusion += (sampleDepth >= samplePos.z + bias) ? rangeCheck * backFilter : 0.0;
     }
 
     occlusion = pow(occlusion / KERNEL_SIZE, 1);
