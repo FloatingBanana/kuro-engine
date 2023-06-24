@@ -19,8 +19,8 @@ function Renderer:new(screensize, msaa, hdrExposure, bloomAmount)
     self.bloomAmount = bloomAmount
 
     -- Setup shaders
-    self.blurShader = lg.newShader("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
-    self.blurShader:send("texSize", screensize:toFlatTable())
+    local blurShader = lfs.read("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
+    self.blurShader = lg.newShader(Utils.preprocessShader(blurShader))
 
     -- Setup canvases
     self.hdrCanvas = lg.newCanvas(screensize.width, screensize.height, {format = "rgba16f", msaa = msaa})

@@ -49,19 +49,8 @@ vec3 CalculateSpotLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D s
 vec3 CalculatePointLight(PhongLight light, vec3 normal, vec3 viewDir, vec3 viewPos, samplerCube shadowMap, vec3 matDiffuseColor, float matShininess, float ambientOcclusion, vec3 fragPos);
 #pragma include "engine/shaders/3D/misc/incl_phongLighting.glsl"
 
-vec4 BoxBlur(sampler2D tex, vec2 texCoord, int kernelSize) {
-    vec2 texelSize = 1.0 / vec2(textureSize(tex, 0));
-    vec4 result = vec4(0);
-
-    for (int x = -kernelSize; x < kernelSize; x++) {
-        for (int y = -kernelSize; y < kernelSize; y++) {
-            vec2 offset = vec2(x, y) * texelSize;
-            result += texture2D(tex, texCoord + offset);
-        }
-    }
-
-    return result / vec4(kernelSize*2*kernelSize*2);
-}
+vec4 BoxBlur(sampler2D tex, vec2 texCoord, int kernelSize);
+#pragma include "engine/shaders/utils/incl_blur.glsl"
 
 
 vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
