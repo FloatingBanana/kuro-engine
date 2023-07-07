@@ -1,0 +1,41 @@
+local BaseEffect = require "engine.3DRenderer.postProcessing.basePostProcessingEffect"
+local HDR = BaseEffect:extend()
+
+local hdrShader = [[
+    uniform float u_exposure;
+    
+    vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
+        const float gamma = 2.2;
+        vec3 hdrColor = (Texel(texture, texcoords)).rgb;
+    
+        vec3 mapped = vec3(1.0) - exp(-hdrColor * u_exposure);
+        mapped = pow(mapped, vec3(1.0 / gamma));
+    
+        return vec4(mapped, 1.0);
+    }
+]]
+
+function HDR:new(screenSize, exposure)
+    self.hdrCanvas = lg.newCanvas(screenSize.width, screenSize.height)
+    self.shader = lg.newShader(hdrShader)
+
+    self:setExposure(exposure)
+end
+
+function HDR:applyPostRender(device, canvas, view, projection)
+    lg.setCanvas(self.hdrCanvas)
+    lg.setShader(self.shader)
+
+    lg.draw(canvas)
+    lg.setCanvas()
+    lg.setShader()
+
+    return self.hdrCanvas
+end
+
+function HDR:setExposure(exposure)
+    self.shader:send("u_exposure", exposure)
+end
+
+
+return HDR

@@ -48,9 +48,9 @@ struct PhongLight {
 
     vec4 fragPos;
 };
-vec3 CalculateDirectionalLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess);
-vec3 CalculateSpotLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess, vec3 fragPos);
-vec3 CalculatePointLight(PhongLight light, vec3 normal, vec3 viewDir, vec3 viewPos, samplerCube shadowMap, vec3 matDiffuseColor, float matShininess, vec3 fragPos);
+vec3 CalculateDirectionalLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess, float ambientOcclusion);
+vec3 CalculateSpotLight(PhongLight light, vec3 normal, vec3 viewDir, sampler2D shadowMap, vec3 matDiffuseColor, float matShininess, float ambientOcclusion, vec3 fragPos);
+vec3 CalculatePointLight(PhongLight light, vec3 normal, vec3 viewDir, vec3 viewPos, samplerCube shadowMap, vec3 matDiffuseColor, float matShininess, float ambientOcclusion, vec3 fragPos);
 #pragma include "engine/shaders/3D/misc/incl_phongLighting.glsl"
 
 
@@ -83,13 +83,13 @@ void effect() {
 
 
             if (u_lightType[INDEX] == LIGHT_TYPE_DIRECTIONAL)
-                result += CalculateDirectionalLight(light, normal, viewDir, u_lightShadowMap[INDEX], diffuseColor, u_shininess);
+                result += CalculateDirectionalLight(light, normal, viewDir, u_lightShadowMap[INDEX], diffuseColor, u_shininess, 1);
 
             if (u_lightType[INDEX] == LIGHT_TYPE_SPOT)
-                result += CalculateSpotLight(light, normal, viewDir, u_lightShadowMap[INDEX], diffuseColor, u_shininess, v_fragPos);
+                result += CalculateSpotLight(light, normal, viewDir, u_lightShadowMap[INDEX], diffuseColor, u_shininess, 1, v_fragPos);
 
             if (u_lightType[INDEX] == LIGHT_TYPE_POINT)
-                result += CalculatePointLight(light, normal, viewDir, u_viewPosition, u_pointLightShadowMap[INDEX], diffuseColor, u_shininess, v_fragPos);
+                result += CalculatePointLight(light, normal, viewDir, u_viewPosition, u_pointLightShadowMap[INDEX], diffuseColor, u_shininess, 1, v_fragPos);
         }
 #   pragma endfor
 

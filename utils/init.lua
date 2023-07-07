@@ -60,4 +60,14 @@ function Utils.getCurrentFont()
 	return fonts[currFont]
 end
 
+function Utils.newSquareMesh(size)
+	local w, h = size.width, size.height
+	return lg.newMesh({
+        {0,0,0,0},
+        {w,0,1,0},
+        {0,h,0,1},
+        {w,h,1,1}
+    }, "strip", "static")
+end
+
 return Utils
