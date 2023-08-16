@@ -1,5 +1,4 @@
 local BaseEffect = require "engine.3DRenderer.postProcessing.basePostProcessingEffect"
-local Bloom = BaseEffect:extend()
 
 local brightFilterShader = [[
 uniform float u_treshold;
@@ -9,10 +8,23 @@ vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
     vec3 pixel = Texel(texture, texcoords).rgb;
     float brightness = dot(pixel, colorBalance);
     float luminance = max(0.0, brightness - u_treshold);
-
+    
     return vec4(pixel * sign(luminance), 1.0);
 }
 ]]
+
+
+--- @class Bloom: BasePostProcessingEffect
+---
+--- @field strenght integer
+--- @field private blurShader love.Shader
+--- @field private brightFilterShader love.Shader
+--- @field private bloomCanvas love.Canvas
+--- @field private blurCanvases love.Canvas[]
+---
+--- @overload fun(screenSize: Vector2, strenght: integer, luminanceTreshold: number): Bloom
+local Bloom = BaseEffect:extend()
+
 
 function Bloom:new(screenSize, strenght, luminanceTreshold)
     local blurShaderCode = lfs.read("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
@@ -33,6 +45,7 @@ function Bloom:new(screenSize, strenght, luminanceTreshold)
 
     self:setLuminanceTreshold(luminanceTreshold)
 end
+
 
 function Bloom:applyPostRender(device, canvas, view, projection)
     -- Get luminous pixels
@@ -67,8 +80,12 @@ function Bloom:applyPostRender(device, canvas, view, projection)
     return canvas
 end
 
+
+
+---@param treshold number
 function Bloom:setLuminanceTreshold(treshold)
     self.brightFilterShader:send("u_treshold", treshold)
 end
+
 
 return Bloom

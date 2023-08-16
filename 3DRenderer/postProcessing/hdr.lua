@@ -1,5 +1,4 @@
 local BaseEffect = require "engine.3DRenderer.postProcessing.basePostProcessingEffect"
-local HDR = BaseEffect:extend()
 
 local hdrShader = [[
     uniform float u_exposure;
@@ -15,12 +14,23 @@ local hdrShader = [[
     }
 ]]
 
+
+--- @class HDR: BasePostProcessingEffect
+---
+--- @field private hdrCanvas love.Canvas
+--- @field private shader love.Shader
+---
+--- @overload fun(screenSize: Vector2, exposure: number): HDR
+local HDR = BaseEffect:extend()
+
+
 function HDR:new(screenSize, exposure)
     self.hdrCanvas = lg.newCanvas(screenSize.width, screenSize.height)
     self.shader = lg.newShader(hdrShader)
 
     self:setExposure(exposure)
 end
+
 
 function HDR:applyPostRender(device, canvas, view, projection)
     lg.setCanvas(self.hdrCanvas)
@@ -33,6 +43,8 @@ function HDR:applyPostRender(device, canvas, view, projection)
     return self.hdrCanvas
 end
 
+
+--- @param exposure number
 function HDR:setExposure(exposure)
     self.shader:send("u_exposure", exposure)
 end
