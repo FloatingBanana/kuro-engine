@@ -1,6 +1,5 @@
-local Vector2    = require "engine.math.vector2"
-local Vector3    = require "engine.math.vector3"
-local Meshpart   = Object:extend()
+local Vector2 = require "engine.math.vector2"
+local Vector3 = require "engine.math.vector3"
 
 local vertexFormat = {
     {"VertexPosition", "float", 3},
@@ -24,13 +23,25 @@ if jitEnabled then
     ]]
 end
 
+
+--- @class MeshPart: Object
+--- @field mesh love.Mesh
+--- @field material Material
+---
+--- @overload fun(part: unknown, model: Model): MeshPart
+local Meshpart = Object:extend()
+
+
 function Meshpart:new(part, model)
     self.mesh = lg.newMesh(vertexFormat, part:num_vertices(), "triangles", "static")
-
     self.material = model.materials[part:material():name()]
+
     self:__loadVertices(part)
 end
 
+
+--- @private
+--- @param part unknown
 function Meshpart:__loadVertices(part)
     local indices = {}
     local vertices = nil
@@ -74,10 +85,12 @@ function Meshpart:__loadVertices(part)
     self.mesh:setVertexMap(indices)
 end
 
+
 function Meshpart:draw()
     self.material:apply()
     self.material.shader:send("u_isCanvasEnabled", lg.getCanvas() ~= nil)
     lg.draw(self.mesh)
 end
+
 
 return Meshpart

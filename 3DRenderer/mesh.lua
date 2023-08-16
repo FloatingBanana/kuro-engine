@@ -1,4 +1,12 @@
+--- @class Mesh: Object
+---
+--- @field parts MeshPart[]
+--- @field transformation Matrix
+--- @field materials Material[]
+---
+--- @overload fun(meshparts: MeshPart[], transformation: Matrix)
 local Mesh = Object:extend()
+
 
 function Mesh:new(meshparts, transformation)
     self.parts = meshparts
@@ -10,10 +18,12 @@ function Mesh:new(meshparts, transformation)
     end
 end
 
+
 function Mesh:draw()
     for i, part in ipairs(self.parts) do
         part:draw()
     end
 end
+
 
 return Mesh

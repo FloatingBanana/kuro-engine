@@ -3,7 +3,19 @@ local Matrix = require "engine.math.matrix"
 local Mesh = require "engine.3DRenderer.mesh"
 local Meshpart = require "engine.3DRenderer.meshpart"
 local FRMaterial = require "engine.3DRenderer.materials.forwardRenderingMaterial"
+
+
+--- @alias ModelLoadingOptions {materials: table<string, Material>}
+
+--- @class Model: Object
+---
+--- @field meshes table<string, Mesh>
+--- @field materials table<string, Material>
+--- @field opts ModelLoadingOptions
+---
+--- @overload fun(file: string, opts: ModelLoadingOptions): Model
 local Model = Object:extend()
+
 
 function Model:new(file, opts)
     self.meshes = {}
@@ -20,7 +32,7 @@ function Model:new(file, opts)
     for i=1, model:num_materials() do
         local mat = model:material(i)
         local name = mat:name()
-        local matClass = opts.materials[name]
+        local matClass = opts.materials[name] or opts.materials.default
 
         if not matClass then
             print("Material class for '"..name.."' not defined, using a default one")
@@ -35,6 +47,11 @@ function Model:new(file, opts)
     self:__loadNode(root, model, Matrix.Identity())
 end
 
+
+--- @private
+--- @param node unknown
+--- @param model unknown
+--- @param parentTransform Matrix
 function Model:__loadNode(node, model, parentTransform)
     local transform = parentTransform * Matrix(node:transformation()):transpose()
 
@@ -55,5 +72,6 @@ function Model:__loadNode(node, model, parentTransform)
         self:__loadNode(child, model, transform)
     end
 end
+
 
 return Model
