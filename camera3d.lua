@@ -1,10 +1,24 @@
 local Matrix = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
+
+--- @class Camera
+--- 
+--- @field position Vector3
+--- @field rotation Quaternion
+--- @field fov number
+--- @field aspectRatio number
+--- @field nearPlane number
+--- @field farPlane number
+--- @field viewMatrix Matrix
+--- @field projectionMatrix Matrix
+--- @field viewProjectionMatrix Matrix
+---
+--- @operator call: Camera
 local Camera = Object:extend()
 
-function Camera:new(position, direction, fov, aspectRatio, nearPlane, farPlane)
+function Camera:new(position, rotation, fov, aspectRatio, nearPlane, farPlane)
     self.position = position
-    self.direction = direction
+    self.rotation = rotation
     self.fov = fov
     self.aspectRatio = aspectRatio
     self.nearPlane = nearPlane
@@ -13,7 +27,7 @@ end
 
 function Camera:__index(key)
     if key == "viewMatrix" then
-        return Matrix.CreateLookAtDirection(self.position, self.direction, Vector3(0,1,0))
+        return Matrix.CreateLookAtDirection(self.position, Vector3(0,0,1):transform(self.rotation), Vector3(0,1,0):transform(self.rotation))
     end
 
     if key == "projectionMatrix" then

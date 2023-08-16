@@ -1,10 +1,14 @@
 local Stack = require "engine.collections.stack"
 local Vector3 = require "engine.math.vector3"
+local AmbientLight = require "engine.3DRenderer.lights.ambientLight"
 local BaseEffect = require "engine.3DRenderer.postProcessing.basePostProcessingEffect"
-local SSAO = BaseEffect:extend()
+
 
 -- TODO: Add forward rendering support
 
+--------------------------------
+-- Buildig ssao noise texture --
+--------------------------------
 local ssaoNoiseData = love.image.newImageData(4, 4, "rg8")
 for i=0, 15 do
     local x = i % 4
@@ -15,6 +19,18 @@ end
 local ssaoNoise = lg.newImage(ssaoNoiseData)
 ssaoNoise:setWrap("repeat")
 ssaoNoiseData:release()
+
+
+
+--- @class SSAO: BasePostProcessingEffect
+---
+--- @field private kernel Stack
+--- @field private ssaoCanvas love.Canvas
+--- @field private shader love.Shader
+--- @field private dummySquare love.Mesh
+---
+--- @overload fun(screenSize: Vector2, kernelSize: integer, kernelRadius: number): SSAO
+local SSAO = BaseEffect:extend()
 
 
 function SSAO:new(screenSize, kernelSize, kernelRadius)
@@ -29,7 +45,8 @@ function SSAO:new(screenSize, kernelSize, kernelRadius)
     self:setKernelRadius(kernelRadius)
 end
 
-function SSAO:deferredPreRender(device, shader, gbuffer, view, projection)
+
+function SSAO:deferredPreRender(device, gbuffer, view, projection)
     lg.setCanvas(self.ssaoCanvas)
     lg.setShader(self.shader)
     lg.clear()
@@ -41,10 +58,17 @@ function SSAO:deferredPreRender(device, shader, gbuffer, view, projection)
 
     lg.draw(self.dummySquare)
     lg.setCanvas()
-
-    shader:send("u_ssaoTex", self.ssaoCanvas)
 end
 
+
+function SSAO:onLightRender(light, shader)
+    if light:is(AmbientLight) then
+        shader:send("u_ssaoTex", self.ssaoCanvas)
+    end
+end
+
+
+--- @param size integer
 function SSAO:setKernelSize(size)
     self.kernel = Stack()
 
@@ -66,8 +90,11 @@ function SSAO:setKernelSize(size)
     self.shader:send("u_kernelSize", size)
 end
 
+
+--- @param radius number
 function SSAO:setKernelRadius(radius)
     self.shader:send("u_kernelRadius", radius)
 end
+
 
 return SSAO

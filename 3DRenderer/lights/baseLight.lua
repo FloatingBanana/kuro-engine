@@ -1,9 +1,22 @@
+--- @class BaseLight: Object
+---
+--- @field position Vector3
+--- @field ambient table
+--- @field diffuse table
+--- @field specular table
+--- @field near number
+--- @field far number
+--- @field enabled boolean
+--- @field depthShader love.Shader
+--- @field shadowMap love.Texture
+---
+--- @overload fun(position: Vector3, diffuse: table, specular: table, depthShader: love.Shader): BaseLight
 local BaseLight = Object:extend()
 
-function BaseLight:new(position, ambient, diffuse, specular, depthShader, shadowMapSize)
+
+function BaseLight:new(position, diffuse, specular, depthShader)
     self.position = position
 
-    self.ambient = ambient
     self.diffuse = diffuse
     self.specular = specular
 
@@ -14,21 +27,15 @@ function BaseLight:new(position, ambient, diffuse, specular, depthShader, shadow
 
     self.enabled = true
 
-    self.shadowmap = lg.newCanvas(shadowMapSize, shadowMapSize, {format = "depth16", readable = true})
-    self.shadowmap:setFilter("nearest", "nearest")
-    self.shadowmap:setWrap("clamp")
+    self.shadowmap = nil
 end
 
-local currCanvas = nil
-local currCullMode = nil
-local currBlendMode = nil
-local currAlphaBlendMode = nil
-local currShader = nil
-function BaseLight:beginLighting(viewProj, mapFace)
-    currCanvas = lg.getCanvas()
-    currCullMode = lg.getMeshCullMode()
-    currBlendMode, currAlphaBlendMode = lg.getBlendMode()
-    currShader = lg.getShader()
+
+--- @protected
+--- @param viewProj Matrix
+--- @param mapFace number?
+function BaseLight:beginShadowMapping(viewProj, mapFace)
+    lg.push("all")
 
     lg.setCanvas {depthstencil = {self.shadowmap, face = mapFace or 1}}
     lg.clear()
@@ -40,15 +47,23 @@ function BaseLight:beginLighting(viewProj, mapFace)
     self.depthShader:send("u_viewProj", "column", viewProj:toFlatTable())
 end
 
-function BaseLight:endLighting()
-    lg.setCanvas(currCanvas)
-    lg.setMeshCullMode(currCullMode)
-    lg.setBlendMode(currBlendMode, currAlphaBlendMode)
-    lg.setShader(currShader)
+
+--- @protected
+function BaseLight:endShadowMapping()
+    lg.pop()
 end
 
-function BaseLight:setupLightData(dataList, index)
+
+--- @param meshparts table
+function BaseLight:generateShadowMap(meshparts)
     error("Not implemented")
 end
+
+
+--- @param lightingShader love.Shader
+function BaseLight:applyLighting(lightingShader)
+    error("Not implemented")
+end
+
 
 return BaseLight
