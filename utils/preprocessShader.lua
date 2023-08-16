@@ -48,6 +48,13 @@ local function preprocessShader(shader, defaultDefines)
 
 			-- Handle special pragma directives
 			if parser:eat("pragma", true) then
+				-- Special case for love2d shaders, "#pragma language" should be declared at
+				-- the very beginning of the file, or else the shader will fail to compile.
+				if parser:eat("language", true) then
+					table.insert(mainBlock, 1, result)
+					result = ""
+				end
+
 				-- Include files
 				if parser:eat("include", true) then
 					local path = parser:eatMatch("\".-\"", true):sub(2, -2)
