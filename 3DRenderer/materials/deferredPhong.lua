@@ -1,9 +1,21 @@
 local Material = require "src.engine.3DRenderer.materials.material"
 local Matrix   = require "engine.math.matrix"
-local Vector3  = require "engine.math.vector3"
-local FRMaterial = Material:extend()
 
-function FRMaterial:new(mat)
+local shader = lg.newShader("engine/shaders/3D/deferred/gbuffer.glsl")
+
+
+--- @class DeferredRenderingMaterial: Material
+---
+--- @field shininess number
+--- @field diffuseTexture love.Texture
+--- @field normalMap love.Texture
+--- @field worldMatrix Matrix
+--- @field viewProjectionMatrix Matrix
+---
+--- @overload fun(mat: unknown): DeferredRenderingMaterial
+local DRMaterial = Material:extend()
+
+function DRMaterial:new(mat)
     local attributes = {
         shininess            = {uniform = "u_shininess",      value = 1 --[[mat:shininess()]]}, -- hackish way to pass specular value, see engine/shaders/3D/deferred/lightPass.frag
         diffuseTexture       = {uniform = "u_diffuseTexture", value = Material.GetTexture(mat, "diffuse", 1, false)},
@@ -12,9 +24,8 @@ function FRMaterial:new(mat)
         viewProjectionMatrix = {uniform = "u_viewProj",       value = Matrix()},
     }
 
-    local shader = lg.newShader("engine/shaders/3D/deferred/gbuffer.glsl")
-
     Material.new(self, shader, attributes)
 end
 
-return FRMaterial
+
+return DRMaterial
