@@ -4,7 +4,7 @@ blankTexData:setPixel(1, 0, 1, 0, 1, 1)
 blankTexData:setPixel(1, 1, 0, 0, 0, 1)
 blankTexData:setPixel(0, 1, 1, 0, 1, 1)
 
-local blankTex = lg.newImage(blankTexData)
+local blankTex = lg.newImage(blankTexData, {linear = true})
 blankTex:setFilter("nearest", "nearest")
 blankTex:setWrap("repeat")
 
