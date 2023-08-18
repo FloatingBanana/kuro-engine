@@ -17,7 +17,9 @@ vec4 position(mat4 transformProjection, vec4 position) {
 #endif
 
 #ifdef PIXEL
-void effect() {}
+void effect() {
+    gl_FragDepth += 0.00001;
+}
 #endif
 ]]
 
