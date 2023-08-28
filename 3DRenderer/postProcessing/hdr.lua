@@ -29,7 +29,7 @@ function HDR:new(screenSize, exposure)
 end
 
 
-function HDR:applyPostRender(device, canvas, view, projection)
+function HDR:onPostRender(device, canvas, view, projection)
     lg.setCanvas(self.hdrCanvas)
     lg.setShader(self.shader)
 

@@ -64,7 +64,7 @@ function Skybox:new(file)
 end
 
 
-function Skybox:applyPostRender(device, canvas, view, projection)
+function Skybox:onPostRender(device, canvas, view, projection)
     view = view:clone()
     view.m41, view.m42, view.m43 = 0, 0, 0
 

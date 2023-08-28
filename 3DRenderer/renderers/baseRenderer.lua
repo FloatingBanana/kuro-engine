@@ -74,7 +74,7 @@ function Renderer:render(position, view, projection)
 
     local result = self.resultCanvas
     for i, effect in ipairs(self.ppeffects) do
-        result = effect:applyPostRender(self, result, view, projection)
+        result = effect:onPostRender(self, result, view, projection)
     end
 
     lg.pop()

@@ -60,7 +60,7 @@ function ColorCorrection:new(screenSize, contrast, brightness, exposure, saturat
 end
 
 
-function ColorCorrection:applyPostRender(device, canvas, view, projection)
+function ColorCorrection:onPostRender(device, canvas, view, projection)
     lg.setCanvas(self.canvas)
     lg.setShader(self.shader)
 

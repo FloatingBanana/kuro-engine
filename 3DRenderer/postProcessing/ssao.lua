@@ -46,13 +46,13 @@ function SSAO:new(screenSize, kernelSize, kernelRadius)
 end
 
 
-function SSAO:deferredPreRender(device, gbuffer, view, projection)
+function SSAO:onPreRender(device, view, projection)
     lg.setCanvas(self.ssaoCanvas)
     lg.setShader(self.shader)
     lg.clear()
 
-    self.shader:send("u_gPosition", gbuffer.position)
-    self.shader:send("u_gNormal", gbuffer.normal)
+    self.shader:send("u_gPosition", device.gbuffer.position)
+    self.shader:send("u_gNormal", device.gbuffer.normal)
     self.shader:send("u_view", "column", view:toFlatTable())
     self.shader:send("u_projection", "column", projection:toFlatTable())
 

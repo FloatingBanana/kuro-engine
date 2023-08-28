@@ -81,7 +81,7 @@ function DeferredRenderer:renderMeshes(position, view, projection)
     lg.setBlendMode("alpha", "alphamultiply")
 
     for i, effect in ipairs(self.ppeffects) do
-        effect:deferredPreRender(self, self.gbuffer, view, projection)
+        effect:onPreRender(self, view, projection)
     end
 
     lg.setBlendMode("add", "alphamultiply")
