@@ -32,10 +32,6 @@ float ShadowCalculation(vec3 position, float farPlane, samplerCube shadowMap, ve
 float ShadowCalculation(sampler2D shadowMap, vec4 lightFragPos);
 #pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
 
-vec4 BoxBlur(sampler2D tex, vec2 texCoord, int kernelSize);
-#pragma include "engine/shaders/utils/incl_blur.glsl"
-
-
 uniform PhongLight light;
 uniform vec3 u_viewPosition;
 uniform sampler2D u_gPosition;
@@ -45,8 +41,6 @@ uniform sampler2D u_ssaoTex;
 uniform sampler2D u_lightShadowMap;
 uniform samplerCube u_pointLightShadowMap;
 uniform mat4 u_lightMatrix;
-
-const int ssaoBlurAmount = 2;
 
 vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
     vec3 fragPos = texture2D(u_gPosition, texcoords).rgb;
@@ -76,7 +70,7 @@ vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
 
 #   ifdef LIGHT_TYPE_AMBIENT
         result = CalculateAmbientLight(light, albedo);
-        shadow = 1.0 - BoxBlur(u_ssaoTex, texcoords, ssaoBlurAmount).r;
+        shadow = 1.0 - texture2D(u_ssaoTex, texcoords).r;
 #   endif
 
     return vec4(result * (1.0 - shadow), 1.0);

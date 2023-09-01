@@ -1,6 +1,7 @@
 local Stack = require "engine.collections.stack"
 local Vector3 = require "engine.math.vector3"
 local AmbientLight = require "engine.3DRenderer.lights.ambientLight"
+local DeferredRenderer = require "engine.3DRenderer.renderers.deferredRenderer"
 local BaseEffect = require "engine.3DRenderer.postProcessing.basePostProcessingEffect"
 
 
@@ -20,24 +21,38 @@ local ssaoNoise = lg.newImage(ssaoNoiseData)
 ssaoNoise:setWrap("repeat")
 ssaoNoiseData:release()
 
+local defines = {
+    accurate = "SAMPLE_DEPTH_ACCURATE",
+    naive = "SAMPLE_DEPTH_NAIVE",
+    deferred = "SAMPLE_DEPTH_DEFERRED"
+}
+
+local boxBlurShader = lg.newShader(Utils.preprocessShader((lfs.read("engine/shaders/postprocessing/boxBlur.frag"))))
+boxBlurShader:send("size", 2)
 
 
 --- @class SSAO: BasePostProcessingEffect
 ---
 --- @field private kernel Stack
 --- @field private ssaoCanvas love.Canvas
+--- @field private blurCanvas love.Canvas
 --- @field private shader love.Shader
 --- @field private dummySquare love.Mesh
+--- @field private algorithm string
 ---
---- @overload fun(screenSize: Vector2, kernelSize: integer, kernelRadius: number): SSAO
+--- @overload fun(screenSize: Vector2, kernelSize: integer, kernelRadius: number, algorithm: "accurate" | "naive" | "deferred" | nil): SSAO
 local SSAO = BaseEffect:extend()
 
 
-function SSAO:new(screenSize, kernelSize, kernelRadius)
+function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
     self.kernel = Stack()
     self.ssaoCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "r8"})
-    self.shader = lg.newShader("engine/shaders/3D/deferred/ssao.frag")
+    self.blurCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "r8"})
     self.dummySquare = Utils.newSquareMesh(screenSize)
+    self.algorithm = algorithm or "deferred"
+
+    local shader = Utils.preprocessShader(lfs.read("engine/shaders/3D/deferred/ssao.frag"), {defines[self.algorithm]})
+    self.shader = lg.newShader(shader)
 
     self.shader:send("u_noiseScale", (screenSize / 4):toFlatTable())
     self.shader:send("u_noiseTex", ssaoNoise)
@@ -51,19 +66,35 @@ function SSAO:onPreRender(device, view, projection)
     lg.setShader(self.shader)
     lg.clear()
 
-    self.shader:send("u_gPosition", device.gbuffer.position)
-    self.shader:send("u_gNormal", device.gbuffer.normal)
-    self.shader:send("u_view", "column", view:toFlatTable())
     self.shader:send("u_projection", "column", projection:toFlatTable())
 
+    if self.algorithm == "deferred" then
+        assert(device:is(DeferredRenderer), "SSAO's 'deferred' algorithm can only be used in a deferred renderer")
+
+        self.shader:send("u_gPosition", device.gbuffer.position)
+        self.shader:send("u_gNormal", device.gbuffer.normal)
+        self.shader:send("u_view", "column", view:toFlatTable())
+    else
+        self.shader:send("u_invProjection", "column", projection.inverse:toFlatTable())
+        self.shader:send("u_depthBuffer", device.depthCanvas)
+    end
+
     lg.draw(self.dummySquare)
+
+    lg.setCanvas(self.blurCanvas)
+    lg.setShader(boxBlurShader)
+    lg.clear()
+
+    lg.draw(self.ssaoCanvas)
+
     lg.setCanvas()
+    lg.setShader()
 end
 
 
 function SSAO:onLightRender(light, shader)
     if light:is(AmbientLight) then
-        shader:send("u_ssaoTex", self.ssaoCanvas)
+        shader:send("u_ssaoTex", self.blurCanvas)
     end
 end
 

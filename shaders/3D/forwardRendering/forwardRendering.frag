@@ -34,6 +34,7 @@ float ShadowCalculation(sampler2D shadowMap, vec4 lightFragPos);
 
 in vec2 v_texCoords;
 in vec3 v_fragPos;
+in vec4 v_screenPos;
 in mat3 v_tbnMatrix;
 in vec4 v_lightSpaceFragPos;
 
@@ -44,6 +45,7 @@ uniform vec3 u_viewPosition;
 uniform float u_shininess;
 uniform sampler2D u_diffuseTexture;
 uniform sampler2D u_normalMap;
+uniform sampler2D u_ssaoTex;
 uniform sampler2D u_lightShadowMap;
 uniform samplerCube u_pointLightShadowMap;
 
@@ -73,7 +75,10 @@ void effect() {
 #   endif
 
 #   ifdef LIGHT_TYPE_AMBIENT
+        vec2 samplePos = (v_screenPos.xy / v_screenPos.w) * 0.5 + 0.5;
+
         result = CalculateAmbientLight(light, diffuseColor);
+        shadow = 1.0 - texture2D(u_ssaoTex, samplePos).r;
 #   endif
 
     FragColor = vec4(result * (1.0 - shadow), 1.0);

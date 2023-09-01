@@ -11,15 +11,16 @@ vec4 position(mat4 transformProjection, vec4 position) {
     
     // 3 days of my life wasted because of this bullshit
     pos.y *= -1.0;
+
+    // Pre-pass bias to avoid depth conflict on some hardwares
+    pos.z += 0.00001;
     
     return pos;
 }
 #endif
 
 #ifdef PIXEL
-void effect() {
-    gl_FragDepth += 0.00001;
-}
+void effect() {}
 #endif
 ]]
 
@@ -47,7 +48,6 @@ function ForwardRenderer:renderMeshes(position, view, projection)
 
     lg.setCanvas({self.resultCanvas, depthstencil = self.depthCanvas})
     lg.clear(black)
-    lg.setMeshCullMode("back")
 
     --------------------
     -- Depth pre-pass --
@@ -59,6 +59,7 @@ function ForwardRenderer:renderMeshes(position, view, projection)
     -- effects (like SSAO) so it's not that bad.
 
     lg.setDepthMode("lequal", true)
+    lg.setMeshCullMode("back")
     lg.setBlendMode("replace")
     lg.setShader(depthPrePassShader)
     depthPrePassShader:send("u_viewProj", "column", viewProj:toFlatTable())
@@ -69,11 +70,23 @@ function ForwardRenderer:renderMeshes(position, view, projection)
     end
 
 
+    lg.setShader()
+    lg.setCanvas()
+    lg.setDepthMode()
+    lg.setMeshCullMode("none")
+    lg.setBlendMode("alpha", "alphamultiply")
+
+    for i, effect in ipairs(self.ppeffects) do
+        effect:onPreRender(self, view, projection)
+    end
+
     ---------------
     -- Rendering --
     ---------------
 
+    lg.setCanvas({self.resultCanvas, depthstencil = self.depthCanvas})
     lg.setDepthMode("lequal", false)
+    lg.setMeshCullMode("back")
     lg.setBlendMode("add")
 
     for meshpart, settings in pairs(self.meshparts) do
@@ -92,6 +105,11 @@ function ForwardRenderer:renderMeshes(position, view, projection)
             for i, light in ipairs(self.lights) do
                 mat:setLightType(getmetatable(light))
                 light:applyLighting(mat.shader)
+
+                for j, effect in ipairs(self.ppeffects) do
+                    effect:onLightRender(light, mat.shader)
+                end
+
                 meshpart:draw()
             end
         end

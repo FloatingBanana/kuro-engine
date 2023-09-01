@@ -5,6 +5,7 @@ in vec3 VertexNormal;
 in vec3 VertexTangent;
 
 out vec3 v_fragPos;
+out vec4 v_screenPos;
 out vec2 v_texCoords;
 out mat3 v_tbnMatrix;
 out vec4 v_lightSpaceFragPos;
@@ -25,14 +26,15 @@ vec4 position(mat4 transformProjection, vec4 position) {
     vec3 B = cross(N, T);
     v_tbnMatrix = mat3(T, B, N);
 
-    // Assigning outputs
-    v_fragPos = worldPos.xyz;
-    v_texCoords = VertexTexCoords;
-    v_lightSpaceFragPos = u_lightMatrix * vec4(worldPos.xyz, 1.0);
-
     // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
     if (u_isCanvasEnabled)
         screen.y *= -1.0;
+
+    // Assigning outputs
+    v_fragPos = worldPos.xyz;
+    v_screenPos = screen;
+    v_texCoords = VertexTexCoords;
+    v_lightSpaceFragPos = u_lightMatrix * vec4(worldPos.xyz, 1.0);
 
     return screen;
 }
