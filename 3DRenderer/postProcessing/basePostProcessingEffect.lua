@@ -5,9 +5,8 @@ local baseEffect = Object:extend()
 
 
 --- @param renderer BaseRenderer
---- @param view Matrix
---- @param projection Matrix
-function baseEffect:onPreRender(renderer, view, projection)
+--- @param camera Camera
+function baseEffect:onPreRender(renderer, camera)
 
 end
 
@@ -21,11 +20,10 @@ end
 
 --- @param renderer BaseRenderer
 --- @param canvas love.Canvas
---- @param view Matrix
---- @param projection Matrix
+--- @param camera Camera
 --- @return love.Canvas
 --- @nodiscard
-function baseEffect:onPostRender(renderer, canvas, view, projection)
+function baseEffect:onPostRender(renderer, canvas, camera)
     return canvas
 end
 

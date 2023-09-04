@@ -28,7 +28,7 @@ end
 --- @class DeferredRenderer: BaseRenderer
 ---
 --- @field private dummySquare love.Mesh
---- @field private gbuffer GBuffer
+--- @field public gbuffer GBuffer
 ---
 --- @overload fun(screensize: Vector2, posProcessingEffects: BasePostProcessingEffect[]): DeferredRenderer
 local DeferredRenderer = BaseRederer:extend()
@@ -47,7 +47,7 @@ function DeferredRenderer:new(screensize, postProcessingEffects)
 end
 
 
-function DeferredRenderer:renderMeshes(position, view, projection)
+function DeferredRenderer:renderMeshes(camera)
     --------------
     -- G-Buffer --
     --------------
@@ -66,7 +66,7 @@ function DeferredRenderer:renderMeshes(position, view, projection)
         local mat = part.material
 
         mat.worldMatrix = settings.worldMatrix
-        mat.viewProjectionMatrix = view * projection
+        mat.viewProjectionMatrix = camera.viewProjectionMatrix
         part:draw()
     end
 
@@ -81,7 +81,7 @@ function DeferredRenderer:renderMeshes(position, view, projection)
     lg.setBlendMode("alpha", "alphamultiply")
 
     for i, effect in ipairs(self.ppeffects) do
-        effect:onPreRender(self, view, projection)
+        effect:onPreRender(self, camera)
     end
 
     lg.setBlendMode("add", "alphamultiply")
@@ -91,7 +91,7 @@ function DeferredRenderer:renderMeshes(position, view, projection)
     for i, light in ipairs(self.lights) do
         local lightShader = lightPassShaders[getmetatable(light)]
 
-        sendUniformIfExist(lightShader, "u_viewPosition", position:toFlatTable())
+        sendUniformIfExist(lightShader, "u_viewPosition", camera.position:toFlatTable())
         sendUniformIfExist(lightShader, "u_gPosition",    self.gbuffer.position)
         sendUniformIfExist(lightShader, "u_gNormal",      self.gbuffer.normal)
         sendUniformIfExist(lightShader, "u_gAlbedoSpec",  self.gbuffer.albedoSpec)

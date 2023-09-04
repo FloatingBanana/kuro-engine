@@ -36,11 +36,9 @@ function ForwardRenderer:new(screensize, postProcessingEffects)
 end
 
 
---- @param position Vector3
---- @param view Matrix
---- @param projection Matrix
-function ForwardRenderer:renderMeshes(position, view, projection)
-    local viewProj = view * projection
+--- @param camera Camera
+function ForwardRenderer:renderMeshes(camera)
+    local viewProj = camera.viewProjectionMatrix
 
     for i, light in ipairs(self.lights) do
         light:generateShadowMap(self.meshparts)
@@ -77,7 +75,7 @@ function ForwardRenderer:renderMeshes(position, view, projection)
     lg.setBlendMode("alpha", "alphamultiply")
 
     for i, effect in ipairs(self.ppeffects) do
-        effect:onPreRender(self, view, projection)
+        effect:onPreRender(self, camera)
     end
 
     ---------------
@@ -91,7 +89,7 @@ function ForwardRenderer:renderMeshes(position, view, projection)
 
     for meshpart, settings in pairs(self.meshparts) do
         local mat = meshpart.material --[[@as ForwardRenderingMaterial]]
-        mat.viewPosition = position
+        mat.viewPosition = camera.position
         mat.worldMatrix = settings.worldMatrix
         mat.viewProjectionMatrix = viewProj
 

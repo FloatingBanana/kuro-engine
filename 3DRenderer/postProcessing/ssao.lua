@@ -61,21 +61,24 @@ function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
 end
 
 
-function SSAO:onPreRender(device, view, projection)
+--- @param device BaseRenderer
+--- @param camera Camera
+function SSAO:onPreRender(device, camera)
     lg.setCanvas(self.ssaoCanvas)
     lg.setShader(self.shader)
     lg.clear()
 
-    self.shader:send("u_projection", "column", projection:toFlatTable())
+    self.shader:send("u_projection", "column", camera.projectionMatrix:toFlatTable())
 
     if self.algorithm == "deferred" then
         assert(device:is(DeferredRenderer), "SSAO's 'deferred' algorithm can only be used in a deferred renderer")
-
+        
+        --- @cast device DeferredRenderer
         self.shader:send("u_gPosition", device.gbuffer.position)
         self.shader:send("u_gNormal", device.gbuffer.normal)
-        self.shader:send("u_view", "column", view:toFlatTable())
+        self.shader:send("u_view", "column", camera.viewMatrix:toFlatTable())
     else
-        self.shader:send("u_invProjection", "column", projection.inverse:toFlatTable())
+        self.shader:send("u_invProjection", "column", camera.projectionMatrix.inverse:toFlatTable())
         self.shader:send("u_depthBuffer", device.depthCanvas)
     end
 

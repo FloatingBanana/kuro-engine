@@ -62,19 +62,17 @@ function Renderer:renderMeshes()
 end
 
 
----@param position Vector3
----@param view Matrix
----@param projection Matrix
-function Renderer:render(position, view, projection)
+---@param camera Camera
+function Renderer:render(camera)
     lg.push("all")
-    self:renderMeshes(position, view, projection)
+    self:renderMeshes(camera)
     lg.pop()
 
     lg.push("all")
 
     local result = self.resultCanvas
     for i, effect in ipairs(self.ppeffects) do
-        result = effect:onPostRender(self, result, view, projection)
+        result = effect:onPostRender(self, result, camera)
     end
 
     lg.pop()
