@@ -1,15 +1,19 @@
 local BaseEffect = require "engine.3DRenderer.postProcessing.basePostProcessingEffect"
 
 local brightFilterShader = [[
-uniform float u_treshold;
-const vec3 colorBalance = vec3(0.2126, 0.7152, 0.0722);
+#pragma language glsl3
 
-vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
-    vec3 pixel = Texel(texture, texcoords).rgb;
-    float brightness = dot(pixel, colorBalance);
-    float luminance = max(0.0, brightness - u_treshold);
+uniform float u_treshold;
+
+float Luminance(vec3 color);
+#pragma include "engine/shaders/incl_utils.glsl"
+
+vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
+    vec3 pixel = Texel(tex, texcoords).rgb;
+    float lum = Luminance(pixel);
+    float shine = max(0.0, lum - u_treshold);
     
-    return vec4(pixel * sign(luminance), 1.0);
+    return vec4(pixel * sign(shine), 1.0);
 }
 ]]
 
@@ -31,7 +35,7 @@ function Bloom:new(screenSize, strenght, luminanceTreshold)
 
     self.strenght = strenght
     self.blurShader = lg.newShader(Utils.preprocessShader(blurShaderCode))
-    self.brightFilterShader = lg.newShader(brightFilterShader)
+    self.brightFilterShader = lg.newShader(Utils.preprocessShader(brightFilterShader))
 
     self.bloomCanvas = lg.newCanvas(screenSize.width/2, screenSize.height/2, {format = "rgba16f"})
     self.blurCanvases = {

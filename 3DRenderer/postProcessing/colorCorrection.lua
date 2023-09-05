@@ -1,6 +1,8 @@
 local BaseEffect = require "engine.3DRenderer.postProcessing.basePostProcessingEffect"
 
 local hdrShader = [[
+    #pragma language glsl3
+
     uniform vec3  u_filter;
     uniform float u_contrast;
     uniform float u_brightness;
@@ -9,11 +11,11 @@ local hdrShader = [[
 
     #define CLAMP(v) clamp(v, 0, 1)
 
-    const vec3 lumFactor = vec3(0.299, 0.587, 0.114);
-    const float gamma = 2.2;
+    float Luminance(vec3 color);
+    #pragma include "engine/shaders/incl_utils.glsl"
 
-    vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
-        vec3 pixel = Texel(texture, texcoords).rgb;
+    vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
+        vec3 pixel = Texel(tex, texcoords).rgb;
 
         // Color filter
         pixel *= u_filter;
@@ -28,7 +30,7 @@ local hdrShader = [[
         pixel = CLAMP(pixel * u_exposure);
 
         // Saturation
-        vec3 grayscale = vec3(dot(pixel, lumFactor));
+        vec3 grayscale = vec3(Luminance(pixel));
         pixel = CLAMP(mix(grayscale, pixel, u_saturation));
 
         // Gamma correction
@@ -50,7 +52,7 @@ local ColorCorrection = BaseEffect:extend()
 
 function ColorCorrection:new(screenSize, contrast, brightness, exposure, saturation, colorFilter)
     self.canvas = lg.newCanvas(screenSize.width, screenSize.height)
-    self.shader = lg.newShader(hdrShader)
+    self.shader = lg.newShader(Utils.preprocessShader(hdrShader))
 
     self:setContrast(contrast)
     self:setBrightness(brightness)
