@@ -11,6 +11,11 @@ local function preprocessShader(shader, defaultDefines)
 	local defines = {}
 	local lineNumber = 0
 
+	local file, err = lfs.read(shader)
+	if file then
+		shader = file
+	end
+
 	local mainBlock = {}
 	blockStack:push(mainBlock)
 

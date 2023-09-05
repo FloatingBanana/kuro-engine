@@ -51,8 +51,7 @@ function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
     self.dummySquare = Utils.newSquareMesh(screenSize)
     self.algorithm = algorithm or "deferred"
 
-    local shader = Utils.preprocessShader(lfs.read("engine/shaders/3D/deferred/ssao.frag"), {defines[self.algorithm]})
-    self.shader = lg.newShader(shader)
+    self.shader = Utils.newPreProcessedShader("engine/shaders/3D/deferred/ssao.frag", {defines[self.algorithm]})
 
     self.shader:send("u_noiseScale", (screenSize / 4):toFlatTable())
     self.shader:send("u_noiseTex", ssaoNoise)

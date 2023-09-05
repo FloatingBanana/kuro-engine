@@ -9,10 +9,10 @@ local code = lfs.read("engine/shaders/3D/deferred/lightPass.frag")
 
 
 local lightPassShaders = {
-    [AmbientLight]     = lg.newShader(Utils.preprocessShader(code, {"LIGHT_TYPE_AMBIENT"})),
-    [DirectionalLight] = lg.newShader(Utils.preprocessShader(code, {"LIGHT_TYPE_DIRECTIONAL"})),
-    [SpotLight]        = lg.newShader(Utils.preprocessShader(code, {"LIGHT_TYPE_SPOT"})),
-    [PointLight]       = lg.newShader(Utils.preprocessShader(code, {"LIGHT_TYPE_POINT"})),
+    [AmbientLight]     = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_AMBIENT"}),
+    [DirectionalLight] = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_DIRECTIONAL"}),
+    [SpotLight]        = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_SPOT"}),
+    [PointLight]       = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_POINT"}),
 }
 
 

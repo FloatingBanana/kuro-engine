@@ -2,6 +2,10 @@ local Utils = {
 	preprocessShader = require "src.engine.utils.preprocessShader"
 }
 
+function Utils.newPreProcessedShader(shader, defaultDefines)
+	return lg.newShader(Utils.preprocessShader(shader, defaultDefines))
+end
+
 function Utils.isNan(number)
 	return number ~= number
 end

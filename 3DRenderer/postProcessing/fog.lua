@@ -1,7 +1,6 @@
 local BaseEffect = require "engine.3DRenderer.postProcessing.basePostProcessingEffect"
 
 -- https://vicrucann.github.io/tutorials/osg-shader-fog/
-local hdrShader = Utils.preprocessShader((lfs.read("engine/shaders/postprocessing/fog.frag")))
 
 
 --- @class Fog: BasePostProcessingEffect
@@ -16,7 +15,7 @@ local Fog = BaseEffect:extend()
 
 function Fog:new(screenSize, min, max, color)
     self.fogCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
-    self.shader = lg.newShader(hdrShader)
+    self.shader = Utils.newPreProcessedShader("engine/shaders/postprocessing/fog.frag")
 
     self:setTreshold(min, max)
     self:setColor(color)

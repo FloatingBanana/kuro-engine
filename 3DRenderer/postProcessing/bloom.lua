@@ -31,11 +31,9 @@ local Bloom = BaseEffect:extend()
 
 
 function Bloom:new(screenSize, strenght, luminanceTreshold)
-    local blurShaderCode = lfs.read("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
-
     self.strenght = strenght
-    self.blurShader = lg.newShader(Utils.preprocessShader(blurShaderCode))
-    self.brightFilterShader = lg.newShader(Utils.preprocessShader(brightFilterShader))
+    self.blurShader = Utils.newPreProcessedShader("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
+    self.brightFilterShader = Utils.newPreProcessedShader(brightFilterShader)
 
     self.bloomCanvas = lg.newCanvas(screenSize.width/2, screenSize.height/2, {format = "rgba16f"})
     self.blurCanvases = {

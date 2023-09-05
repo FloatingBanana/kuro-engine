@@ -52,7 +52,7 @@ local ColorCorrection = BaseEffect:extend()
 
 function ColorCorrection:new(screenSize, contrast, brightness, exposure, saturation, colorFilter)
     self.canvas = lg.newCanvas(screenSize.width, screenSize.height)
-    self.shader = lg.newShader(Utils.preprocessShader(hdrShader))
+    self.shader = Utils.newPreProcessedShader(hdrShader)
 
     self:setContrast(contrast)
     self:setBrightness(brightness)
