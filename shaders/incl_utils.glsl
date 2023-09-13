@@ -60,6 +60,10 @@ float Luminance(vec3 color) {
     return dot(color, lumFactor);
 }
 
+float LuminanceGamma(vec3 color) {
+    return sqrt(dot(color, lumFactor));
+}
+
 
 /////////////////////
 // Blur algorithms //
