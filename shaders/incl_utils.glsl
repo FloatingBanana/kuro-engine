@@ -54,6 +54,19 @@ vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj) {
 }
 
 
+#ifndef VELOCITY_ENCODE_PRECISION
+#   define VELOCITY_ENCODE_PRECISION 3.0
+#endif
+
+vec2 EncodeVelocity(vec2 vel) {
+    return pow(vel * 0.5 + 0.5, vec2(VELOCITY_ENCODE_PRECISION));
+}
+
+vec2 DecodeVelocity(vec2 vel) {
+    return pow(vel, vec2(1.0 / VELOCITY_ENCODE_PRECISION)) * 2.0 - 1.0;
+}
+
+
 const vec3 lumFactor = vec3(0.299, 0.587, 0.114);
 
 float Luminance(vec3 color) {

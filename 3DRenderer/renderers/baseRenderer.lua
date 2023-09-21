@@ -6,8 +6,10 @@
 --- @field protected ppeffects BasePostProcessingEffect[]
 --- @field resultCanvas love.Canvas
 --- @field depthCanvas love.Canvas
+--- @field velocityBuffer love.Canvas
 --- @field protected meshparts table<MeshPart, MeshPartConfig>
 --- @field protected lights BaseLight[]
+--- @field protected previousTransformations table<MeshPart, Matrix>
 ---
 --- @overload fun(screenSize: Vector2, postProcessingEffects: BasePostProcessingEffect[]): BaseRenderer
 local Renderer = Object:extend()
@@ -18,9 +20,11 @@ function Renderer:new(screensize, postProcessingEffects)
 
     self.resultCanvas = lg.newCanvas(screensize.width, screensize.height, {format = "rgba16f"})
     self.depthCanvas = lg.newCanvas(screensize.width, screensize.heiht, {format = "depth32f", readable = true})
+    self.velocityBuffer = lg.newCanvas(screensize.width, screensize.height, {format = "rg8"})
 
     self.meshparts = {}
     self.lights = {}
+    self.previousTransformations = {} -- for velocity buffer
 end
 
 
@@ -29,6 +33,7 @@ end
 function Renderer:addMeshPart(parts, settings)
     for i, part in ipairs(parts) do
         self.meshparts[part] = Lume.clone(settings)
+        self.previousTransformations[part] = settings.worldMatrix:clone()
     end
 end
 
@@ -77,6 +82,13 @@ function Renderer:render(camera)
 
     lg.pop()
     lg.draw(result)
+
+    -- Store mesh transfomation from this frame to calculate the velocity buffer on the next frame
+    for meshpart, prevMatrix in pairs(self.previousTransformations) do
+        local settings = self:getMeshpartSettings(meshpart)
+
+        self.previousTransformations[meshpart] = settings.worldMatrix * camera.viewProjectionMatrix
+    end
 end
 
 

@@ -52,8 +52,8 @@ function DeferredRenderer:renderMeshes(camera)
     -- G-Buffer --
     --------------
 
-    lg.setCanvas({self.gbuffer.position, self.gbuffer.normal, self.gbuffer.albedoSpec, depthstencil = self.depthCanvas})
-    lg.clear(black, black, black)
+    lg.setCanvas({self.gbuffer.position, self.gbuffer.normal, self.gbuffer.albedoSpec, self.velocityBuffer, depthstencil = self.depthCanvas})
+    lg.clear(black, black, black, black)
 
     lg.setDepthMode("lequal", true)
     lg.setBlendMode("replace")
@@ -67,6 +67,7 @@ function DeferredRenderer:renderMeshes(camera)
 
         mat.worldMatrix = settings.worldMatrix
         mat.viewProjectionMatrix = camera.viewProjectionMatrix
+        mat.previousTransformation = self.previousTransformations[part]
         part:draw()
     end
 

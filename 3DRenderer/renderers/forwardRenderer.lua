@@ -1,28 +1,43 @@
 local BaseRederer = require "engine.3DRenderer.renderers.baseRenderer"
 
 local black = Color.BLACK
-local depthPrePassShader = lg.newShader [[
+local depthPrePassShader = Utils.newPreProcessedShader([[
+#pragma language glsl3
+#define Velocity love_Canvases[1]
+
+smooth varying vec4 v_clipPos;
+smooth varying vec4 v_prevClipPos;
+
 #ifdef VERTEX
 uniform mat4 u_viewProj;
 uniform mat4 u_world;
+uniform mat4 u_prevTransform;
 
 vec4 position(mat4 transformProjection, vec4 position) {
     vec4 pos = u_viewProj * u_world * position;
     
-    // 3 days of my life wasted because of this bullshit
-    pos.y *= -1.0;
-
-    // Pre-pass bias to avoid depth conflict on some hardwares
-    pos.z += 0.00001;
+    v_clipPos = pos;
+    v_prevClipPos = u_prevTransform * position;
+    
+    pos.y *= -1.0; // 3 days of my life wasted because of this bullshit
+    pos.z += 0.00001; // Pre-pass bias to avoid depth conflict on some hardwares
     
     return pos;
 }
 #endif
 
+vec2 EncodeVelocity(vec2 vel);
+#pragma include "engine/shaders/incl_utils.glsl"
+
 #ifdef PIXEL
-void effect() {}
+void effect() {
+    vec2 pos = v_clipPos.xy / v_clipPos.w;
+    vec2 prevPos = v_prevClipPos.xy / v_prevClipPos.w;
+
+    Velocity = vec4(EncodeVelocity(pos - prevPos), 1, 1);
+}
 #endif
-]]
+]])
 
 
 --- @class ForwardRenderer: BaseRenderer
@@ -44,7 +59,7 @@ function ForwardRenderer:renderMeshes(camera)
         light:generateShadowMap(self.meshparts)
     end
 
-    lg.setCanvas({self.resultCanvas, depthstencil = self.depthCanvas})
+    lg.setCanvas({self.resultCanvas, self.velocityBuffer, depthstencil = self.depthCanvas})
     lg.clear(black)
 
     --------------------
@@ -64,6 +79,7 @@ function ForwardRenderer:renderMeshes(camera)
 
     for meshpart, settings in pairs(self.meshparts) do
         depthPrePassShader:send("u_world", "column", settings.worldMatrix:toFlatTable())
+        depthPrePassShader:send("u_prevTransform", "column", self.previousTransformations[meshpart]:toFlatTable())
         lg.draw(meshpart.mesh)
     end
 
