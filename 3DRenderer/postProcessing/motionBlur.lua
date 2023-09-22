@@ -45,11 +45,11 @@ function MotionBlur:new(screenSize, amount)
 end
 
 
-function MotionBlur:onPostRender(device, canvas, camera)
+function MotionBlur:onPostRender(renderer, canvas, camera)
     lg.setCanvas(self.blurCanvas)
     lg.setShader(motionBlurShader)
 
-    motionBlurShader:send("u_velocityBuffer", device.velocityBuffer)
+    motionBlurShader:send("u_velocityBuffer", renderer.velocityBuffer)
     motionBlurShader:send("u_velocityScale", (1 - love.timer.getAverageDelta()) * self.amount)
     lg.draw(canvas)
 

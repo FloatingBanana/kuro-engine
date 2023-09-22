@@ -66,7 +66,7 @@ function Skybox:new(file)
 end
 
 
-function Skybox:onPostRender(device, canvas, camera)
+function Skybox:onPostRender(renderer, canvas, camera)
     local view = camera.viewMatrix:clone()
     view.m41, view.m42, view.m43 = 0, 0, 0
 
@@ -77,7 +77,7 @@ function Skybox:onPostRender(device, canvas, camera)
 
     self.prevViewProj = viewProj
 
-    lg.setCanvas({canvas, device.velocityBuffer, depth = true, depthstencil = device.depthCanvas})
+    lg.setCanvas({canvas, renderer.velocityBuffer, depth = true, depthstencil = renderer.depthCanvas})
     lg.setMeshCullMode("back")
     lg.setDepthMode("lequal", false)
     lg.setShader(skyboxShader)

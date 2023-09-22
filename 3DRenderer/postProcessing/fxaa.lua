@@ -23,7 +23,7 @@ function FXAA:new(screenSize)
 end
 
 
-function FXAA:onPostRender(device, canvas, camera)
+function FXAA:onPostRender(renderer, canvas, camera)
     lg.setCanvas(self.fxaaCanvas)
     lg.setShader(self.shader)
 

@@ -49,7 +49,7 @@ function Bloom:new(screenSize, strenght, luminanceTreshold)
 end
 
 
-function Bloom:onPostRender(device, canvas, camera)
+function Bloom:onPostRender(renderer, canvas, camera)
     -- Get luminous pixels
     lg.setCanvas(self.bloomCanvas)
     lg.setShader(self.brightFilterShader)

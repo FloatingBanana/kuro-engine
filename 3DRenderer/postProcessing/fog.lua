@@ -22,11 +22,11 @@ function Fog:new(screenSize, min, max, color)
 end
 
 
-function Fog:onPostRender(device, canvas, camera)
+function Fog:onPostRender(renderer, canvas, camera)
     lg.setCanvas(self.fogCanvas)
     lg.setShader(self.shader)
 
-    self.shader:send("u_depthBuffer", device.depthCanvas)
+    self.shader:send("u_depthBuffer", renderer.depthCanvas)
     self.shader:send("u_viewPos", camera.position:toFlatTable())
     self.shader:send("u_invViewProj", "column", camera.viewProjectionMatrix:invert():toFlatTable())
     lg.draw(canvas)
