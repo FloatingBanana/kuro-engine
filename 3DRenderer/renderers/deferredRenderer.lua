@@ -90,6 +90,8 @@ function DeferredRenderer:renderMeshes(camera)
     lg.clear()
 
     for i, light in ipairs(self.lights) do
+        if not light.enabled then goto continue end
+
         local lightShader = lightPassShaders[getmetatable(light)]
 
         sendUniformIfExist(lightShader, "u_viewPosition", camera.position:toFlatTable())
@@ -106,6 +108,8 @@ function DeferredRenderer:renderMeshes(camera)
 
         lg.setShader(lightShader)
         lg.draw(self.dummySquare)
+        
+        ::continue::
     end
 
     lg.setShader()

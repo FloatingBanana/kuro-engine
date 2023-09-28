@@ -117,6 +117,8 @@ function ForwardRenderer:renderMeshes(camera)
             meshpart:draw()
         else
             for i, light in ipairs(self.lights) do
+                if light.enabled then goto continue end
+                
                 mat:setLightType(getmetatable(light))
                 light:applyLighting(mat.shader)
 
@@ -125,6 +127,8 @@ function ForwardRenderer:renderMeshes(camera)
                 end
 
                 meshpart:draw()
+
+                ::continue::
             end
         end
     end
