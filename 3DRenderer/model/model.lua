@@ -1,7 +1,7 @@
 local Assimp = require "moonassimp"
 local Matrix = require "engine.math.matrix"
-local Mesh = require "engine.3DRenderer.mesh"
-local Meshpart = require "engine.3DRenderer.meshpart"
+local Mesh = require "src.engine.3DRenderer.model.mesh"
+local Meshpart = require "src.engine.3DRenderer.model.meshpart"
 local FRMaterial = require "engine.3DRenderer.materials.forwardRenderingMaterial"
 
 
