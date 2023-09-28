@@ -16,6 +16,7 @@ local hdrShader = [[
 ---
 --- @field private hdrCanvas love.Canvas
 --- @field private shader love.Shader
+--- @field public exposure number
 ---
 --- @overload fun(screenSize: Vector2, exposure: number): HDR
 local HDR = BaseEffect:extend()
@@ -24,6 +25,7 @@ local HDR = BaseEffect:extend()
 function HDR:new(screenSize, exposure)
     self.hdrCanvas = lg.newCanvas(screenSize.width, screenSize.height)
     self.shader = lg.newShader(hdrShader)
+    self.exposure = exposure
 
     self:setExposure(exposure)
 end
@@ -45,6 +47,7 @@ end
 --- @param exposure number
 function HDR:setExposure(exposure)
     self.shader:send("u_exposure", exposure)
+    self.exposure = exposure
 end
 
 

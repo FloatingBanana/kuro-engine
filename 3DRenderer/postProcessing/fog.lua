@@ -7,6 +7,8 @@ local BaseEffect = require "engine.3DRenderer.postProcessing.basePostProcessingE
 ---
 --- @field private hdrCanvas love.Canvas
 --- @field private shader love.Shader
+--- @field public min number
+--- @field public max number
 --- @field public color table
 ---
 --- @overload fun(screenSize: Vector2, min: number, max: number, color: table): Fog
@@ -16,6 +18,10 @@ local Fog = BaseEffect:extend()
 function Fog:new(screenSize, min, max, color)
     self.fogCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
     self.shader = Utils.newPreProcessedShader("engine/shaders/postprocessing/fog.frag")
+
+    self.min = min
+    self.max = max
+    self.color = color
 
     self:setTreshold(min, max)
     self:setColor(color)
@@ -42,12 +48,15 @@ end
 --- @param max number
 function Fog:setTreshold(min, max)
     self.shader:send("u_minMaxDistance", {min, max})
+    self.min = min
+    self.max = max
 end
 
 
 --- @param color table
 function Fog:setColor(color)
     self.shader:send("u_fogColor", color)
+    self.color = color
 end
 
 

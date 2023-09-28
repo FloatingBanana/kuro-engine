@@ -34,6 +34,7 @@ local motionBlurShader = Utils.newPreProcessedShader([[
 --- @class MotionBlur: BasePostProcessingEffect
 ---
 --- @field private blurCanvas love.Canvas
+--- @field public amount number
 ---
 --- @overload fun(screenSize: Vector2, amount: number): MotionBlur
 local MotionBlur = BaseEffect:extend()

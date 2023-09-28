@@ -39,6 +39,8 @@ boxBlurShader:send("size", 2)
 --- @field private shader love.Shader
 --- @field private dummySquare love.Mesh
 --- @field private algorithm string
+--- @field public kernelSize integer
+--- @field public kernelRadius number
 ---
 --- @overload fun(screenSize: Vector2, kernelSize: integer, kernelRadius: number, algorithm: "accurate" | "naive" | "deferred" | nil): SSAO
 local SSAO = BaseEffect:extend()
@@ -50,6 +52,8 @@ function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
     self.blurCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "r8"})
     self.dummySquare = Utils.newSquareMesh(screenSize)
     self.algorithm = algorithm or "deferred"
+    self.kernelSize = kernelSize
+    self.kernelRadius = kernelRadius
 
     self.shader = Utils.newPreProcessedShader("engine/shaders/3D/deferred/ssao.frag", {defines[self.algorithm]})
 
@@ -104,6 +108,7 @@ end
 --- @param size integer
 function SSAO:setKernelSize(size)
     self.kernel = Stack()
+    self.kernelSize = size
 
     for i=0, size-1 do
         local sample = Vector3(
@@ -127,6 +132,7 @@ end
 --- @param radius number
 function SSAO:setKernelRadius(radius)
     self.shader:send("u_kernelRadius", radius)
+    self.kernelRadius = radius
 end
 
 

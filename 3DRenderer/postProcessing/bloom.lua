@@ -20,7 +20,8 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 
 --- @class Bloom: BasePostProcessingEffect
 ---
---- @field strenght integer
+--- @field public strenght integer
+--- @field public luminanceTreshold number
 --- @field private blurShader love.Shader
 --- @field private brightFilterShader love.Shader
 --- @field private bloomCanvas love.Canvas
@@ -32,6 +33,7 @@ local Bloom = BaseEffect:extend()
 
 function Bloom:new(screenSize, strenght, luminanceTreshold)
     self.strenght = strenght
+    self.luminanceTreshold = luminanceTreshold
     self.blurShader = Utils.newPreProcessedShader("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
     self.brightFilterShader = Utils.newPreProcessedShader(brightFilterShader)
 
@@ -87,6 +89,7 @@ end
 ---@param treshold number
 function Bloom:setLuminanceTreshold(treshold)
     self.brightFilterShader:send("u_treshold", treshold)
+    self.luminanceTreshold = treshold
 end
 
 
