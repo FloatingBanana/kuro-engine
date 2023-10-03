@@ -24,22 +24,24 @@ function Model:new(file, opts)
 
     -- Read model data
     local data = lfs.read("string", file)
-    local model, err = Assimp.import_file_from_memory(data, "triangulate", "sort by p type", "optimize meshes", "flip uvs", "calc tangent space")
+    local model, err = Assimp.import_file_from_memory(data, unpack(opts.flags or {"none"}))
 
     assert(model, err)
 
     -- Load materials
-    for i=1, model:num_materials() do
-        local mat = model:material(i)
-        local name = mat:name()
-        local matClass = opts.materials[name] or opts.materials.default
+    if opts.materials then
+        for i=1, model:num_materials() do
+            local mat = model:material(i)
+            local name = mat:name()
+            local matClass = opts.materials[name] or opts.materials.default
+            
+            if not matClass then
+                print("Material class for '"..name.."' not defined, using a default one")
+                matClass = FRMaterial
+            end
 
-        if not matClass then
-            print("Material class for '"..name.."' not defined, using a default one")
-            matClass = FRMaterial
+            self.materials[name] = matClass(mat)
         end
-
-        self.materials[name] = matClass(mat)
     end
 
     -- Start loading from root node
