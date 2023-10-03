@@ -30,8 +30,8 @@ function PointLight:new(position, constant, linear, quadratic, diffuse, specular
     self.constant = constant
     self.quadratic = quadratic
 
-    self.near = 1
-    self.far = 50
+    self.near = 0.1
+    self.far = self:getLightRadius()
 
     self.shadowmap = lg.newCanvas(256, 256, {format = "depth24", type = "cube", readable = true})
 end
@@ -74,6 +74,16 @@ function PointLight:applyLighting(lightingShader)
 
     lightingShader:send("light.diffuse", self.diffuse)
     lightingShader:send("light.specular", self.specular)
+end
+
+
+local treshold = 256/5
+function PointLight:getLightRadius()
+    local linear, constant, quadratic = self.linear, self.constant, self.quadratic
+    local color = self.diffuse + self.specular
+    local max = math.max(math.max(color.r, color.g), color.b)
+
+    return (-linear + math.sqrt(linear * linear - 4 * quadratic * (constant - treshold * max))) / (2 * quadratic)
 end
 
 

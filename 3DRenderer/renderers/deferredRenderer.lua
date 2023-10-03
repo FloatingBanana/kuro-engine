@@ -2,11 +2,14 @@ local DirectionalLight = require "engine.3DRenderer.lights.directionalLight"
 local SpotLight = require "engine.3DRenderer.lights.spotLight"
 local PointLight = require "engine.3DRenderer.lights.pointLight"
 local AmbientLight = require "engine.3DRenderer.lights.ambientLight"
+local Model = require "engine.3DRenderer.model.model"
 local BaseRederer = require "engine.3DRenderer.renderers.baseRenderer"
+local Matrix      = require "engine.math.matrix"
+local Vector3     = require "engine.math.vector3"
 
 local black = Color.BLACK
-local code = lfs.read("engine/shaders/3D/deferred/lightPass.frag")
-
+local volume = Model("assets/models/lightvolume.fbx", {flags = {"calc tangent space", "triangulate"}}).meshes.Sphere.parts[1]
+local code = lfs.read("engine/shaders/3D/deferred/lightPass.glsl")
 
 local lightPassShaders = {
     [AmbientLight]     = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_AMBIENT"}),
@@ -78,13 +81,13 @@ function DeferredRenderer:renderMeshes(camera)
 
     lg.setCanvas()
     lg.setDepthMode()
-    lg.setMeshCullMode("none")
+    lg.setMeshCullMode("front")
     lg.setBlendMode("alpha", "alphamultiply")
-
+    
     for i, effect in ipairs(self.ppeffects) do
         effect:onPreRender(self, camera)
     end
-
+    
     lg.setBlendMode("add", "alphamultiply")
     lg.setCanvas(self.resultCanvas)
     lg.clear()
@@ -101,18 +104,27 @@ function DeferredRenderer:renderMeshes(camera)
 
         light:generateShadowMap(self.meshparts)
         light:applyLighting(lightShader)
-
+        
         for j, effect in ipairs(self.ppeffects) do
             effect:onLightRender(light, lightShader)
         end
 
         lg.setShader(lightShader)
-        lg.draw(self.dummySquare)
+        
+        if light:is(PointLight) then ---@cast light PointLight
+            local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * camera.viewProjectionMatrix
+            lightShader:send("u_volumeTransform", "column", transform:toFlatTable())
+            lg.draw(volume.mesh)
+        else
+            lightShader:send("u_volumeTransform", "column", Matrix.CreateOrthographicOffCenter(0, WIDTH, HEIGHT, 0, 0, 1):toFlatTable())
+            lg.draw(self.dummySquare)
+        end
         
         ::continue::
     end
-
+    
     lg.setShader()
+    lg.setMeshCullMode("none")
     lg.setBlendMode("alpha", "alphamultiply")
 end
 
