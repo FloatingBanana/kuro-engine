@@ -19,8 +19,8 @@ local DRMaterial = Material:extend()
 function DRMaterial:new(mat)
     local attributes = {
         shininess              = {uniform = "u_shininess",      value = 1 --[[mat:shininess()]]}, -- hackish way to pass specular value, see engine/shaders/3D/deferred/lightPass.frag
-        diffuseTexture         = {uniform = "u_diffuseTexture", value = Material.GetTexture(mat, "diffuse", 1, false)},
-        normalMap              = {uniform = "u_normalMap",      value = Material.GetTexture(mat, "normals", 1, true)},
+        diffuseTexture         = {uniform = "u_diffuseTexture", value = Material.GetTexture(mat, "diffuse", 1, false) or Material.BLANK_TEX},
+        normalMap              = {uniform = "u_normalMap",      value = Material.GetTexture(mat, "normals", 1, true) or Material.BLANK_NORMAL},
         worldMatrix            = {uniform = "u_world",          value = Matrix()},
         viewProjectionMatrix   = {uniform = "u_viewProj",       value = Matrix()},
         previousTransformation = {uniform = "u_prevTransform",  value = Matrix()},

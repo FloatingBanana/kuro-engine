@@ -16,7 +16,7 @@ local EmissiveMat = Material:extend()
 function EmissiveMat:new(mat)
     local attributes = {
         shininess            = {uniform = "u_strenght",       value = 5},
-        diffuseTexture       = {uniform = "u_diffuseTexture", value = Material.GetTexture(mat, "diffuse", 1, false)},
+        diffuseTexture       = {uniform = "u_diffuseTexture", value = Material.GetTexture(mat, "diffuse", 1, false) or Material.BLANK_TEX},
         worldMatrix          = {uniform = "u_world",          value = Matrix()},
         viewProjectionMatrix = {uniform = "u_viewProj",       value = Matrix()},
     }

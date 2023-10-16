@@ -1,12 +1,9 @@
-local blankTexData = love.image.newImageData(2,2)
-blankTexData:setPixel(0, 0, 0, 0, 0, 1)
-blankTexData:setPixel(1, 0, 1, 0, 1, 1)
-blankTexData:setPixel(1, 1, 0, 0, 0, 1)
-blankTexData:setPixel(0, 1, 1, 0, 1, 1)
-
-local blankTex = lg.newImage(blankTexData, {linear = true})
+local blankTex = lg.newImage("assets/images/blank_tex.png", {linear = true})
 blankTex:setFilter("nearest", "nearest")
 blankTex:setWrap("repeat")
+
+local blankNormal = lg.newImage("assets/images/blank_normal.png", {linear = true})
+blankNormal:setWrap("repeat")
 
 local textures = {}
 
@@ -36,9 +33,14 @@ end
 ---
 --- @field shader love.Shader
 --- @field private __attrs MaterialDefinition
+--- @field BLANK_TEX love.Image
+--- @field BLANK_NORMAL love.Image
 ---
 --- @overload fun(shader: love.Shader, attributes: MaterialDefinition)
 local Material = Object:extend()
+
+Material.BLANK_TEX = blankTex
+Material.BLANK_NORMAL = blankNormal
 
 
 function Material:new(shader, attributes)
@@ -83,26 +85,28 @@ function Material:apply()
     end
 
     lg.setShader(self.shader)
+
+    if self.shader:hasUniform("u_isCanvasEnabled") then
+        self.shader:send("u_isCanvasEnabled", lg.getCanvas() ~= nil)
+    end
 end
 
 
---- @param mat unknown
+--- @param aiMat unknown
 --- @param type string
 --- @param texIndex integer
 --- @param linear boolean
 --- @return love.Image?
-function Material.GetTexture(mat, type, texIndex, linear)
-    local path = mat:texture_path(type, texIndex)
+function Material.GetTexture(aiMat, type, texIndex, linear)
+    local path = aiMat:texture_path(type, texIndex)
 
     if path then
         if not textures[path] then
             textures[path] = lg.newImage("assets/models/"..path, {linear = linear})
         end
-
         return textures[path]
-    else
-        return blankTex
     end
+    return nil
 end
 
 
