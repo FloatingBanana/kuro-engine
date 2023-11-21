@@ -66,11 +66,16 @@ function DeferredRenderer:renderMeshes(camera)
         if settings.onDraw then
             settings.onDraw(part, settings)
         end
-        local mat = part.material
 
+        local mat = part.material
         mat.worldMatrix = settings.worldMatrix
         mat.viewProjectionMatrix = camera.viewProjectionMatrix
         mat.previousTransformation = self.previousTransformations[part]
+
+        if settings.animator then
+            mat.boneMatrices = settings.animator.finalMatrices
+        end
+
         part:draw()
     end
 
@@ -104,17 +109,17 @@ function DeferredRenderer:renderMeshes(camera)
 
         light:generateShadowMap(self.meshparts)
         light:applyLighting(lightShader)
-        
+
         for j, effect in ipairs(self.ppeffects) do
             effect:onLightRender(light, lightShader)
         end
 
         lg.setShader(lightShader)
-        
+
         if light:is(PointLight) then ---@cast light PointLight
             local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * camera.viewProjectionMatrix
             lightShader:send("u_volumeTransform", "column", transform:toFlatTable())
-            lg.draw(volume.mesh)
+            lg.draw(volume.buffer)
         else
             lightShader:send("u_volumeTransform", "column", Matrix.CreateOrthographicOffCenter(0, WIDTH, HEIGHT, 0, 0, 1):toFlatTable())
             lg.draw(self.dummySquare)

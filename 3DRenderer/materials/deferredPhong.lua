@@ -24,6 +24,7 @@ function DRMaterial:new(mat)
         worldMatrix            = {uniform = "u_world",          value = Matrix()},
         viewProjectionMatrix   = {uniform = "u_viewProj",       value = Matrix()},
         previousTransformation = {uniform = "u_prevTransform",  value = Matrix()},
+        boneMatrices           = {uniform = "u_boneMatrices",   value = nil}
     }
 
     Material.new(self, shader, attributes)

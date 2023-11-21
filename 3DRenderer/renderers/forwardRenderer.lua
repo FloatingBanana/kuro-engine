@@ -4,30 +4,40 @@ local black = Color.BLACK
 local depthPrePassShader = Utils.newPreProcessedShader([[
 #pragma language glsl3
 #define Velocity love_Canvases[1]
+#define MAX_BONE_COUNT 50
 
 smooth varying vec4 v_clipPos;
 smooth varying vec4 v_prevClipPos;
 
+
+vec2 EncodeVelocity(vec2 vel);
+mat4 GetSkinningMatrix(mat4 boneMatrices[MAX_BONE_COUNT], vec4 boneIDs, vec4 weights);
+#pragma include "engine/shaders/incl_utils.glsl"
+
+
 #ifdef VERTEX
+in vec4 VertexBoneIDs;
+in vec4 VertexWeights;
+
 uniform mat4 u_viewProj;
 uniform mat4 u_world;
 uniform mat4 u_prevTransform;
+uniform mat4 u_boneMatrices[MAX_BONE_COUNT];
 
 vec4 position(mat4 transformProjection, vec4 position) {
-    vec4 pos = u_viewProj * u_world * position;
-    
-    v_clipPos = pos;
+    mat4 skinMat = GetSkinningMatrix(u_boneMatrices, VertexBoneIDs, VertexWeights);
+    position = skinMat * position;
+
+    vec4 screenPos = u_viewProj * u_world * position;
+    v_clipPos = screenPos;
     v_prevClipPos = u_prevTransform * position;
     
-    pos.y *= -1.0; // 3 days of my life wasted because of this bullshit
-    pos.z += 0.00001; // Pre-pass bias to avoid depth conflict on some hardwares
+    screenPos.y *= -1.0; // 3 days of my life wasted because of this bullshit
+    screenPos.z += 0.00001; // Pre-pass bias to avoid depth conflict on some hardwares
     
-    return pos;
+    return screenPos;
 }
 #endif
-
-vec2 EncodeVelocity(vec2 vel);
-#pragma include "engine/shaders/incl_utils.glsl"
 
 #ifdef PIXEL
 void effect() {
@@ -80,7 +90,12 @@ function ForwardRenderer:renderMeshes(camera)
     for meshpart, settings in pairs(self.meshparts) do
         depthPrePassShader:send("u_world", "column", settings.worldMatrix:toFlatTable())
         depthPrePassShader:send("u_prevTransform", "column", self.previousTransformations[meshpart]:toFlatTable())
-        lg.draw(meshpart.mesh)
+
+        if settings.animator then
+            depthPrePassShader:send("u_boneMatrices", settings.animator.finalMatrices)
+        end
+
+        lg.draw(meshpart.buffer)
     end
 
 
@@ -109,6 +124,10 @@ function ForwardRenderer:renderMeshes(camera)
         mat.worldMatrix = settings.worldMatrix
         mat.viewProjectionMatrix = viewProj
 
+        if settings.animator then
+            mat.boneMatrices = settings.animator.finalMatrices
+        end
+
         if settings.onDraw then
             settings.onDraw(meshpart, settings)
         end
@@ -117,7 +136,7 @@ function ForwardRenderer:renderMeshes(camera)
             meshpart:draw()
         else
             for i, light in ipairs(self.lights) do
-                if light.enabled then goto continue end
+                if not light.enabled then goto continue end
                 
                 mat:setLightType(getmetatable(light))
                 light:applyLighting(mat.shader)

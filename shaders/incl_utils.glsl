@@ -78,6 +78,47 @@ float LuminanceGamma(vec3 color) {
 }
 
 
+mat3 GetTBNMatrix(mat4 world, vec3 normal, vec3 tangent) {
+    vec3 T = normalize(vec3(world * vec4(tangent, 0.0)));
+    vec3 N = normalize(vec3(world * vec4(normal,  0.0)));
+    T = normalize(T - dot(T, N) * N);
+    vec3 B = cross(N, T);
+
+    return mat3(T, B, N);
+}
+
+
+#ifndef MAX_BONE_COUNT
+#   define MAX_BONE_COUNT 50
+#endif
+
+mat4 GetSkinningMatrix(mat4 boneMatrices[MAX_BONE_COUNT], vec4 boneIDs, vec4 weights) {
+    mat4 boneTransform = mat4(0);
+    bool hasBones = false;
+
+    for (int i=0; i < 4; i++) {
+        if (boneIDs[i] < 0)
+            continue;
+        if (boneIDs[i] >= MAX_BONE_COUNT) {
+            hasBones = false;
+            break;
+        }
+
+        boneTransform += boneMatrices[int(boneIDs[i])] * weights[i];
+        hasBones = true;
+    }
+
+    if (hasBones)
+        return boneTransform;
+        
+    return mat4(
+        1,0,0,0,
+        0,1,0,0,
+        0,0,1,0,
+        0,0,0,1
+    );
+}
+
 /////////////////////
 // Blur algorithms //
 /////////////////////

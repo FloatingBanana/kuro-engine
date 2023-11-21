@@ -7,7 +7,7 @@ local PointLight       = require "engine.3DRenderer.lights.pointLight"
 local AmbientLight     = require "engine.3DRenderer.lights.ambientLight"
 
 local fragCode = lfs.read("engine/shaders/3D/forwardRendering/forwardRendering.frag")
-local vertCode = lfs.read("engine/shaders/3D/forwardRendering/forwardRendering.vert")
+local vertCode = Utils.preprocessShader("engine/shaders/3D/forwardRendering/forwardRendering.vert")
 
 local lightShaders = {
     [AmbientLight]     = lg.newShader(vertCode, Utils.preprocessShader(fragCode, {"LIGHT_TYPE_AMBIENT"})),
@@ -38,6 +38,7 @@ function FRMaterial:new(mat)
         worldMatrix          = {uniform = "u_world",          value = Matrix()},
         viewProjectionMatrix = {uniform = "u_viewProj",       value = Matrix()},
         viewPosition         = {uniform = "u_viewPosition",   value = Vector3()},
+        boneMatrices         = {uniform = "u_boneMatrices",   value = nil}
     }
 
     Material.new(self, lightShaders[SpotLight], attributes)

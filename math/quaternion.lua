@@ -162,10 +162,10 @@ end
 --- @return Quaternion: This quaternion
 function Quaternion:divide(other)
 	if type(other) == "number" then
-		self.x = self.x / other.x
-		self.y = self.y / other.y
-		self.z = self.z / other.z
-		self.w = self.w / other.w
+		self.x = self.x / other
+		self.y = self.y / other
+		self.z = self.z / other
+		self.w = self.w / other
 	else
 		-- yeah, IDK either...
 		local invoX, invoY, invoZ, invoW = other.inverted:split()
@@ -187,12 +187,7 @@ end
 --- Make this quaternion have a magnitude of 1
 --- @return Quaternion: This quaternion
 function Quaternion:normalize()
-	local invLength = 1 / self.length
-	self.x = self.x * invLength
-	self.y = self.y * invLength
-	self.z = self.z * invLength
-	self.w = self.w * invLength
-
+	self:multiply(1 / self.length)
 	return self
 end
 
@@ -210,7 +205,7 @@ end
 --- Rotate this quaternion to the opposite direction
 --- @return Quaternion: This quaternion
 function Quaternion:invert()
-	return self:conjugate():multiply(1 / self.length)
+	return self:conjugate():normalize()
 end
 
 --- Creates a new quaternion with the same component values of this one
@@ -256,7 +251,7 @@ function Quaternion.Lerp(q1, q2, progress)
 		(invProgress * q1.w) + (progress * q2.w * dir)
 	)
 
-	return quaternion:normalized()
+	return quaternion:normalize()
 end
 
 
@@ -348,33 +343,36 @@ end
 --- @return Quaternion: Result
 function Quaternion.CreateFromRotationMatrix(mat)
     local scale = mat.m11 + mat.m22 + mat.m33;
+	local quat = Quaternion()
 
 	if scale > 0 then
         local scaleSqrt = sqrt(scale + 1);
         local half = 0.5 / scaleSqrt;
 
-		return Quaternion(
-			(mat.m23 - mat.m32) * half,
-	    	(mat.m31 - mat.m13) * half,
-	    	(mat.m12 - mat.m21) * half,
-	    	scaleSqrt * 0.5
-		)
-	end
-	local quat = Quaternion()
-	local scaleSqrt = sqrt(1 + mat.m11 - mat.m22 - mat.m33);
-	local half = 0.5 / scaleSqrt;
+		quat.x = (mat.m23 - mat.m32) * half
+	    quat.y = (mat.m31 - mat.m13) * half
+	    quat.z = (mat.m12 - mat.m21) * half
+	    quat.w = scaleSqrt * 0.5
+	elseif (mat.m11 >= mat.m22) and (mat.m11 >= mat.m33) then
+		local scaleSqrt = sqrt(1 + mat.m11 - mat.m22 - mat.m33);
+		local half = 0.5 / scaleSqrt;
 
-	if (mat.m11 >= mat.m22) and (mat.m11 >= mat.m33) then
 		quat.x = 0.5 * scaleSqrt
 		quat.y = (mat.m12 + mat.m21) * half
 	    quat.z = (mat.m13 + mat.m31) * half
 		quat.w = (mat.m23 - mat.m32) * half
 	elseif mat.m22 > mat.m33 then
+		local scaleSqrt = sqrt(1 + mat.m22 - mat.m11 - mat.m33);
+		local half = 0.5 / scaleSqrt;
+
 		quat.x = (mat.m21 + mat.m12) * half
 		quat.y = 0.5 * scaleSqrt
 	    quat.z = (mat.m32 + mat.m23) * half
 		quat.w = (mat.m31 - mat.m13) * half
 	else
+		local scaleSqrt = sqrt(1 + mat.m33 - mat.m11 - mat.m22);
+		local half = 0.5 / scaleSqrt;
+
 		quat.x = (mat.m31 + mat.m13) * half
 		quat.y = (mat.m32 + mat.m23) * half
 		quat.z = 0.5 * scaleSqrt

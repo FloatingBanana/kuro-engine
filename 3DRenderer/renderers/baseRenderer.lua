@@ -1,4 +1,4 @@
---- @alias MeshPartConfig {castShadows: boolean, ignoreLighting: boolean, worldMatrix: Matrix, onDraw: function}
+--- @alias MeshPartConfig {castShadows: boolean, ignoreLighting: boolean, worldMatrix: Matrix, animator: ModelAnimator, onDraw: function}
 
 --- @class BaseRenderer: Object
 ---

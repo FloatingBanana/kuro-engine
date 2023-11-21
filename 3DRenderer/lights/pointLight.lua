@@ -2,7 +2,7 @@ local Matrix = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3DRenderer.lights.baseLight"
 
-local depthShader = lg.newShader("engine/shaders/3D/shadowMap/pointShadowMapRenderer.glsl")
+local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/pointShadowMapRenderer.glsl")
 
 local dirs = {
     {dir = Vector3( 1, 0, 0), up = Vector3(0,-1, 0)},
@@ -37,6 +37,7 @@ function PointLight:new(position, constant, linear, quadratic, diffuse, specular
 end
 
 
+---@param meshparts table<MeshPart, MeshPartConfig>
 function PointLight:generateShadowMap(meshparts)
     local proj = Matrix.CreatePerspectiveFOV(math.rad(90), 1, self.near, self.far)
 
@@ -51,10 +52,15 @@ function PointLight:generateShadowMap(meshparts)
 
         for part, settings in pairs(meshparts) do
             if settings.castShadows then
-                local worldMatrix = settings.worldMatrix --- @type Matrix
-
+                local worldMatrix = settings.worldMatrix
                 depthShader:send("u_world", "column", worldMatrix:toFlatTable())
-                lg.draw(part.mesh)
+
+                local animator = settings.animator
+                if animator then
+                    depthShader:send("u_boneMatrices", animator.finalMatrices)
+                end
+
+                lg.draw(part.buffer)
             end
         end
 
