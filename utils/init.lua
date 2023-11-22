@@ -1,5 +1,5 @@
 local Utils = {
-	preprocessShader = require "src.engine.utils.preprocessShader"
+	preprocessShader = require "engine.utils.preprocessShader"
 }
 
 function Utils.newPreProcessedShader(shader, defaultDefines)
@@ -63,6 +63,13 @@ end
 function Utils.getCurrentFont()
 	return fonts[currFont]
 end
+
+Utils.dummySquare = lg.newMesh({
+	{0,0,0,0},
+	{1,0,1,0},
+	{0,1,0,1},
+	{1,1,1,1}
+}, "strip", "static")
 
 function Utils.newSquareMesh(size)
 	local w, h = size.width, size.height
