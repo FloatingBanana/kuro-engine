@@ -7,7 +7,7 @@ end
 
 local function preprocessShader(shader, defaultDefines)
 	local blockStack = Stack()
-	local parser = ParserHelper()
+	local parser = ParserHelper("", true)
 	local defines = {}
 	local lineNumber = 0
 
@@ -36,47 +36,47 @@ local function preprocessShader(shader, defaultDefines)
 		lineNumber = lineNumber + 1
 		parser:reset(line)
 
-		if parser:eat("#", true) then
+		if parser:eat("#") then
 			-- Store defines
-			if parser:eat("define", true) then
-				local name = parser:eatMatch(ParserHelper.identifierPattern, true)
-				local value = parser:eatMatch(ParserHelper.identifierPattern, true)
+			if parser:eat("define") then
+				local name = parser:eatMatch(ParserHelper.IdentifierPattern)
+				local value = parser:eatMatch(ParserHelper.IdentifierPattern)
 
 				defines[name] = value or true
 			end
 
 			-- Delete defines
-			if parser:eat("undef", true) then
-				local name = parser:eatMatch(ParserHelper.identifierPattern, true)
+			if parser:eat("undef") then
+				local name = parser:eatMatch(ParserHelper.IdentifierPattern)
 				defines[name] = nil
 			end
 
 			-- Handle special pragma directives
-			if parser:eat("pragma", true) then
+			if parser:eat("pragma") then
 				-- Special case for love2d shaders, "#pragma language" should be declared at
 				-- the very beginning of the file, or else the shader will fail to compile.
-				if parser:eat("language", true) then
+				if parser:eat("language") then
 					table.insert(mainBlock, 1, result)
 					result = ""
 				end
 
 				-- Include files
-				if parser:eat("include", true) then
-					local path = parser:eatMatch("\".-\"", true):sub(2, -2)
+				if parser:eat("include") then
+					local path = parser:eatMatch("\".-\""):sub(2, -2)
 					local included = lfs.read("string", path)
 
 					result = isolate_line_number(preprocessShader(included, {}), lineNumber)
 				end
 
 				-- Compile time for loop
-				if parser:eat("for", true) then
-					local var = parser:eatMatch(ParserHelper.identifierPattern, true)
-					assert(parser:eat("=", true))
-					local init = parser:eatMatch(ParserHelper.identifierPattern, true)
-					assert(parser:eat(",", true))
-					local target = parser:eatMatch(ParserHelper.identifierPattern, true)
-					assert(parser:eat(",", true))
-					local step = parser:eatMatch(ParserHelper.identifierPattern, true)
+				if parser:eat("for") then
+					local var = parser:eatMatch(ParserHelper.IdentifierPattern)
+					assert(parser:eat("="))
+					local init = parser:eatMatch(ParserHelper.IdentifierPattern)
+					assert(parser:eat(","))
+					local target = parser:eatMatch(ParserHelper.IdentifierPattern)
+					assert(parser:eat(","))
+					local step = parser:eatMatch(ParserHelper.IdentifierPattern)
 
 					blockStack:push({
 						startLine = lineNumber,
@@ -88,7 +88,7 @@ local function preprocessShader(shader, defaultDefines)
 				end
 
 				-- End for loop block
-				if parser:eat("endfor", true) then
+				if parser:eat("endfor") then
 					local thisBlock = blockStack:pop()
 					local currBlock = blockStack:peek()
 					local startLine = thisBlock.startLine
