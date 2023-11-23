@@ -4,7 +4,7 @@ local ModelNode = require "engine.3DRenderer.model.modelNode"
 ---
 --- @field parts MeshPart[]
 --- @field transformation Matrix
---- @field materials Material[]
+--- @field materials BaseMaterial[]
 ---
 --- @overload fun(model: Model, name: string, localMatrix: Matrix, meshparts: MeshPart[], parent: ModelNode?): ModelMesh
 local Mesh = ModelNode:extend()

@@ -1,10 +1,10 @@
-local Material = require "engine.3DRenderer.materials.material"
+local Material = require "engine.3DRenderer.materials.baseMaterial"
 local Matrix   = require "engine.math.matrix"
 
 local shader = Utils.newPreProcessedShader("engine/shaders/3D/deferred/gbuffer.glsl")
 
 
---- @class DeferredRenderingMaterial: Material
+--- @class DeferredMaterial: BaseMaterial
 ---
 --- @field shininess number
 --- @field diffuseTexture love.Texture
@@ -13,7 +13,7 @@ local shader = Utils.newPreProcessedShader("engine/shaders/3D/deferred/gbuffer.g
 --- @field viewProjectionMatrix Matrix
 --- @field previousTransformation Matrix
 ---
---- @overload fun(mat: unknown): DeferredRenderingMaterial
+--- @overload fun(mat: unknown): DeferredMaterial
 local DRMaterial = Material:extend()
 
 function DRMaterial:new(mat)

@@ -119,7 +119,7 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setBlendMode("add")
 
     for meshpart, settings in pairs(self.meshparts) do
-        local mat = meshpart.material --[[@as ForwardRenderingMaterial]]
+        local mat = meshpart.material --[[@as ForwardMaterial]]
         mat.viewPosition = camera.position
         mat.worldMatrix = settings.worldMatrix
         mat.viewProjectionMatrix = viewProj

@@ -6,14 +6,14 @@ local ModelNode  = require "engine.3DRenderer.model.modelNode"
 local ModelAnimation = require "engine.3DRenderer.model.animation.modelAnimation"
 
 
---- @alias ModelLoadingOptions {materials: table<string, Material>}
+--- @alias ModelLoadingOptions {materials: table<string, BaseMaterial>}
 --- @alias BoneInfo {id: integer, offset: Matrix}
 
 --- @class Model: Object
 ---
 --- @field nodes table<string, ModelNode>
 --- @field meshes table<string, ModelMesh>
---- @field materials table<string, Material>
+--- @field materials table<string, BaseMaterial>
 --- @field animations table<string, ModelAnimation>
 --- @field boneInfos table<string, BoneInfo>
 --- @field opts ModelLoadingOptions

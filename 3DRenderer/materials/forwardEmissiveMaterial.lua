@@ -1,16 +1,16 @@
-local Material = require "engine.3DRenderer.materials.material"
+local Material = require "engine.3DRenderer.materials.baseMaterial"
 local Matrix   = require "engine.math.matrix"
 local Vector3  = require "engine.math.vector3"
 
 
---- @class EmissiveMaterial: Material
+--- @class ForwardEmissiveMaterial: BaseMaterial
 ---
 --- @field shininess number
 --- @field diffuseTexture love.Texture
 --- @field worldMatrix Matrix
 --- @field viewProjectionMatrix Matrix
 ---
---- @overload fun(mat: unknown): EmissiveMaterial
+--- @overload fun(mat: unknown): ForwardEmissiveMaterial
 local EmissiveMat = Material:extend()
 
 function EmissiveMat:new(mat)

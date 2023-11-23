@@ -35,7 +35,7 @@ local defaultWeights = {0, 0, 0, 0}
 
 --- @class MeshPart: Object
 --- @field buffer love.Mesh
---- @field material Material
+--- @field material BaseMaterial
 --- @field model Model
 ---
 --- @overload fun(part: unknown, model: Model): MeshPart

@@ -1,4 +1,4 @@
-local Material         = require "engine.3DRenderer.materials.material"
+local Material         = require "engine.3DRenderer.materials.baseMaterial"
 local Matrix           = require "engine.math.matrix"
 local Vector3          = require "engine.math.vector3"
 local DirectionalLight = require "engine.3DRenderer.lights.directionalLight"
@@ -17,7 +17,7 @@ local lightShaders = {
 }
 
 
---- @class ForwardRenderingMaterial: Material
+--- @class ForwardMaterial: BaseMaterial
 ---
 --- @field shininess number
 --- @field diffuseTexture love.Texture
@@ -26,7 +26,7 @@ local lightShaders = {
 --- @field viewProjectionMatrix Matrix
 --- @field viewPosition Vector3
 ---
---- @overload fun(mat: unknown): ForwardRenderingMaterial
+--- @overload fun(mat: unknown): ForwardMaterial
 local FRMaterial = Material:extend()
 
 

@@ -29,7 +29,7 @@ end
 
 --- @alias MaterialDefinition table<string, {uniform: string, value: any}>
 
---- @class Material: Object
+--- @class BaseMaterial: Object
 ---
 --- @field shader love.Shader
 --- @field private __attrs MaterialDefinition
