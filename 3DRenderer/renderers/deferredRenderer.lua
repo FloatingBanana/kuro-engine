@@ -8,7 +8,7 @@ local Matrix      = require "engine.math.matrix"
 local Vector3     = require "engine.math.vector3"
 
 local black = Color.BLACK
-local volume = Model("assets/models/lightvolume.fbx", {flags = {"calc tangent space", "triangulate"}}).meshes.Sphere.parts[1]
+local volume = Model("engine/3DRenderer/renderers/lightvolume.fbx", {flags = {"calc tangent space", "triangulate"}}).meshes.Sphere.parts[1]
 local code = lfs.read("engine/shaders/3D/deferred/lightPass.glsl")
 
 local lightPassShaders = {
