@@ -1,9 +1,12 @@
-local blankTex = lg.newImage("assets/images/blank_tex.png", {linear = true})
-blankTex:setFilter("nearest", "nearest")
-blankTex:setWrap("repeat")
+local texData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAQSURBVBhXY/gPhBDwn+E/ABvyA/1Bas9NAAAAAElFTkSuQmCC")
+local normalData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAANSURBVBhXY2ho+P8fAAaCAv+ce/dzAAAAAElFTkSuQmCC")
 
-local blankNormal = lg.newImage("assets/images/blank_normal.png", {linear = true})
+local blankTex = lg.newImage(texData, {linear = true})
+local blankNormal = lg.newImage(normalData, {linear = true})
 blankNormal:setWrap("repeat")
+blankTex:setWrap("repeat")
+blankTex:setFilter("nearest", "nearest")
+
 
 local textures = {}
 
