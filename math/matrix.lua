@@ -1,6 +1,6 @@
 local Vector3 = require "engine.math.vector3"
 local Quaternion = require "engine.math.quaternion"
-local CStruct = require "engine.cstruct"
+local CStruct = require "engine.misc.cstruct"
 local abs, tan, sqrt, huge = math.abs, math.tan, math.sqrt, math.huge
 
 -- See [engine/vector2.lua] for explanation

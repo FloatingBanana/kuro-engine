@@ -1,6 +1,6 @@
 -- Borrowed from https://github.com/MonoGame/MonoGame/blob/develop/MonoGame.Framework/Quaternion.cs
 
-local CStruct = require "engine.cstruct"
+local CStruct = require "engine.misc.cstruct"
 local sin, cos, acos, sqrt = math.sin, math.cos, math.acos, math.sqrt
 
 -- See [engine/vector2.lua] for explanation

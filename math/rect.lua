@@ -1,5 +1,5 @@
 local Inter2d = require "engine.math.intersection2d"
-local CStruct = require "engine.cstruct"
+local CStruct = require "engine.misc.cstruct"
 local Rect = CStruct("Rect", [[
     vector2 position;
     vector2 size;

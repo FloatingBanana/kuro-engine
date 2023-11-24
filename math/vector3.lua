@@ -1,5 +1,5 @@
 local Vector2 = require "engine.math.vector2"
-local CStruct = require "engine.cstruct"
+local CStruct = require "engine.misc.cstruct"
 local abs, sqrt, floor, ceil, min, max = math.abs, math.sqrt, math.floor, math.ceil, math.min, math.max
 
 local double_epsilon = 4.94065645841247E-324
