@@ -47,6 +47,8 @@ end
 ---
 --- @field width number: returns `right - left`
 --- @field height number: returns `bottom - top`
+--- @field topleft Vector2: returns `Vector2(left, top)`
+--- @field bottomright Vector2: returns `Vector2(right, bottom)`
 ---
 --- @operator call: Vector4
 --- @operator add: Vector4
@@ -95,6 +97,14 @@ function Vector4:__index(key)
 
     if key == "height" then
         return self.bottom - self.top
+    end
+
+    if key == "topleft" then
+        return Vector2(self.left, self.top)
+    end
+
+    if key == "bottomright" then
+        return Vector2(self.right, self.bottom)
     end
 
     if key == "normalized" then
