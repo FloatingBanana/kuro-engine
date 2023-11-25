@@ -5,6 +5,10 @@ local function isolate_line_number(text, lineNumber)
 	return ("\n#line 0\n%s\n#line %d\n"):format(text, lineNumber)
 end
 
+
+---@param shader string
+---@param defaultDefines table?
+---@return string
 local function preprocessShader(shader, defaultDefines)
 	local blockStack = Stack()
 	local parser = ParserHelper("", true)
@@ -123,5 +127,6 @@ local function preprocessShader(shader, defaultDefines)
 	assert(blockStack:peek() == mainBlock, "missing an '#pragma endfor'")
 	return table.concat(mainBlock, "\r\n")
 end
+
 
 return preprocessShader

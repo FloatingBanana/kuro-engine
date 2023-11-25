@@ -1,15 +1,31 @@
 local Utils = {
-	preprocessShader = require "engine.misc.preprocessShader"
+	preprocessShader = require "engine.misc.preprocessShader",
+
+	fontName = "default",
+	fontSize = 13,
+	fontcache = {} ---@type love.Font[]
 }
 
+
+---@param shader string
+---@param defaultDefines table?
+---@return love.Shader
 function Utils.newPreProcessedShader(shader, defaultDefines)
 	return lg.newShader(Utils.preprocessShader(shader, defaultDefines))
 end
 
+
+---@param number any
+---@return boolean
 function Utils.isNan(number)
 	return number ~= number
 end
 
+
+---@param folder string
+---@param filter string[]?
+---@param recursive boolean
+---@param func fun(folder: string, name: string, ext: string)
 function Utils.loadFilesFromFolder(folder, filter, recursive, func)
     for i, file in ipairs(lfs.getDirectoryItems(folder)) do
         local name = file:match("^(.*)%.")
@@ -25,6 +41,10 @@ function Utils.loadFilesFromFolder(folder, filter, recursive, func)
     end
 end
 
+
+---@param startFolder string
+---@param recursive boolean
+---@param results table<string, any>
 function Utils.requireFilesFromFolder(startFolder, recursive, results)
     Utils.loadFilesFromFolder(startFolder, {".lua"}, recursive, function(folder, name, ext)
 		local result = require(folder.."."..name)
@@ -35,33 +55,41 @@ function Utils.requireFilesFromFolder(startFolder, recursive, results)
 	end)
 end
 
-local fonts = {}
-local currFont = "default13"
-function Utils.setFont(name, size)
+
+---@param filename string
+---@param size number
+---@overload fun(size: number)
+function Utils.setFont(filename, size)
 	if not size then
-		name, size = "default", name or 13
+		---@diagnostic disable-next-line cast-local-type
+		filename, size = "default", filename or 13
 	end
 
-	local filename = name..size
+	local fonts = Utils.fontcache
+	local name = filename..size
 
-	if not fonts[filename] then
-		if name == "default" then
-			fonts[filename] = lg.newFont(size)
+	-- Cache font object
+	if not fonts[name] then
+		if filename == "default" then
+			fonts[name] = lg.newFont(size)
 		else
-			if lfs.getInfo("assets/fonts/"..name..".otf") then
-				fonts[filename] = lg.newFont("assets/fonts/"..name..".otf", size)
+			if lfs.getInfo("assets/fonts/"..filename..".otf") then
+				fonts[name] = lg.newFont("assets/fonts/"..filename..".otf", size)
 			else
-				fonts[filename] = lg.newFont("assets/fonts/"..name..".ttf", size)
+				fonts[name] = lg.newFont("assets/fonts/"..filename..".ttf", size)
 			end
 		end
 	end
 
-	lg.setFont(fonts[filename])
-	currFont = filename
+	lg.setFont(fonts[name])
+	Utils.fontName = filename
+	Utils.fontSize = size
 end
 
+
+---@return love.Font
 function Utils.getCurrentFont()
-	return fonts[currFont]
+	return Utils.fontcache[Utils.fontName..Utils.fontSize]
 end
 
 Utils.dummySquare = lg.newMesh({
@@ -71,6 +99,9 @@ Utils.dummySquare = lg.newMesh({
 	{1,1,1,1}
 }, "strip", "static")
 
+
+---@param size Vector2
+---@return love.Mesh
 function Utils.newSquareMesh(size)
 	local w, h = size.width, size.height
 	return lg.newMesh({
@@ -80,5 +111,6 @@ function Utils.newSquareMesh(size)
         {w,h,1,1}
     }, "strip", "static")
 end
+
 
 return Utils
