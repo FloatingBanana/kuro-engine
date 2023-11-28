@@ -1,5 +1,6 @@
 local Material = require "engine.3D.materials.baseMaterial"
 local Matrix   = require "engine.math.matrix"
+local Utils = require "engine.misc.utils"
 
 local shader = Utils.newPreProcessedShader("engine/shaders/3D/deferred/gbuffer.glsl")
 

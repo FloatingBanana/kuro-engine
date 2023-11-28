@@ -1,4 +1,5 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
+local Utils = require "engine.misc.utils"
 
 local hdrShader = [[
     #pragma language glsl3
@@ -56,7 +57,7 @@ local ColorCorrection = BaseEffect:extend()
 
 
 function ColorCorrection:new(screenSize, contrast, brightness, exposure, saturation, colorFilter)
-    self.canvas = lg.newCanvas(screenSize.width, screenSize.height)
+    self.canvas = love.graphics.newCanvas(screenSize.width, screenSize.height)
     self.shader = Utils.newPreProcessedShader(hdrShader)
 
     self.contrast = contrast
@@ -74,13 +75,13 @@ end
 
 
 function ColorCorrection:onPostRender(renderer, canvas, camera)
-    lg.setCanvas(self.canvas)
-    lg.setShader(self.shader)
+    love.graphics.setCanvas(self.canvas)
+    love.graphics.setShader(self.shader)
 
-    lg.draw(canvas)
+    love.graphics.draw(canvas)
 
-    lg.setCanvas()
-    lg.setShader()
+    love.graphics.setCanvas()
+    love.graphics.setShader()
 
     return self.canvas
 end

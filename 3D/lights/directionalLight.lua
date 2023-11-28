@@ -1,6 +1,7 @@
 local Matrix = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
+local Utils = require "engine.misc.utils"
 
 local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/shadowMapRenderer.glsl")
 
@@ -14,7 +15,7 @@ local Dirlight = BaseLight:extend()
 function Dirlight:new(position, diffuse, specular)
     BaseLight.new(self, position, diffuse, specular, depthShader)
 
-    self.shadowmap = lg.newCanvas(2048, 2048, {format = "depth16", readable = true})
+    self.shadowmap = love.graphics.newCanvas(2048, 2048, {format = "depth16", readable = true})
     self.shadowmap:setFilter("nearest", "nearest")
     self.shadowmap:setWrap("clamp")
 end
@@ -41,7 +42,7 @@ function Dirlight:generateShadowMap(meshparts)
 
             depthShader:send("u_world", "column", worldMatrix:toFlatTable())
             depthShader:send("u_invTranspWorld", "column", worldMatrix.inverse:transpose():to3x3():toFlatTable())
-            lg.draw(part.buffer)
+            love.graphics.draw(part.buffer)
         end
     end
     self:endShadowMapping()

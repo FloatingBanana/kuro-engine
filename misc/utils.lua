@@ -11,7 +11,7 @@ local Utils = {
 ---@param defaultDefines table?
 ---@return love.Shader
 function Utils.newPreProcessedShader(shader, defaultDefines)
-	return lg.newShader(Utils.preprocessShader(shader, defaultDefines))
+	return love.graphics.newShader(Utils.preprocessShader(shader, defaultDefines))
 end
 
 
@@ -27,12 +27,12 @@ end
 ---@param recursive boolean
 ---@param func fun(folder: string, name: string, ext: string)
 function Utils.loadFilesFromFolder(folder, filter, recursive, func)
-    for i, file in ipairs(lfs.getDirectoryItems(folder)) do
+    for i, file in ipairs(love.filesystem.getDirectoryItems(folder)) do
         local name = file:match("^(.*)%.")
         local ext = file:match("%..-$")
         local path = folder.."/"..file
 
-        if recursive and lfs.getInfo(path).type == "directory" then
+        if recursive and love.filesystem.getInfo(path).type == "directory" then
             Utils.loadFilesFromFolder(path, filter, recursive, func)
 
         elseif not filter or Lume.find(filter, ext) then
@@ -72,13 +72,13 @@ function Utils.setFont(filename, size)
 	-- Cache font object
 	if not fonts[name] then
 		if filename == "default" then
-			fonts[name] = lg.newFont(size)
+			fonts[name] = love.graphics.newFont(size)
 		else
-			fonts[name] = lg.newFont(filename, size)
+			fonts[name] = love.graphics.newFont(filename, size)
 		end
 	end
 
-	lg.setFont(fonts[name])
+	love.graphics.setFont(fonts[name])
 	Utils.fontName = filename
 	Utils.fontSize = size
 end
@@ -89,7 +89,7 @@ function Utils.getCurrentFont()
 	return Utils.fontcache[Utils.fontName..Utils.fontSize]
 end
 
-Utils.dummySquare = lg.newMesh({
+Utils.dummySquare = love.graphics.newMesh({
 	{0,0,0,0},
 	{1,0,1,0},
 	{0,1,0,1},
@@ -101,7 +101,7 @@ Utils.dummySquare = lg.newMesh({
 ---@return love.Mesh
 function Utils.newSquareMesh(size)
 	local w, h = size.width, size.height
-	return lg.newMesh({
+	return love.graphics.newMesh({
         {0,0,0,0},
         {w,0,1,0},
         {0,h,0,1},

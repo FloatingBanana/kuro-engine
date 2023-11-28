@@ -43,7 +43,7 @@ local Meshpart = Object:extend()
 
 
 function Meshpart:new(part, model)
-    self.buffer = lg.newMesh(vertexFormat, part:num_vertices(), "triangles", "static")
+    self.buffer = love.graphics.newMesh(vertexFormat, part:num_vertices(), "triangles", "static")
     self.material = model.materials[part:material():name()]
     self.model = model
 
@@ -138,7 +138,7 @@ end
 
 function Meshpart:draw()
     self.material:apply()
-    lg.draw(self.buffer)
+    love.graphics.draw(self.buffer)
 end
 
 

@@ -1,4 +1,6 @@
 local BaseRederer = require "engine.3D.renderers.baseRenderer"
+local Utils = require "engine.misc.utils"
+local lg = love.graphics
 
 local black = Color.BLACK
 local depthPrePassShader = Utils.newPreProcessedShader([[

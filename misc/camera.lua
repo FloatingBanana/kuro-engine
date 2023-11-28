@@ -54,16 +54,16 @@ function Camera:update(dt)
 end
 
 function Camera:attach()
-    lg.push()
+    love.graphics.push()
 
-    lg.translate(WIDTH / 2, HEIGHT / 2)
-    lg.scale(self.zoom)
+    love.graphics.translate(WIDTH / 2, HEIGHT / 2)
+    love.graphics.scale(self.zoom)
 
-    lg.translate(-self.actualPosition.x, -self.actualPosition.y)
+    love.graphics.translate(-self.actualPosition.x, -self.actualPosition.y)
 end
 
 function Camera:detach()
-    lg.pop()
+    love.graphics.pop()
 end
 
 return Camera

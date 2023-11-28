@@ -5,7 +5,7 @@ local IH = {
 
 local function anyPressed(buttons)
     for i, key in ipairs(buttons) do
-        if (lk.isDown(key)) then
+        if (love.keyboard.isDown(key)) then
             return true
         end
     end

@@ -1,6 +1,7 @@
 local Matrix = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
+local Utils = require "engine.misc.utils"
 
 local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/pointShadowMapRenderer.glsl")
 
@@ -33,7 +34,7 @@ function PointLight:new(position, constant, linear, quadratic, diffuse, specular
     self.near = 0.1
     self.far = self:getLightRadius()
 
-    self.shadowmap = lg.newCanvas(256, 256, {format = "depth24", type = "cube", readable = true})
+    self.shadowmap = love.graphics.newCanvas(256, 256, {format = "depth24", type = "cube", readable = true})
 end
 
 
@@ -60,7 +61,7 @@ function PointLight:generateShadowMap(meshparts)
                     depthShader:send("u_boneMatrices", animator.finalMatrices)
                 end
 
-                lg.draw(part.buffer)
+                love.graphics.draw(part.buffer)
             end
         end
 

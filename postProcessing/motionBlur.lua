@@ -1,5 +1,6 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
 local Matrix     = require "engine.math.matrix"
+local Utils      = require "engine.misc.utils"
 
 -- http://john-chapman-graphics.blogspot.com/2013/01/per-object-motion-blur.html
 
@@ -41,21 +42,21 @@ local MotionBlur = BaseEffect:extend()
 
 
 function MotionBlur:new(screenSize, amount)
-    self.blurCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
+    self.blurCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
     self.amount = amount
 end
 
 
 function MotionBlur:onPostRender(renderer, canvas, camera)
-    lg.setCanvas(self.blurCanvas)
-    lg.setShader(motionBlurShader)
+    love.graphics.setCanvas(self.blurCanvas)
+    love.graphics.setShader(motionBlurShader)
 
     motionBlurShader:send("u_velocityBuffer", renderer.velocityBuffer)
     motionBlurShader:send("u_velocityScale", (1 - love.timer.getAverageDelta()) * self.amount)
-    lg.draw(canvas)
+    love.graphics.draw(canvas)
 
-    lg.setCanvas()
-    lg.setShader()
+    love.graphics.setCanvas()
+    love.graphics.setShader()
 
     return self.blurCanvas
 end

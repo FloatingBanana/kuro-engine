@@ -5,15 +5,16 @@ local DirectionalLight = require "engine.3D.lights.directionalLight"
 local SpotLight        = require "engine.3D.lights.spotLight"
 local PointLight       = require "engine.3D.lights.pointLight"
 local AmbientLight     = require "engine.3D.lights.ambientLight"
+local Utils            = require "engine.misc.utils"
 
-local fragCode = lfs.read("engine/shaders/3D/forwardRendering/forwardRendering.frag")
+local fragCode = love.filesystem.read("engine/shaders/3D/forwardRendering/forwardRendering.frag")
 local vertCode = Utils.preprocessShader("engine/shaders/3D/forwardRendering/forwardRendering.vert")
 
 local lightShaders = {
-    [AmbientLight]     = lg.newShader(vertCode, Utils.preprocessShader(fragCode, {"LIGHT_TYPE_AMBIENT"})),
-    [DirectionalLight] = lg.newShader(vertCode, Utils.preprocessShader(fragCode, {"LIGHT_TYPE_DIRECTIONAL"})),
-    [SpotLight]        = lg.newShader(vertCode, Utils.preprocessShader(fragCode, {"LIGHT_TYPE_SPOT"})),
-    [PointLight]       = lg.newShader(vertCode, Utils.preprocessShader(fragCode, {"LIGHT_TYPE_POINT"})),
+    [AmbientLight]     = love.graphics.newShader(vertCode, Utils.preprocessShader(fragCode, {"LIGHT_TYPE_AMBIENT"})),
+    [DirectionalLight] = love.graphics.newShader(vertCode, Utils.preprocessShader(fragCode, {"LIGHT_TYPE_DIRECTIONAL"})),
+    [SpotLight]        = love.graphics.newShader(vertCode, Utils.preprocessShader(fragCode, {"LIGHT_TYPE_SPOT"})),
+    [PointLight]       = love.graphics.newShader(vertCode, Utils.preprocessShader(fragCode, {"LIGHT_TYPE_POINT"})),
 }
 
 

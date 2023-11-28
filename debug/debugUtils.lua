@@ -1,10 +1,11 @@
 local Vector2 = require "engine.math.vector2"
+local Utils = require "engine.misc.utils"
 
 local Dbg = {}
 
 local modstates = {}
 function Dbg.wasFileModified(file)
-    local currModtime = lfs.getInfo(file, "file").modtime
+    local currModtime = love.filesystem.getInfo(file, "file").modtime
     local lastModtime = modstates[file]
 
     modstates[file] = currModtime
@@ -25,7 +26,7 @@ function Dbg.hotswapWhenModified(file)
 end
 
 
-local cubeshader = lg.newShader [[
+local cubeshader = love.graphics.newShader [[
 uniform samplerCube cubeImg;
 uniform vec3 faceDir;
 
@@ -47,9 +48,9 @@ function Dbg.drawCubemapFace(cubemap, face, ...)
     
     cubeshader:send("cubeImg", cubemap)
     cubeshader:send("faceDir", face:toFlatTable())
-    lg.setShader(cubeshader)
-    lg.draw(square, ...)
-    lg.setShader()
+    love.graphics.setShader(cubeshader)
+    love.graphics.draw(square, ...)
+    love.graphics.setShader()
 end
 
 return Dbg

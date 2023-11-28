@@ -1,5 +1,6 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
 local Matrix     = require "engine.math.matrix"
+local Utils      = require "engine.misc.utils"
 
 local cubeVertexFormat = {
     {"VertexPosition", "float", 3}
@@ -50,7 +51,7 @@ local cubeVertices = {
 }
 
 local skyboxShader = Utils.newPreProcessedShader("engine/shaders/3D/skybox.glsl")
-local cube = lg.newMesh(cubeVertexFormat, cubeVertices, "triangles", "static")
+local cube = love.graphics.newMesh(cubeVertexFormat, cubeVertices, "triangles", "static")
 
 
 --- @class Skybox: BasePostProcessingEffect
@@ -61,7 +62,7 @@ local cube = lg.newMesh(cubeVertexFormat, cubeVertices, "triangles", "static")
 local Skybox = BaseEffect:extend()
 
 function Skybox:new(file)
-    self.texture = lg.newCubeImage(file)
+    self.texture = love.graphics.newCubeImage(file)
     self.prevViewProj = Matrix.Identity()
 end
 
@@ -77,17 +78,17 @@ function Skybox:onPostRender(renderer, canvas, camera)
 
     self.prevViewProj = viewProj
 
-    lg.setCanvas({canvas, renderer.velocityBuffer, depth = true, depthstencil = renderer.depthCanvas})
-    lg.setMeshCullMode("back")
-    lg.setDepthMode("lequal", false)
-    lg.setShader(skyboxShader)
+    love.graphics.setCanvas({canvas, renderer.velocityBuffer, depth = true, depthstencil = renderer.depthCanvas})
+    love.graphics.setMeshCullMode("back")
+    love.graphics.setDepthMode("lequal", false)
+    love.graphics.setShader(skyboxShader)
 
-    lg.draw(cube)
+    love.graphics.draw(cube)
 
-    lg.setShader()
-    lg.setMeshCullMode("none")
-    lg.setDepthMode()
-    lg.setCanvas()
+    love.graphics.setShader()
+    love.graphics.setMeshCullMode("none")
+    love.graphics.setDepthMode()
+    love.graphics.setCanvas()
 
     return canvas
 end

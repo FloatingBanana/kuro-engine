@@ -6,10 +6,12 @@ local Model = require "engine.3D.model.model"
 local BaseRederer = require "engine.3D.renderers.baseRenderer"
 local Matrix      = require "engine.math.matrix"
 local Vector3     = require "engine.math.vector3"
+local Utils = require "engine.misc.utils"
+local lg = love.graphics
 
 local black = Color.BLACK
 local volume = Model("engine/3D/renderers/lightvolume.fbx", {flags = {"calc tangent space", "triangulate"}}).meshes.Sphere.parts[1]
-local code = lfs.read("engine/shaders/3D/deferred/lightPass.glsl")
+local code = love.filesystem.read("engine/shaders/3D/deferred/lightPass.glsl")
 
 local lightPassShaders = {
     [AmbientLight]     = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_AMBIENT"}),

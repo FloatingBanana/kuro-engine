@@ -1,5 +1,6 @@
 local Vector2 = require "engine.math.vector2"
 local Inter2d = require "engine.math.intersection2d"
+local lg = love.graphics
 local PolyShadow = Object:extend()
 
 local shadowShader = lg.newShader [[

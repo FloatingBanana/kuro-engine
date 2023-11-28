@@ -15,7 +15,7 @@ local function preprocessShader(shader, defaultDefines)
 	local defines = {}
 	local lineNumber = 0
 
-	local file, err = lfs.read(shader)
+	local file, err = love.filesystem.read(shader)
 	if file then
 		shader = file
 	end
@@ -67,7 +67,7 @@ local function preprocessShader(shader, defaultDefines)
 				-- Include files
 				if parser:eat("include") then
 					local path = parser:eatMatch("\".-\""):sub(2, -2)
-					local included = lfs.read("string", path)
+					local included = love.filesystem.read("string", path)
 
 					result = isolate_line_number(preprocessShader(included, {}), lineNumber)
 				end

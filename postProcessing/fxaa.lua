@@ -1,4 +1,5 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
+local Utils = require "engine.misc.utils"
 
 local fxaaShader = Utils.newPreProcessedShader("engine/shaders/postprocessing/fxaa.frag")
 
@@ -16,7 +17,7 @@ local FXAA = BaseEffect:extend()
 
 
 function FXAA:new(screenSize)
-    self.fxaaCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
+    self.fxaaCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
     self.shader = fxaaShader
 
     self.fxaaCanvas:setFilter("linear", "linear")
@@ -24,13 +25,13 @@ end
 
 
 function FXAA:onPostRender(renderer, canvas, camera)
-    lg.setCanvas(self.fxaaCanvas)
-    lg.setShader(self.shader)
+    love.graphics.setCanvas(self.fxaaCanvas)
+    love.graphics.setShader(self.shader)
 
-    lg.draw(canvas)
+    love.graphics.draw(canvas)
 
-    lg.setCanvas()
-    lg.setShader()
+    love.graphics.setCanvas()
+    love.graphics.setShader()
 
     return self.fxaaCanvas
 end

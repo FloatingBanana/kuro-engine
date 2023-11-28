@@ -23,8 +23,8 @@ local HDR = BaseEffect:extend()
 
 
 function HDR:new(screenSize, exposure)
-    self.hdrCanvas = lg.newCanvas(screenSize.width, screenSize.height)
-    self.shader = lg.newShader(hdrShader)
+    self.hdrCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height)
+    self.shader = love.graphics.newShader(hdrShader)
     self.exposure = exposure
 
     self:setExposure(exposure)
@@ -32,13 +32,13 @@ end
 
 
 function HDR:onPostRender(renderer, canvas, camera)
-    lg.setCanvas(self.hdrCanvas)
-    lg.setShader(self.shader)
+    love.graphics.setCanvas(self.hdrCanvas)
+    love.graphics.setShader(self.shader)
 
-    lg.draw(canvas)
+    love.graphics.draw(canvas)
 
-    lg.setCanvas()
-    lg.setShader()
+    love.graphics.setCanvas()
+    love.graphics.setShader()
 
     return self.hdrCanvas
 end

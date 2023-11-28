@@ -1,6 +1,7 @@
 local Matrix = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
+local Utils = require "engine.misc.utils"
 
 local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/shadowMapRenderer.glsl")
 
@@ -24,7 +25,7 @@ function Spotlight:new(position, direction, innerAngle, outerAngle, diffuse, spe
     self.near = 1
     self.far = 50
 
-    self.shadowmap = lg.newCanvas(1024, 1024, {format = "depth16", readable = true})
+    self.shadowmap = love.graphics.newCanvas(1024, 1024, {format = "depth16", readable = true})
     self.shadowmap:setFilter("nearest", "nearest")
     self.shadowmap:setWrap("clamp")
 end
@@ -50,7 +51,7 @@ function Spotlight:generateShadowMap(meshparts)
 
             depthShader:send("u_world", "column", worldMatrix:toFlatTable())
             depthShader:send("u_invTranspWorld", "column", worldMatrix.inverse:transpose():to3x3():toFlatTable())
-            lg.draw(part.buffer)
+            love.graphics.draw(part.buffer)
         end
     end
     self:endShadowMapping()

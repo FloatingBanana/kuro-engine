@@ -73,7 +73,7 @@ function GLdebug.popEvent()
 end
 
 function GLdebug.flushPopEvent()
-	lg.flushBatch()
+	love.graphics.flushBatch()
 	GLdebug.popEvent()
 end
 

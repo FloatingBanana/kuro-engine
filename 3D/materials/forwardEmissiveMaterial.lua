@@ -21,7 +21,7 @@ function EmissiveMat:new(model, aiMat)
         viewProjectionMatrix = {uniform = "u_viewProj",       value = Matrix()},
     }
 
-    local shader = lg.newShader("engine/shaders/3D/forwardRendering/emissive.glsl")
+    local shader = love.graphics.newShader("engine/shaders/3D/forwardRendering/emissive.glsl")
 
     Material.new(self, model, shader, attributes)
 end

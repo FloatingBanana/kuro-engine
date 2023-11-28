@@ -35,14 +35,14 @@ end
 --- @param viewProj Matrix
 --- @param mapFace number?
 function BaseLight:beginShadowMapping(viewProj, mapFace)
-    lg.push("all")
+    love.graphics.push("all")
 
-    lg.setCanvas {depthstencil = {self.shadowmap, face = mapFace or 1}}
-    lg.clear()
-    lg.setDepthMode("lequal", true)
-    lg.setMeshCullMode("none")
-    lg.setBlendMode("replace")
-    lg.setShader(self.depthShader)
+    love.graphics.setCanvas {depthstencil = {self.shadowmap, face = mapFace or 1}}
+    love.graphics.clear()
+    love.graphics.setDepthMode("lequal", true)
+    love.graphics.setMeshCullMode("none")
+    love.graphics.setBlendMode("replace")
+    love.graphics.setShader(self.depthShader)
 
     self.depthShader:send("u_viewProj", "column", viewProj:toFlatTable())
 end
@@ -50,7 +50,7 @@ end
 
 --- @protected
 function BaseLight:endShadowMapping()
-    lg.pop()
+    love.graphics.pop()
 end
 
 

@@ -1,4 +1,5 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
+local Utils = require "engine.misc.utils"
 
 -- https://vicrucann.github.io/tutorials/osg-shader-fog/
 
@@ -16,7 +17,7 @@ local Fog = BaseEffect:extend()
 
 
 function Fog:new(screenSize, min, max, color)
-    self.fogCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
+    self.fogCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
     self.shader = Utils.newPreProcessedShader("engine/shaders/postprocessing/fog.frag")
 
     self.min = min
@@ -29,16 +30,16 @@ end
 
 
 function Fog:onPostRender(renderer, canvas, camera)
-    lg.setCanvas(self.fogCanvas)
-    lg.setShader(self.shader)
+    love.graphics.setCanvas(self.fogCanvas)
+    love.graphics.setShader(self.shader)
 
     self.shader:send("u_depthBuffer", renderer.depthCanvas)
     self.shader:send("u_viewPos", camera.position:toFlatTable())
     self.shader:send("u_invViewProj", "column", camera.viewProjectionMatrix:invert():toFlatTable())
-    lg.draw(canvas)
+    love.graphics.draw(canvas)
 
-    lg.setCanvas()
-    lg.setShader()
+    love.graphics.setCanvas()
+    love.graphics.setShader()
 
     return self.fogCanvas
 end

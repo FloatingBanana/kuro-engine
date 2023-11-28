@@ -18,9 +18,9 @@ function Renderer:new(screensize, postProcessingEffects)
     self.screensize = screensize
     self.ppeffects = postProcessingEffects
 
-    self.resultCanvas = lg.newCanvas(screensize.width, screensize.height, {format = "rgba16f"})
-    self.depthCanvas = lg.newCanvas(screensize.width, screensize.heiht, {format = "depth32f", readable = true})
-    self.velocityBuffer = lg.newCanvas(screensize.width, screensize.height, {format = "rg8"})
+    self.resultCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rgba16f"})
+    self.depthCanvas = love.graphics.newCanvas(screensize.width, screensize.heiht, {format = "depth32f", readable = true})
+    self.velocityBuffer = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg8"})
 
     self.meshparts = {}
     self.lights = {}
@@ -69,19 +69,19 @@ end
 
 ---@param camera Camera
 function Renderer:render(camera)
-    lg.push("all")
+    love.graphics.push("all")
     self:renderMeshes(camera)
-    lg.pop()
+    love.graphics.pop()
 
-    lg.push("all")
+    love.graphics.push("all")
 
     local result = self.resultCanvas
     for i, effect in ipairs(self.ppeffects) do
         result = effect:onPostRender(self, result, camera)
     end
 
-    lg.pop()
-    lg.draw(result)
+    love.graphics.pop()
+    love.graphics.draw(result)
 
     -- Store mesh transfomation from this frame to calculate the velocity buffer on the next frame
     for meshpart, prevMatrix in pairs(self.previousTransformations) do

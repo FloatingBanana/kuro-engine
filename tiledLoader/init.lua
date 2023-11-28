@@ -41,7 +41,7 @@ function tiled.loadTable(t)
 end
 
 function tiled.loadTmx(file)
-    local xml, err = lfs.read(file)
+    local xml, err = love.filesystem.read(file)
     assert(xml, ("Could not open %s: %s"):format(file, err))
 
     local obj = tmxLoader(xml)

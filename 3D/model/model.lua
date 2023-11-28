@@ -10,8 +10,8 @@ local ModelAnimation = require "engine.3D.model.animation.modelAnimation"
 local texData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAQSURBVBhXY/gPhBDwn+E/ABvyA/1Bas9NAAAAAElFTkSuQmCC")
 local normalData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAANSURBVBhXY2ho+P8fAAaCAv+ce/dzAAAAAElFTkSuQmCC")
 
-local blankTex = lg.newImage(texData, {linear = true})
-local blankNormal = lg.newImage(normalData, {linear = true})
+local blankTex = love.graphics.newImage(texData, {linear = true})
+local blankNormal = love.graphics.newImage(normalData, {linear = true})
 blankTex:setWrap("repeat")
 blankTex:setFilter("nearest", "nearest")
 
@@ -50,7 +50,7 @@ function Model:new(file, opts)
     self._boneCount = 0
 
     -- Read model data
-    local data = lfs.read("string", file)
+    local data = love.filesystem.read("string", file)
     local aiModel, err = Assimp.import_file_from_memory(data, unpack(opts.flags or {"none"}))
 
     assert(aiModel, err)
@@ -69,7 +69,7 @@ function Model:new(file, opts)
 
                 if texpath and not self.textures[texpath] then
                     local fullpath = file:match("^.*/")..texpath
-                    self.textures[texpath] = lg.newImage(fullpath, {linear = linearTexTypes[textype]})
+                    self.textures[texpath] = love.graphics.newImage(fullpath, {linear = linearTexTypes[textype]})
                 end
             end
 

@@ -7,6 +7,7 @@ function TransitionBase:new(maxTime, isFadingOut)
     self.isFadingOut = isFadingOut
 end
 
+local NULLFUNC = function()end
 TransitionBase.update = NULLFUNC
 TransitionBase.drawFadeIn = NULLFUNC
 TransitionBase.drawFadeOut = NULLFUNC

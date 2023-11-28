@@ -1,4 +1,6 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
+local Utils = require "engine.misc.utils"
+local lg = love.graphics
 
 local brightFilterShader = [[
 #pragma language glsl3

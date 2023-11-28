@@ -73,10 +73,10 @@ function Material:apply()
         end
     end
 
-    lg.setShader(self.shader)
+    love.graphics.setShader(self.shader)
 
     if self.shader:hasUniform("u_isCanvasEnabled") then
-        self.shader:send("u_isCanvasEnabled", lg.getCanvas() ~= nil)
+        self.shader:send("u_isCanvasEnabled", love.graphics.getCanvas() ~= nil)
     end
 end
 

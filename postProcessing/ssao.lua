@@ -3,9 +3,8 @@ local Vector3 = require "engine.math.vector3"
 local AmbientLight = require "engine.3D.lights.ambientLight"
 local DeferredRenderer = require "engine.3D.renderers.deferredRenderer"
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
+local Utils = require "engine.misc.utils"
 
-
--- TODO: Add forward rendering support
 
 --------------------------------
 -- Buildig ssao noise texture --
@@ -17,7 +16,7 @@ for i=0, 15 do
 
     ssaoNoiseData:setPixel(x, y, math.random(), math.random(), 0, 0)
 end
-local ssaoNoise = lg.newImage(ssaoNoiseData)
+local ssaoNoise = love.graphics.newImage(ssaoNoiseData)
 ssaoNoise:setWrap("repeat")
 ssaoNoiseData:release()
 
@@ -27,7 +26,7 @@ local defines = {
     deferred = "SAMPLE_DEPTH_DEFERRED"
 }
 
-local boxBlurShader = lg.newShader(Utils.preprocessShader((lfs.read("engine/shaders/postprocessing/boxBlur.frag"))))
+local boxBlurShader = love.graphics.newShader(Utils.preprocessShader((love.filesystem.read("engine/shaders/postprocessing/boxBlur.frag"))))
 boxBlurShader:send("size", 2)
 
 
@@ -48,8 +47,8 @@ local SSAO = BaseEffect:extend()
 
 function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
     self.kernel = Stack()
-    self.ssaoCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "r8"})
-    self.blurCanvas = lg.newCanvas(screenSize.width, screenSize.height, {format = "r8"})
+    self.ssaoCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "r8"})
+    self.blurCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "r8"})
     self.dummySquare = Utils.newSquareMesh(screenSize)
     self.algorithm = algorithm or "deferred"
     self.kernelSize = kernelSize
@@ -67,9 +66,9 @@ end
 --- @param renderer BaseRenderer
 --- @param camera Camera
 function SSAO:onPreRender(renderer, camera)
-    lg.setCanvas(self.ssaoCanvas)
-    lg.setShader(self.shader)
-    lg.clear()
+    love.graphics.setCanvas(self.ssaoCanvas)
+    love.graphics.setShader(self.shader)
+    love.graphics.clear()
 
     self.shader:send("u_projection", "column", camera.projectionMatrix:toFlatTable())
 
@@ -85,16 +84,16 @@ function SSAO:onPreRender(renderer, camera)
         self.shader:send("u_depthBuffer", renderer.depthCanvas)
     end
 
-    lg.draw(self.dummySquare)
+    love.graphics.draw(self.dummySquare)
 
-    lg.setCanvas(self.blurCanvas)
-    lg.setShader(boxBlurShader)
-    lg.clear()
+    love.graphics.setCanvas(self.blurCanvas)
+    love.graphics.setShader(boxBlurShader)
+    love.graphics.clear()
 
-    lg.draw(self.ssaoCanvas)
+    love.graphics.draw(self.ssaoCanvas)
 
-    lg.setCanvas()
-    lg.setShader()
+    love.graphics.setCanvas()
+    love.graphics.setShader()
 end
 
 
