@@ -67,17 +67,14 @@ function Utils.setFont(filename, size)
 
 	local fonts = Utils.fontcache
 	local name = filename..size
+	
 
 	-- Cache font object
 	if not fonts[name] then
 		if filename == "default" then
 			fonts[name] = lg.newFont(size)
 		else
-			if lfs.getInfo("assets/fonts/"..filename..".otf") then
-				fonts[name] = lg.newFont("assets/fonts/"..filename..".otf", size)
-			else
-				fonts[name] = lg.newFont("assets/fonts/"..filename..".ttf", size)
-			end
+			fonts[name] = lg.newFont(filename, size)
 		end
 	end
 
