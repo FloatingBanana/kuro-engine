@@ -6,6 +6,21 @@ local ModelNode  = require "engine.3D.model.modelNode"
 local ModelAnimation = require "engine.3D.model.animation.modelAnimation"
 
 
+-- Default textures
+local texData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAQSURBVBhXY/gPhBDwn+E/ABvyA/1Bas9NAAAAAElFTkSuQmCC")
+local normalData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAANSURBVBhXY2ho+P8fAAaCAv+ce/dzAAAAAElFTkSuQmCC")
+
+local blankTex = lg.newImage(texData, {linear = true})
+local blankNormal = lg.newImage(normalData, {linear = true})
+blankTex:setWrap("repeat")
+blankTex:setFilter("nearest", "nearest")
+
+
+local textureDefaults = {diffuse = blankTex, normal = blankNormal}
+local textureTypes = {"diffuse", "normals"}
+local linearTexTypes = {normals = true}
+
+
 --- @alias ModelLoadingOptions {materials: table<string, BaseMaterial>}
 --- @alias BoneInfo {id: integer, offset: Matrix}
 
@@ -16,7 +31,9 @@ local ModelAnimation = require "engine.3D.model.animation.modelAnimation"
 --- @field materials table<string, BaseMaterial>
 --- @field animations table<string, ModelAnimation>
 --- @field boneInfos table<string, BoneInfo>
+--- @field textures table<string, love.Texture>
 --- @field opts ModelLoadingOptions
+--- @field private _boneCount integer
 ---
 --- @overload fun(file: string, opts: ModelLoadingOptions): Model
 local Model = Object:extend()
@@ -28,8 +45,8 @@ function Model:new(file, opts)
     self.materials = {}
     self.animations = {}
     self.boneInfos = {}
+    self.textures = {}
     self.opts = opts
-
     self._boneCount = 0
 
     -- Read model data
@@ -45,7 +62,19 @@ function Model:new(file, opts)
             local matClass = opts.materials[name] or opts.materials.default
 
             assert(matClass, "Material class for '"..name.."' not defined")
-            self.materials[name] = matClass(aiMat)
+
+            -- Load textures
+            for j, textype in ipairs(textureTypes) do
+                local texpath = aiMat:texture_path(textype, 1)
+
+                if texpath and not self.textures[texpath] then
+                    local fullpath = file:match("^.*/")..texpath
+                    self.textures[texpath] = lg.newImage(fullpath, {linear = linearTexTypes[textype]})
+                end
+            end
+
+
+            self.materials[name] = matClass(self, aiMat)
         end
     end
 
@@ -57,6 +86,20 @@ function Model:new(file, opts)
     for i, aiAnim in ipairs(aiModel:animations()) do
         self.animations[aiAnim:name()] = ModelAnimation(self, aiAnim)
     end
+end
+
+
+---@param aiMat unknown
+---@param type "diffuse"|"normals"
+function Model:getTexture(aiMat, type)
+    local path = aiMat:texture_path(type, 1)
+
+    if path and self.textures[path] then
+        return self.textures[path]
+    end
+
+    print(("%s: No texture of type '%s' at path %s, using a default one."):format(aiMat:name(), type, path or "<no path>"))
+    return textureDefaults[type] or blankTex
 end
 
 

@@ -1,15 +1,3 @@
-local texData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAQSURBVBhXY/gPhBDwn+E/ABvyA/1Bas9NAAAAAElFTkSuQmCC")
-local normalData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAANSURBVBhXY2ho+P8fAAaCAv+ce/dzAAAAAElFTkSuQmCC")
-
-local blankTex = lg.newImage(texData, {linear = true})
-local blankNormal = lg.newImage(normalData, {linear = true})
-blankNormal:setWrap("repeat")
-blankTex:setWrap("repeat")
-blankTex:setFilter("nearest", "nearest")
-
-
-local textures = {}
-
 local function sendToShader(shader, uniform, value)
     local sendValue = value
 
@@ -39,15 +27,13 @@ end
 --- @field BLANK_TEX love.Image
 --- @field BLANK_NORMAL love.Image
 ---
---- @overload fun(shader: love.Shader, attributes: MaterialDefinition)
+--- @overload fun(model: Model, shader: love.Shader, attributes: MaterialDefinition)
 local Material = Object:extend()
 
-Material.BLANK_TEX = blankTex
-Material.BLANK_NORMAL = blankNormal
 
-
-function Material:new(shader, attributes)
+function Material:new(model, shader, attributes)
     rawset(self, "__attrs", attributes)
+    self.model = model
     self.shader = shader
 end
 
@@ -92,24 +78,6 @@ function Material:apply()
     if self.shader:hasUniform("u_isCanvasEnabled") then
         self.shader:send("u_isCanvasEnabled", lg.getCanvas() ~= nil)
     end
-end
-
-
---- @param aiMat unknown
---- @param type string
---- @param texIndex integer
---- @param linear boolean
---- @return love.Image?
-function Material.GetTexture(aiMat, type, texIndex, linear)
-    local path = aiMat:texture_path(type, texIndex)
-
-    if path then
-        if not textures[path] then
-            textures[path] = lg.newImage("assets/models/"..path, {linear = linear})
-        end
-        return textures[path]
-    end
-    return nil
 end
 
 
