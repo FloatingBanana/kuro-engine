@@ -50,7 +50,7 @@ function Camera:shake(time, intensity, shakeSpeed)
 end
 
 function Camera:update(dt)
-    self.actualPosition = self.easing(self.actualPosition, self.position, self.speed * dt)
+    self.actualPosition = Vector2.Lerp(self.actualPosition, self.position, self.easing(self.speed * dt))
 end
 
 function Camera:attach()

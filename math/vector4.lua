@@ -368,6 +368,16 @@ end
 ----------------------------
 
 
+--- Peforms a linear interpolation between two vectors
+--- @param v1 Vector4: The first vector
+--- @param v2 Vector4: the second vector
+--- @param t number: The interpolation progress between 0 and 1
+--- @return Vector4: Result
+function Vector4.Lerp(v1, v2, t)
+    return (v1 * (1-t)):add(v2 * t)
+end
+
+
 --- Calculates the dot product between two vectors
 --- @param v1 Vector4: The first vector
 --- @param v2 Vector4: the second vector

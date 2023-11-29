@@ -53,9 +53,9 @@ function AnimNode:getInterpolated(time)
     local prevScale, nextScale, scaleProgress = findInterpolationKeys(self._scaleKeys, time)
 
     return
-        prevPos * (1-posProgress) + nextPos * posProgress,
+        Vector3.Lerp(prevPos, nextPos, posProgress),
         Quaternion.Slerp(prevRot, nextRot, rotProgress),
-        prevScale * (1-scaleProgress) + nextScale * scaleProgress
+        Vector3.Lerp(prevScale, nextScale, scaleProgress)
 end
 
 return AnimNode

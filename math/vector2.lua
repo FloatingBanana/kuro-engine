@@ -327,6 +327,16 @@ end
 ----------------------------
 
 
+--- Peforms a linear interpolation between two vectors
+--- @param v1 Vector2: The first vector
+--- @param v2 Vector2: the second vector
+--- @param t number: The interpolation progress between 0 and 1
+--- @return Vector2: Result
+function Vector2.Lerp(v1, v2, t)
+    return (v1 * (1-t)):add(v2 * t)
+end
+
+
 --- Calculates the dot product between two vectors
 --- @param v1 Vector2: The first vector
 --- @param v2 Vector2: the second vector
