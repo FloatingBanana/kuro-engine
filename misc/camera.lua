@@ -1,8 +1,9 @@
 local Camera = Object:extend()
 
-local Easing = require "engine.math.easing"
-local Rect = require "engine.math.rect"
+local Easing  = require "engine.math.easing"
+local Rect    = require "engine.math.rect"
 local Vector2 = require "engine.math.vector2"
+local Timer   = require "engine.misc.timer"
 
 function Camera:new(position, zoom)
     self.position = position
@@ -11,6 +12,10 @@ function Camera:new(position, zoom)
 
     self.easing = Easing.linear
     self.speed = 100
+
+    self.shakeTimer = Timer(0, 0, false)
+    self.shakeShiftTimer = Timer(0, 0, true)
+    self.shakeIntensity = 0
 end
 
 function Camera:getBounds()
@@ -26,31 +31,27 @@ function Camera:setInterpolation(easing, speed)
 end
 
 function Camera:shake(time, intensity, shakeSpeed)
-    local defaultPos = self.actualPosition
-    local shakeTimer = shakeSpeed
-    local remainingTime = time
-    local shakeOffset = Vector2()
+    self.shakeTimer.duration = time
+    self.shakeShiftTimer.duration = shakeSpeed
+    self.shakeIntensity = intensity
 
-    Timer.during(time, function(dt)
-        shakeTimer = shakeTimer - dt
-        remainingTime = remainingTime - dt
-
-        if shakeTimer <= 0 then
-            local int = intensity * (remainingTime / time)
-            shakeOffset.x = math.random(-int, int)
-            shakeOffset.y = math.random(-int, int)
-
-            shakeTimer = shakeSpeed
-            self.actualPosition = defaultPos + shakeOffset
-        end
-    end,
-    function()
-        self.actualPosition = defaultPos
-    end)
+    self.shakeTimer:restart():play()
+    self.shakeShiftTimer:restart():play()
 end
 
 function Camera:update(dt)
-    self.actualPosition = Vector2.Lerp(self.actualPosition, self.position, self.easing(self.speed * dt))
+    local shakeOffset = Vector2()
+
+    if self.shakeTimer:update(dt).running then
+        if self.shakeShiftTimer:update(dt).justEnded then
+            local int = 1 - (self.shakeTimer.time / self.shakeTimer.duration)
+
+            shakeOffset.x = math.random(-int, int) * self.shakeIntensity
+            shakeOffset.y = math.random(-int, int) * self.shakeIntensity
+        end
+    end
+
+    self.actualPosition = Vector2.Lerp(self.actualPosition, self.position, self.easing(self.speed * dt)):add(shakeOffset)
 end
 
 function Camera:attach()
