@@ -1,4 +1,5 @@
-local Matrix = require "engine.math.matrix"
+local Matrix    = require "engine.math.matrix"
+local Object    = require "engine.3rdparty.classic.classic"
 local Transform = Object:extend()
 
 local function rebuildMatrix(matrix, rotation, scale)

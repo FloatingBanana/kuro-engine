@@ -1,3 +1,4 @@
+local Object         = require "engine.3rdparty.classic.classic"
 local TransitionBase = Object:extend()
 
 function TransitionBase:new(maxTime, isFadingOut)

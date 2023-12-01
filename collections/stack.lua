@@ -1,3 +1,5 @@
+local Object = require "engine.3rdparty.classic.classic"
+
 ---
 --- A list of data that follows the "Last In, First Out" (LIFO) principle.
 ---

@@ -1,6 +1,6 @@
-local xml = require "engine.text.xml"
-local csv = require "engine.text.csv"
-local base64 = require "engine.textc.base64"
+local Lume = require "engine.3rdparty.lume"
+local xml  = require "engine.text.xml"
+local csv  = require "engine.text.csv"
 
 local layer_types = {layer = true, objectgroup = true, group = true, imagelayer = true}
 local shape_types = {ellipse = true, point = true, polygon = true, polyline = true}

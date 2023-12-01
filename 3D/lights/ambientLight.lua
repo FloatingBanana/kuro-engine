@@ -1,4 +1,4 @@
-local Vector3 = require "engine.math.vector3"
+local Vector3   = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
 
 --- @class AmbientLight: BaseLight
@@ -9,7 +9,7 @@ local AmbientLight = BaseLight:extend()
 
 
 function AmbientLight:new(color)
-    BaseLight.new(self, Vector3(), Color.BLACK, Color.BLACK, nil)
+    BaseLight.new(self, Vector3(), {0,0,0}, {0,0,0}, nil)
 
     self.color = color
 end

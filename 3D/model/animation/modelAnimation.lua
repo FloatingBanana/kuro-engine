@@ -1,6 +1,7 @@
 local Matrix = require "engine.math.matrix"
 local AnimationNode = require "engine.3D.model.animation.modelAnimationNode"
 local Animator = require "engine.3D.model.animation.modelAnimator"
+local Object   = require "engine.3rdparty.classic.classic"
 
 
 --- @class ModelAnimation: Object

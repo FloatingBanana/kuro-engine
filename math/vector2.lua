@@ -1,3 +1,4 @@
+local Lume    = require "engine.3rdparty.lume"
 local CStruct = require "engine.misc.cstruct"
 local sin, cos, atan2, sqrt, floor, ceil, min, max = math.sin, math.cos, math.atan2, math.sqrt, math.floor, math.ceil, math.min, math.max
 

@@ -1,3 +1,5 @@
+local Object = require "engine.3rdparty.classic.classic"
+
 --- @class Timer: Object
 ---
 --- @field public time number

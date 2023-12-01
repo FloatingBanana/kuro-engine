@@ -2,7 +2,7 @@ local BaseRederer = require "engine.3D.renderers.baseRenderer"
 local Utils = require "engine.misc.utils"
 local lg = love.graphics
 
-local black = Color.BLACK
+local black = {0,0,0,0}
 local depthPrePassShader = Utils.newPreProcessedShader([[
 #pragma language glsl3
 #define Velocity love_Canvases[1]

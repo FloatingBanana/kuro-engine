@@ -1,15 +1,16 @@
 local DirectionalLight = require "engine.3D.lights.directionalLight"
-local SpotLight = require "engine.3D.lights.spotLight"
-local PointLight = require "engine.3D.lights.pointLight"
-local AmbientLight = require "engine.3D.lights.ambientLight"
-local Model = require "engine.3D.model.model"
-local BaseRederer = require "engine.3D.renderers.baseRenderer"
-local Matrix      = require "engine.math.matrix"
-local Vector3     = require "engine.math.vector3"
-local Utils = require "engine.misc.utils"
-local lg = love.graphics
+local SpotLight        = require "engine.3D.lights.spotLight"
+local PointLight       = require "engine.3D.lights.pointLight"
+local AmbientLight     = require "engine.3D.lights.ambientLight"
+local Model            = require "engine.3D.model.model"
+local BaseRederer      = require "engine.3D.renderers.baseRenderer"
+local Matrix           = require "engine.math.matrix"
+local Vector3          = require "engine.math.vector3"
+local Utils            = require "engine.misc.utils"
+local lg               = love.graphics
 
-local black = Color.BLACK
+
+local black = {0,0,0,0}
 local volume = Model("engine/3D/renderers/lightvolume.fbx", {flags = {"calc tangent space", "triangulate"}}).meshes.Sphere.parts[1]
 local code = love.filesystem.read("engine/shaders/3D/deferred/lightPass.glsl")
 
@@ -58,7 +59,7 @@ function DeferredRenderer:renderMeshes(camera)
     --------------
 
     lg.setCanvas({self.gbuffer.position, self.gbuffer.normal, self.gbuffer.albedoSpec, self.velocityBuffer, depthstencil = self.depthCanvas})
-    lg.clear(black, black, black, black)
+    lg.clear(black, black, black, black) ---@diagnostic disable-line param-type-mismatch
 
     lg.setDepthMode("lequal", true)
     lg.setBlendMode("replace")

@@ -1,5 +1,6 @@
 local Matrix = require "engine.math.matrix"
-local ffi = require "ffi"
+local Object = require "engine.3rdparty.classic.classic"
+local ffi    = require "ffi"
 
 
 --- @class ModelAnimator: Object

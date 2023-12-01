@@ -1,3 +1,6 @@
+local Object = require "engine.3rdparty.classic.classic"
+
+
 local function sendToShader(shader, uniform, value)
     local sendValue = value
 

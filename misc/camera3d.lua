@@ -1,5 +1,6 @@
-local Matrix = require "engine.math.matrix"
+local Matrix  = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
+local Object  = require "engine.3rdparty.classic.classic"
 
 --- @class Camera
 --- 

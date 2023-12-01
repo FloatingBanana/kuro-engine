@@ -1,6 +1,8 @@
-local bit = require "bit"
+local bit           = require "bit"
 local PriorityQueue = require "engine.collections.priorityQueue"
-local Finder = Object:extend()
+local Lume          = require "engine.3rdparty.lume"
+local Object        = require "engine.3rdparty.classic.classic"
+local Finder        = Object:extend()
 
 local function hash(vec)
     return bit.bxor(vec.x * 397, vec.y)

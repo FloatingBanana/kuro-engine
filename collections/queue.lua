@@ -1,4 +1,5 @@
 local Deque = require "engine.collections.deque"
+local Object = require "engine.3rdparty.classic.classic"
 
 
 ---

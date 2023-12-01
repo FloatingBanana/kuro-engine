@@ -1,9 +1,10 @@
-local Stack = require "engine.collections.stack"
-local Vector3 = require "engine.math.vector3"
-local AmbientLight = require "engine.3D.lights.ambientLight"
+local Stack            = require "engine.collections.stack"
+local Vector3          = require "engine.math.vector3"
+local AmbientLight     = require "engine.3D.lights.ambientLight"
 local DeferredRenderer = require "engine.3D.renderers.deferredRenderer"
-local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
-local Utils = require "engine.misc.utils"
+local BaseEffect       = require "engine.postProcessing.basePostProcessingEffect"
+local Utils            = require "engine.misc.utils"
+local Lume             = require "engine.3rdparty.lume"
 
 
 --------------------------------

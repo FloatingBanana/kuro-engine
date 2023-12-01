@@ -1,3 +1,5 @@
+local Lume   = require "engine.3rdparty.lume"
+local Object = require "engine.3rdparty.classic.classic"
 
 --- @class ModelNode: Object
 ---

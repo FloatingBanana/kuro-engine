@@ -1,3 +1,4 @@
+local Object = require "engine.3rdparty.classic.classic"
 -- Priority queue using binary heap: https://www.geeksforgeeks.org/priority-queue-using-binary-heap/
 
 local floor = math.floor

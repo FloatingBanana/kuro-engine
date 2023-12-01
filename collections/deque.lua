@@ -1,3 +1,5 @@
+local Object = require "engine.3rdparty.classic.classic"
+
 ---
 --- A double queue that can be pushed/popped from both sides.
 ---

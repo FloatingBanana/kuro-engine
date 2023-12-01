@@ -1,3 +1,6 @@
+local Lume   = require "engine.3rdparty.lume"
+local Object = require "engine.3rdparty.classic.classic"
+
 --- @alias MeshPartConfig {castShadows: boolean, ignoreLighting: boolean, worldMatrix: Matrix, animator: ModelAnimator, onDraw: function}
 
 --- @class BaseRenderer: Object

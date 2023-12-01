@@ -1,3 +1,5 @@
+local Object = require "engine.3rdparty.classic.classic"
+
 --- @class ParserHelper: Object
 ---
 --- @field public text string

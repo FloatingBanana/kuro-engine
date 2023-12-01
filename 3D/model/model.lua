@@ -1,9 +1,10 @@
-local Assimp = require "moonassimp"
-local Matrix = require "engine.math.matrix"
-local Mesh = require "engine.3D.model.modelMesh"
-local Meshpart = require "engine.3D.model.meshpart"
-local ModelNode  = require "engine.3D.model.modelNode"
+local Assimp         = require "moonassimp"
+local Matrix         = require "engine.math.matrix"
+local Mesh           = require "engine.3D.model.modelMesh"
+local Meshpart       = require "engine.3D.model.meshpart"
+local ModelNode      = require "engine.3D.model.modelNode"
 local ModelAnimation = require "engine.3D.model.animation.modelAnimation"
+local Object         = require "engine.3rdparty.classic.classic"
 
 
 -- Default textures

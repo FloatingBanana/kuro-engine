@@ -1,5 +1,6 @@
-local Vector3 = require "engine.math.vector3"
+local Vector3    = require "engine.math.vector3"
 local Quaternion = require "engine.math.quaternion"
+local Object     = require "engine.3rdparty.classic.classic"
 
 
 --- @class ModelAnimationNode: Object

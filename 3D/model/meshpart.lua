@@ -1,5 +1,7 @@
 local Vector2 = require "engine.math.vector2"
 local Vector3 = require "engine.math.vector3"
+local Lume    = require "engine.3rdparty.lume"
+local Object  = require "engine.3rdparty.classic.classic"
 
 local vertexFormat = {
     {"VertexPosition", "float", 3},

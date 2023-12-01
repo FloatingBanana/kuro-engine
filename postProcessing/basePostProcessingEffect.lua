@@ -1,3 +1,5 @@
+local Object = require "engine.3rdparty.classic.classic"
+
 --- @class BasePostProcessingEffect: Object
 ---
 --- @operator call: BasePostProcessingEffect
