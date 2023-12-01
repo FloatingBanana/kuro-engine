@@ -1,0 +1,3 @@
+local grouplayer = {}
+
+return grouplayer
