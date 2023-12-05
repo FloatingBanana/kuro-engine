@@ -7,7 +7,11 @@
 -- the terms of the MIT license. See LICENSE for details.
 --
 
+-- Modified to include annotations
 
+
+--- Base class for all other classes. Uses the classic.lua library.
+--- @class Object
 local Object = {}
 Object.__index = Object
 
@@ -16,6 +20,8 @@ function Object:new()
 end
 
 
+--- Creates a child class of this object.
+--- @return any
 function Object:extend()
   local cls = {}
   for k, v in pairs(self) do
@@ -30,6 +36,8 @@ function Object:extend()
 end
 
 
+--- Implements another class into this one
+---@param ... Object
 function Object:implement(...)
   for _, cls in pairs({...}) do
     for k, v in pairs(cls) do
@@ -41,6 +49,9 @@ function Object:implement(...)
 end
 
 
+--- Checks if this object belongs to this class.
+--- @param T Object Class.
+--- @return boolean
 function Object:is(T)
   local mt = getmetatable(self)
   while mt do
@@ -53,11 +64,13 @@ function Object:is(T)
 end
 
 
+---@private
 function Object:__tostring()
   return "Object"
 end
 
 
+---@private
 function Object:__call(...)
   local obj = setmetatable({}, self)
   obj:new(...)
