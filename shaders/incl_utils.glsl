@@ -15,10 +15,11 @@ vec3 ReconstructPosition(vec2 uv, sampler2D depthBuffer, mat4 invProj) {
 }
 
 
-vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj) {
+vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj, out vec3 position) {
     vec2 texelSize = 1.0 / textureSize(depthBuffer, 0);
     float depth = texture2D(depthBuffer, uv).r;
     vec3 viewSpacePos_c = ReconstructPosition(uv, depthBuffer, invProj);
+    position = viewSpacePos_c;
 
     vec4 H = vec4(
         texture2D(depthBuffer, uv + vec2(-1.0, 0.0) * texelSize).r,
@@ -111,12 +112,7 @@ mat4 GetSkinningMatrix(mat4 boneMatrices[MAX_BONE_COUNT], vec4 boneIDs, vec4 wei
     if (hasBones)
         return boneTransform;
         
-    return mat4(
-        1,0,0,0,
-        0,1,0,0,
-        0,0,1,0,
-        0,0,0,1
-    );
+    return mat4(1.0);
 }
 
 /////////////////////

@@ -20,7 +20,7 @@ const float depthBias = 0.025;
 
 
 vec3 ReconstructPosition(vec2 uv, sampler2D depthBuffer, mat4 invProj);
-vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj);
+vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj, out vec3 position);
 #pragma include "engine/shaders/incl_utils.glsl"
 
 
@@ -31,8 +31,7 @@ vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
 
 #   if defined(SAMPLE_DEPTH_ACCURATE)
         // Better quality
-        fragPos = ReconstructPosition(texcoords, u_depthBuffer, u_invProjection);
-        normal = ReconstructNormal(u_depthBuffer, texcoords, u_invProjection);
+        normal = ReconstructNormal(u_depthBuffer, texcoords, u_invProjection, fragPos);
 #   elif defined(SAMPLE_DEPTH_NAIVE)
         // Better peformance
         fragPos = ReconstructPosition(texcoords, u_depthBuffer, u_invProjection);
