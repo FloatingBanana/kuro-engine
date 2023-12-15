@@ -6,15 +6,95 @@ local Utils = {
 
 	fontName = "default",
 	fontSize = 13,
-	fontcache = {} ---@type love.Font[]
+	fontcache = {}, ---@type love.Font[]
+
+	shaderCache = {} ---@type table<string, table<table, love.Shader>>
 }
 
 
----@param shader string
+function Utils.combineShaders(vert, frag)
+	vert = love.filesystem.read(vert) or vert
+	frag = love.filesystem.read(frag) or frag
+
+	return string.format("#ifdef VERTEX\n#line 0\n%s\n#endif\n#ifdef PIXEL\n#line 0\n%s\n#endif", vert, frag)
+end
+
+
+---@param shaderStr string
 ---@param defaultDefines table?
 ---@return love.Shader
-function Utils.newPreProcessedShader(shader, defaultDefines)
-	return love.graphics.newShader(Utils.preprocessShader(shader, defaultDefines))
+function Utils.newPreProcessedShader(shaderStr, defaultDefines)
+	return love.graphics.newShader(Utils.preprocessShader(shaderStr, defaultDefines))
+end
+
+
+---@param shaderStr string
+---@param defaultDefines table?
+---@return love.Shader
+function Utils.newPreProcessedShaderCache(shaderStr, defaultDefines)
+	defaultDefines = defaultDefines or {}
+	local shader = Utils.getCachedShader(shaderStr, defaultDefines)
+
+	if not shader then
+		shader = Utils.newPreProcessedShader(shaderStr, defaultDefines)
+		Utils.cacheShader(shaderStr, defaultDefines, shader)
+	end
+
+	return shader
+end
+
+
+---@param shaderStr string
+---@param defines table
+---@param shader love.Shader
+function Utils.cacheShader(shaderStr, defines, shader)
+	local cache = Utils.shaderCache
+
+	cache[shaderStr] = cache[shaderStr] or {}
+	cache[shaderStr][defines] = shader
+end
+
+
+---@param shaderStr string
+---@param defines table
+---@return love.Shader?
+function Utils.getCachedShader(shaderStr, defines)
+	local cache = Utils.shaderCache
+
+	if cache[shaderStr] then
+		for cacheDefs, shader in pairs(cache[shaderStr]) do
+			if Utils.isTableEqual(cacheDefs, defines, true) then
+				return shader
+			end
+		end
+	end
+
+	return nil
+end
+
+
+---@param t1 table
+---@param t2 table
+---@param ignoreArrayOrder boolean
+---@return boolean
+function Utils.containsTable(t1, t2, ignoreArrayOrder)
+	for k, v in pairs(t2) do
+		if ignoreArrayOrder and type(k) == "number" and not Lume.find(t1, v) then
+			return false
+		elseif t1[k] ~= v then
+    	    return false
+    	end
+	end
+	return true
+end
+
+
+---@param t1 table
+---@param t2 table
+---@param ignoreArrayOrder boolean
+---@return boolean
+function Utils.isTableEqual(t1, t2, ignoreArrayOrder)
+	return Utils.containsTable(t1, t2, ignoreArrayOrder) and Utils.containsTable(t2, t1, ignoreArrayOrder)
 end
 
 
