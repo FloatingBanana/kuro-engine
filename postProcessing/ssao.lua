@@ -47,17 +47,19 @@ local SSAO = BaseEffect:extend()
 
 
 function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
+    local ssaoSize = screenSize / 2
+
     self.kernel = Stack()
-    self.ssaoCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "r8"})
-    self.blurCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "r8"})
-    self.dummySquare = Utils.newSquareMesh(screenSize)
+    self.ssaoCanvas = love.graphics.newCanvas(ssaoSize.width, ssaoSize.height, {format = "r8"})
+    self.blurCanvas = love.graphics.newCanvas(ssaoSize.width, ssaoSize.height, {format = "r8"})
+    self.dummySquare = Utils.newSquareMesh(ssaoSize)
     self.algorithm = algorithm or "deferred"
     self.kernelSize = kernelSize
     self.kernelRadius = kernelRadius
 
     self.shader = Utils.newPreProcessedShader("engine/shaders/3D/deferred/ssao.frag", {defines[self.algorithm]})
 
-    self.shader:send("u_noiseScale", (screenSize / 4):toFlatTable())
+    self.shader:send("u_noiseScale", (ssaoSize / 4):toFlatTable())
     self.shader:send("u_noiseTex", ssaoNoise)
     self:setKernelSize(kernelSize)
     self:setKernelRadius(kernelRadius)
