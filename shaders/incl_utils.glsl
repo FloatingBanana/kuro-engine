@@ -1,3 +1,11 @@
+vec3 ProjectUV(vec3 position, mat4 proj) {
+    vec4 clipPos = proj * vec4(position, 1.0);
+    vec3 screen = (clipPos.xyz / clipPos.w) * vec3(0.5, -0.5, 0.5) + 0.5;
+
+    return screen;
+}
+
+
 vec3 ReconstructPosition(vec2 uv, float depth, mat4 invProj) {
     float x = uv.x * 2.0 - 1.0;
     float y = (1.0 - uv.y) * 2.0 - 1.0;
@@ -8,7 +16,6 @@ vec3 ReconstructPosition(vec2 uv, float depth, mat4 invProj) {
     
     return position_v.xyz / position_v.w;
 }
-
 
 vec3 ReconstructPosition(vec2 uv, sampler2D depthBuffer, mat4 invProj) {
     return ReconstructPosition(uv, texture2D(depthBuffer, uv).r, invProj);
@@ -54,6 +61,12 @@ vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj) {
 }
 
 
+float LinearizeDepth(float depth, float near, float far) {
+    float z = depth * 2.0 - 1.0;
+    return (2.0 * near * far) / (far + near + z * (far - near)) / far;
+}
+
+
 #ifndef VELOCITY_ENCODE_PRECISION
 #   define VELOCITY_ENCODE_PRECISION 3.0
 #endif
@@ -75,6 +88,15 @@ float Luminance(vec3 color) {
 
 float LuminanceGamma(vec3 color) {
     return sqrt(dot(color, lumFactor));
+}
+
+
+bool Check01Range(float v) {
+    return v >= 0.0 && v <= 1.0;
+}
+
+bool Check01Range(vec2 v) {
+    return Check01Range(v.x) && Check01Range(v.y);
 }
 
 

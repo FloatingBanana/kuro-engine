@@ -52,20 +52,14 @@ vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
 
     float occlusion = 0.0;
     for (int i = 0; i < u_kernelSize; i++) {
-        vec3 samplePos = tbn * u_samples[i];
-        samplePos = fragPos + samplePos * u_kernelRadius;
-
-        vec4 offset = vec4(samplePos, 1.0);
-        offset = u_projection * offset;
-        offset.y *= -1.0;
-        offset.xyz /= offset.w;
-        offset.xyz = offset.xyz * 0.5 + 0.5;
-
+        vec3 samplePos = fragPos + (tbn * u_samples[i] * u_kernelRadius);
+        vec2 offset = ProjectUV(samplePos, u_projection).xy;
         vec3 samplePosView;
+
 #       if defined(SAMPLE_DEPTH_ACCURATE) || defined(SAMPLE_DEPTH_NAIVE)
-            samplePosView = ReconstructPosition(offset.xy, u_depthBuffer, u_invProjection);
+            samplePosView = ReconstructPosition(offset, u_depthBuffer, u_invProjection);
 #       else
-            vec4 wSamplePosView = texture2D(u_gPosition, offset.xy);
+            vec4 wSamplePosView = texture2D(u_gPosition, offset);
             if (wSamplePosView.xyz == vec3(0)) continue;
 
             samplePosView = (u_view * wSamplePosView).xyz;
