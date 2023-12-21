@@ -14,7 +14,11 @@ local Utils = {
 ---@param defaultDefines table?
 ---@return love.Shader
 function Utils.newPreProcessedShader(shader, defaultDefines)
-	return love.graphics.newShader(Utils.preprocessShader(shader, defaultDefines))
+	local code = Utils.preprocessShader(shader, defaultDefines)
+	local ok, err = love.graphics.validateShader(false, code);
+	
+	assert(ok, ("Failed to load shader '%s': %s"):format(shader:gsub("\n.*", "..."), err))
+	return love.graphics.newShader(code)
 end
 
 
