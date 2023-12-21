@@ -1,6 +1,5 @@
 #pragma language glsl3
-
-//#define SAMPLE_DEPTH_ACCURATE
+#pragma include "engine/shaders/incl_utils.glsl"
 
 uniform sampler2D u_gPosition;
 uniform sampler2D u_gNormal;
@@ -18,14 +17,8 @@ uniform float u_kernelRadius;
 
 const float depthBias = 0.025;
 
-
-vec3 ReconstructPosition(vec2 uv, sampler2D depthBuffer, mat4 invProj);
-vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj, out vec3 position);
-#pragma include "engine/shaders/incl_utils.glsl"
-
-
-vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
-    vec3 randomVec = vec3(texture2D(u_noiseTex, texcoords * u_noiseScale).xy * 2.0 - 1.0, 0);
+vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
+    vec3 randomVec = vec3(texture(u_noiseTex, texcoords * u_noiseScale).xy * 2.0 - 1.0, 0);
     vec3 fragPos;
     vec3 normal;
 
@@ -38,11 +31,11 @@ vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
         normal = normalize(cross(dFdy(fragPos), dFdx(fragPos)));
 #   else
         // For deferred rendering (best peformance and perfect accuracy)
-        vec4 wFragPos = texture2D(u_gPosition, texcoords);
+        vec4 wFragPos = texture(u_gPosition, texcoords);
         if (wFragPos.xyz == vec3(0)) return vec4(0);
 
         fragPos = (u_view * wFragPos).xyz;
-        normal = mat3(u_view) * texture2D(u_gNormal, texcoords).xyz;
+        normal = mat3(u_view) * texture(u_gNormal, texcoords).xyz;
 #   endif
 
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
@@ -51,8 +44,7 @@ vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
 
     float occlusion = 0.0;
     for (int i = 0; i < u_kernelSize; i++) {
-        vec3 samplePos = tbn * u_samples[i];
-        samplePos = fragPos + samplePos * u_kernelRadius;
+        vec3 samplePos = fragPos + tbn * u_samples[i] * u_kernelRadius;
 
         vec4 offset = vec4(samplePos, 1.0);
         offset = u_projection * offset;
@@ -64,7 +56,7 @@ vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
 #       if defined(SAMPLE_DEPTH_ACCURATE) || defined(SAMPLE_DEPTH_NAIVE)
             samplePosView = ReconstructPosition(offset.xy, u_depthBuffer, u_invProjection);
 #       else
-            vec4 wSamplePosView = texture2D(u_gPosition, offset.xy);
+            vec4 wSamplePosView = texture(u_gPosition, offset.xy);
             if (wSamplePosView.xyz == vec3(0)) continue;
 
             samplePosView = (u_view * wSamplePosView).xyz;

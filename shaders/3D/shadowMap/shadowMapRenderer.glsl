@@ -1,8 +1,9 @@
 #pragma language glsl3
-#define MAX_BONE_COUNT 50
 
 
 #ifdef VERTEX
+#pragma include "engine/shaders/incl_utils.glsl"
+
 in vec3 VertexNormal;
 in vec4 VertexBoneIDs;
 in vec4 VertexWeights;
@@ -12,10 +13,6 @@ uniform mat4 u_viewProj;
 uniform mat4 u_world;
 uniform mat3 u_invTranspWorld;
 uniform mat4 u_boneMatrices[MAX_BONE_COUNT];
-
-
-mat4 GetSkinningMatrix(mat4 boneMatrices[MAX_BONE_COUNT], vec4 boneIDs, vec4 weights);
-#pragma include "engine/shaders/incl_utils.glsl"
 
 vec4 position(mat4 transformProjection, vec4 position) {
     mat4 skinMat = GetSkinningMatrix(u_boneMatrices, VertexBoneIDs, VertexWeights);

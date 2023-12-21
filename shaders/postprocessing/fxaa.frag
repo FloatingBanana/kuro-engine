@@ -1,4 +1,5 @@
 #pragma language glsl3
+#pragma include "engine/shaders/incl_utils.glsl"
 
 // https://github.com/kosua20/Rendu/blob/master/resources/common/shaders/screens/fxaa.frag
 
@@ -7,9 +8,6 @@
 #define ITERATIONS 12
 #define SUBPIXEL_QUALITY 0.75
 #define QUALITY(q) ((q) < 5 ? 1.0 : ((q) > 5 ? ((q) < 10 ? 2.0 : ((q) < 11 ? 4.0 : 8.0)) : 1.5))
-
-float LuminanceGamma(vec3 color);
-#pragma include "engine/shaders/incl_utils.glsl"
 
 
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {

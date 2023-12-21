@@ -23,10 +23,9 @@ vec4 position(mat4 _, vec4 position) {
 #endif
 
 #ifdef PIXEL
-uniform samplerCube u_skyTex;
-
-vec2 EncodeVelocity(vec2 vel);
 #pragma include "engine/shaders/incl_utils.glsl"
+
+uniform samplerCube u_skyTex;
 
 void effect() {
     vec2 vel = (v_clipPos.xy / v_clipPos.w) - (v_prevClipPos.xy / v_prevClipPos.w);

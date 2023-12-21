@@ -1,6 +1,3 @@
-#ifndef PHONG_LIGHT_STRUCT_DECLARED
-#define PHONG_LIGHT_STRUCT_DECLARED
-
 struct PhongLight {
     vec3 position;
     vec3 direction;
@@ -21,7 +18,6 @@ struct PhongLight {
 
     vec4 fragPos;
 };
-#endif
 
 
 vec3 CaculatePhongLighting(PhongLight light, vec3 fragLightDir, vec3 normal, vec3 viewDir, vec3 matDiffuseColor, float matShininess) {

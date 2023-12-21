@@ -8,17 +8,14 @@ end
 
 ---@param shader string
 ---@param defaultDefines table?
+---@param isIncludedFile boolean?
 ---@return string
-local function preprocessShader(shader, defaultDefines)
+local function preprocessShader(shader, defaultDefines, isIncludedFile)
 	local blockStack = Stack()
 	local parser = ParserHelper("", true)
 	local defines = {}
 	local lineNumber = 0
-
-	local file, err = love.filesystem.read(shader)
-	if file then
-		shader = file
-	end
+	shader = love.filesystem.read(shader) or shader
 
 	local mainBlock = {}
 	blockStack:push(mainBlock)
@@ -30,9 +27,14 @@ local function preprocessShader(shader, defaultDefines)
 		else
 			table.insert(mainBlock, ("#define %s %s\n"):format(k, v))
 		end
-
-		table.insert(mainBlock, "#line 0\n")
 	end
+
+	if not isIncludedFile then
+		table.insert(mainBlock, "#line 0\n")
+		table.insert(mainBlock, preprocessShader("engine/shaders/default.glsl", {}, true))
+	end
+
+	table.insert(mainBlock, "#line 0\n")
 
 	for line in shader:gmatch("[^\n]+") do
 		local result = line
@@ -53,6 +55,11 @@ local function preprocessShader(shader, defaultDefines)
 			if parser:eat("undef") then
 				local name = parser:eatMatch(ParserHelper.IdentifierPattern)
 				defines[name] = nil
+			end
+
+			if parser:eat("line") then
+				local number = parser:eatMatch(ParserHelper.NumberPattern)
+				lineNumber = tonumber(number)
 			end
 
 			-- Handle special pragma directives

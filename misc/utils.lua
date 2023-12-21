@@ -1,4 +1,6 @@
-local Lume = require "engine.3rdparty.lume"
+local Lume   = require "engine.3rdparty.lume"
+local Object = require "engine.3rdparty.classic.classic"
+local ffi    = require "ffi"
 
 
 local Utils = {
@@ -20,11 +22,24 @@ function Utils.combineShaders(vert, frag)
 end
 
 
+---@param shader love.Shader
+---@param uniform string
+---@param ... any
+---@return boolean
+function Utils.trySendUniform(shader, uniform, ...)
+	if shader:hasUniform(uniform) then
+		shader:send(uniform, ...)
+		return true
+	end
+	return false
+end
+
+
 ---@param shaderStr string
 ---@param defaultDefines table?
 ---@return love.Shader
 function Utils.newPreProcessedShader(shaderStr, defaultDefines)
-	return love.graphics.newShader(Utils.preprocessShader(shaderStr, defaultDefines))
+	return love.graphics.newShader(Utils.preprocessShader(shaderStr, defaultDefines, false))
 end
 
 
@@ -86,6 +101,46 @@ function Utils.containsTable(t1, t2, ignoreArrayOrder)
     	end
 	end
 	return true
+end
+
+
+---@param v any
+---@return string|ffi.ctype*|Object
+function Utils.getType(v)
+	if type(v) == "table" and v.is and v:is(Object) then
+		return getmetatable(v)
+	elseif type(v) == "table" and v.typename then
+		return v.typename
+	elseif type(v) == "cdata" then
+		return ffi.typeof(v)
+	else
+		return type(v)
+	end
+end
+
+
+
+local function copyTable(t, refs)
+	local result = {}
+	refs[t] = result
+
+	for key, value in pairs(t) do
+		local nkey   = refs[key]   or type(key)   == "table" and copyTable(key, refs)   or key
+		local nvalue = refs[value] or type(value) == "table" and copyTable(value, refs) or value
+
+		refs[key] = nkey
+		refs[value] = nvalue
+
+		result[nkey] = nvalue
+	end
+
+	return result
+end
+
+---@param t table
+---@return table
+function Utils.deepCopy(t)
+	return setmetatable(copyTable(t, {}), getmetatable(t))
 end
 
 

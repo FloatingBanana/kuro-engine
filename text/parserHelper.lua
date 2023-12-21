@@ -14,9 +14,10 @@ local Object = require "engine.3rdparty.classic.classic"
 local Parser = Object:extend()
 
 
-Parser.WhitespacePattern = "[\n\r%s]*"
-Parser.AlphanumericPattern = "[a-zA-Z0-9]*"
-Parser.IdentifierPattern = "[a-zA-Z0-9_]*"
+Parser.WhitespacePattern = "%s*"
+Parser.AlphanumericPattern = "%w*"
+Parser.IdentifierPattern = "%a+[%w_]*"
+Parser.NumberPattern = "%d*%.?%d+"
 
 
 function Parser:new(text, autoSkipWhitespaces)

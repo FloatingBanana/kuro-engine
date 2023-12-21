@@ -22,13 +22,6 @@ local lightPassShaders = {
 }
 
 
-local function sendUniformIfExist(shader, uniform, value)
-    if shader:hasUniform(uniform) then
-        shader:send(uniform, value)
-    end
-end
-
-
 --- @alias GBuffer {position: love.Canvas, normal: love.Canvas, albedoSpec: love.Canvas}
 
 --- @class DeferredRenderer: BaseRenderer
@@ -105,10 +98,10 @@ function DeferredRenderer:renderMeshes(camera)
 
         local lightShader = lightPassShaders[getmetatable(light)]
 
-        sendUniformIfExist(lightShader, "u_viewPosition", camera.position:toFlatTable())
-        sendUniformIfExist(lightShader, "u_gPosition",    self.gbuffer.position)
-        sendUniformIfExist(lightShader, "u_gNormal",      self.gbuffer.normal)
-        sendUniformIfExist(lightShader, "u_gAlbedoSpec",  self.gbuffer.albedoSpec)
+        Utils.trySendUniform(lightShader, "u_viewPosition", camera.position:toFlatTable())
+        Utils.trySendUniform(lightShader, "u_gPosition",    self.gbuffer.position)
+        Utils.trySendUniform(lightShader, "u_gNormal",      self.gbuffer.normal)
+        Utils.trySendUniform(lightShader, "u_gAlbedoSpec",  self.gbuffer.albedoSpec)
 
         light:generateShadowMap(self.meshparts)
         light:applyLighting(lightShader)

@@ -1,6 +1,6 @@
 local Material = require "engine.3D.materials.baseMaterial"
 local Matrix   = require "engine.math.matrix"
-local Vector3  = require "engine.math.vector3"
+local Utils    = require "engine.misc.utils"
 
 
 --- @class ForwardEmissiveMaterial: BaseMaterial
@@ -21,7 +21,7 @@ function EmissiveMat:new(model, aiMat)
         viewProjectionMatrix = {uniform = "u_viewProj",       value = Matrix()},
     }
 
-    local shader = love.graphics.newShader("engine/shaders/3D/forwardRendering/emissive.glsl")
+    local shader = Utils.newPreProcessedShader("engine/shaders/3D/forwardRendering/emissive.glsl")
 
     Material.new(self, model, shader, attributes)
 end
