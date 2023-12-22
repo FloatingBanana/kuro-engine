@@ -39,10 +39,10 @@ end
 ---@param defaultDefines table?
 ---@return love.Shader
 function Utils.newPreProcessedShader(shaderStr, defaultDefines)
-	local code = Utils.preprocessShader(shader, defaultDefines)
+	local code = Utils.preprocessShader(shaderStr, defaultDefines)
 	local ok, err = love.graphics.validateShader(false, code);
 	
-	assert(ok, ("Failed to load shader '%s': %s"):format(shader:gsub("\n.*", "..."), err))
+	assert(ok, ("Failed to load shader '%s': %s"):format(shaderStr:gsub("\n.*", "..."), err))
 	return love.graphics.newShader(code)
 end
 
