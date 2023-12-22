@@ -56,7 +56,7 @@ function Material:__newindex(key, value)
     if rawget(self, "__attrs") and self.__attrs[key] then
         local attr = self.__attrs[key]
 
-        if not value then
+        if rawequal(value, nil) then
             print("Attempt to assign nil to '"..key.."' material attribute")
             return
         end

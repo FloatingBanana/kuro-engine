@@ -1,8 +1,9 @@
-varying vec2 v_texCoords;
+#pragma language glsl3
 
 #ifdef VERTEX
-attribute vec2 VertexTexCoords;
-attribute vec3 VertexNormal;
+in vec2 VertexTexCoords;
+in vec3 VertexNormal;
+out vec2 v_texCoords;
 
 uniform mat4 u_world;
 uniform mat4 u_viewProj;
@@ -14,20 +15,19 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
     // Assigning outputs
     v_texCoords = VertexTexCoords;
-
     // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
-    if (u_isCanvasEnabled)
-        screen.y *= -1.0;
+    screen.y *= (u_isCanvasEnabled ? -1 : 1);
 
     return screen;
 }
 #endif
 
 #ifdef PIXEL
+in vec2 v_texCoords;
 uniform sampler2D u_diffuseTexture;
 uniform float u_strenght;
 
-void effect() {
-    gl_FragColor = Texel(u_diffuseTexture, v_texCoords) * u_strenght;
+vec4 effect(EFFECTARGS) {
+    return texture(u_diffuseTexture, v_texCoords) * u_strenght;
 }
 #endif

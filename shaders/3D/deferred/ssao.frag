@@ -1,6 +1,5 @@
 #pragma language glsl3
-
-//#define SAMPLE_DEPTH_ACCURATE
+#pragma include "engine/shaders/incl_utils.glsl"
 
 uniform sampler2D u_gPosition;
 uniform sampler2D u_gNormal;
@@ -18,32 +17,25 @@ uniform float u_kernelRadius;
 
 const float depthBias = 0.025;
 
-
-vec3 ReconstructPosition(vec2 uv, sampler2D depthBuffer, mat4 invProj);
-vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj);
-#pragma include "engine/shaders/incl_utils.glsl"
-
-
-vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
-    vec3 randomVec = vec3(texture2D(u_noiseTex, texcoords * u_noiseScale).xy * 2.0 - 1.0, 0);
+vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
+    vec3 randomVec = vec3(texture(u_noiseTex, texcoords * u_noiseScale).xy * 2.0 - 1.0, 0);
     vec3 fragPos;
     vec3 normal;
 
 #   if defined(SAMPLE_DEPTH_ACCURATE)
         // Better quality
-        fragPos = ReconstructPosition(texcoords, u_depthBuffer, u_invProjection);
-        normal = ReconstructNormal(u_depthBuffer, texcoords, u_invProjection);
+        normal = ReconstructNormal(u_depthBuffer, texcoords, u_invProjection, fragPos);
 #   elif defined(SAMPLE_DEPTH_NAIVE)
         // Better peformance
         fragPos = ReconstructPosition(texcoords, u_depthBuffer, u_invProjection);
         normal = normalize(cross(dFdy(fragPos), dFdx(fragPos)));
 #   else
         // For deferred rendering (best peformance and perfect accuracy)
-        vec4 wFragPos = texture2D(u_gPosition, texcoords);
+        vec4 wFragPos = texture(u_gPosition, texcoords);
         if (wFragPos.xyz == vec3(0)) return vec4(0);
 
         fragPos = (u_view * wFragPos).xyz;
-        normal = mat3(u_view) * texture2D(u_gNormal, texcoords).xyz;
+        normal = mat3(u_view) * texture(u_gNormal, texcoords).xyz;
 #   endif
 
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));

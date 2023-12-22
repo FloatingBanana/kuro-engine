@@ -22,7 +22,7 @@ local textureTypes = {"diffuse", "normals"}
 local linearTexTypes = {normals = true}
 
 
---- @alias ModelLoadingOptions {materials: table<string, BaseMaterial>}
+--- @alias ModelLoadingOptions {materials: table<string, BaseMaterial>, flags: string[]}
 --- @alias BoneInfo {id: integer, offset: Matrix}
 
 --- @class Model: Object

@@ -1,6 +1,6 @@
 #pragma language glsl3
+#pragma include "engine/shaders/incl_utils.glsl"
 
-#define MAX_BONE_COUNT 50
 #define GPosition love_Canvases[0]
 #define GNormal love_Canvases[1]
 #define GAlbedoSpecular love_Canvases[2]
@@ -12,12 +12,6 @@ varying vec4 v_clipPos;
 varying vec4 v_prevClipPos;
 varying vec2 v_texCoords;
 varying mat3 v_tbnMatrix;
-
-
-vec2 EncodeVelocity(vec2 vel);
-mat3 GetTBNMatrix(mat4 world, vec3 normal, vec3 tangent);
-mat4 GetSkinningMatrix(mat4 boneMatrices[MAX_BONE_COUNT], vec4 boneIDs, vec4 weights);
-#pragma include "engine/shaders/incl_utils.glsl"
 
 
 #ifdef VERTEX
@@ -68,8 +62,8 @@ void effect() {
     vec2 prevClipPos = (v_prevClipPos.xy / v_prevClipPos.w);
 
     GPosition       = vec4(v_fragPos, 1.0);
-    GNormal         = vec4(normalize(v_tbnMatrix * (Texel(u_normalMap, v_texCoords).rgb * 2.0 - 1.0)), 1.0);
-    GAlbedoSpecular = vec4(Texel(u_diffuseTexture, v_texCoords).rgb, u_shininess);
+    GNormal         = vec4(normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0)), 1.0);
+    GAlbedoSpecular = vec4(texture(u_diffuseTexture, v_texCoords).rgb, u_shininess);
     GVelocity       = vec4(EncodeVelocity(clipPos - prevClipPos), 1, 1);
 }
 #endif

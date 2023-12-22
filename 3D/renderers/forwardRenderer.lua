@@ -5,16 +5,11 @@ local lg = love.graphics
 local black = {0,0,0,0}
 local depthPrePassShader = Utils.newPreProcessedShader([[
 #pragma language glsl3
+#pragma include "engine/shaders/incl_utils.glsl"
 #define Velocity love_Canvases[1]
-#define MAX_BONE_COUNT 50
 
 smooth varying vec4 v_clipPos;
 smooth varying vec4 v_prevClipPos;
-
-
-vec2 EncodeVelocity(vec2 vel);
-mat4 GetSkinningMatrix(mat4 boneMatrices[MAX_BONE_COUNT], vec4 boneIDs, vec4 weights);
-#pragma include "engine/shaders/incl_utils.glsl"
 
 
 #ifdef VERTEX

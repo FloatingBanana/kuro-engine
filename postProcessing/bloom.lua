@@ -11,7 +11,7 @@ float Luminance(vec3 color);
 #pragma include "engine/shaders/incl_utils.glsl"
 
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
-    vec3 pixel = Texel(tex, texcoords).rgb;
+    vec3 pixel = texture(tex, texcoords).rgb;
     float lum = Luminance(pixel);
     float shine = max(0.0, lum - u_treshold);
     
