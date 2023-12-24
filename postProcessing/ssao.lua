@@ -74,17 +74,15 @@ function SSAO:onPreRender(renderer, camera)
     love.graphics.clear()
 
     self.shader:send("u_projection", "column", camera.projectionMatrix:toFlatTable())
+    self.shader:send("u_invProjection", "column", camera.projectionMatrix:invert():toFlatTable())
+    self.shader:send("u_depthBuffer", renderer.depthCanvas)
 
     if self.algorithm == "deferred" then
         assert(renderer:is(DeferredRenderer), "SSAO's 'deferred' algorithm can only be used in a deferred renderer")
         
         --- @cast renderer DeferredRenderer
-        self.shader:send("u_gPosition", renderer.gbuffer.position)
         self.shader:send("u_gNormal", renderer.gbuffer.normal)
         self.shader:send("u_view", "column", camera.viewMatrix:toFlatTable())
-    else
-        self.shader:send("u_invProjection", "column", camera.projectionMatrix.inverse:toFlatTable())
-        self.shader:send("u_depthBuffer", renderer.depthCanvas)
     end
 
     love.graphics.draw(self.dummySquare)

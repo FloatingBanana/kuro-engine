@@ -1,7 +1,6 @@
 #pragma language glsl3
 #pragma include "engine/shaders/incl_utils.glsl"
 
-uniform sampler2D u_gPosition;
 uniform sampler2D u_gNormal;
 uniform sampler2D u_gAlbedoSpec;
 uniform sampler2D u_noiseTex;
@@ -31,10 +30,7 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
         normal = normalize(cross(dFdy(fragPos), dFdx(fragPos)));
 #   else
         // For deferred rendering (best peformance and perfect accuracy)
-        vec4 wFragPos = texture(u_gPosition, texcoords);
-        if (wFragPos.xyz == vec3(0)) return vec4(0);
-
-        fragPos = (u_view * wFragPos).xyz;
+        fragPos = ReconstructPosition(texcoords, u_depthBuffer, u_invProjection);
         normal = mat3(u_view) * texture(u_gNormal, texcoords).xyz;
 #   endif
 
@@ -46,17 +42,8 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
     for (int i = 0; i < u_kernelSize; i++) {
         vec3 samplePos = fragPos + (tbn * u_samples[i] * u_kernelRadius);
         vec2 offset = ProjectUV(samplePos, u_projection).xy;
-        vec3 samplePosView;
 
-#       if defined(SAMPLE_DEPTH_ACCURATE) || defined(SAMPLE_DEPTH_NAIVE)
-            samplePosView = ReconstructPosition(offset, u_depthBuffer, u_invProjection);
-#       else
-            vec4 wSamplePosView = texture2D(u_gPosition, offset);
-            if (wSamplePosView.xyz == vec3(0)) continue;
-
-            samplePosView = (u_view * wSamplePosView).xyz;
-#       endif
-
+        vec3 samplePosView = ReconstructPosition(offset, u_depthBuffer, u_invProjection);
         float sampleDepth = samplePosView.z;
         float rangeCheck = smoothstep(0.0, 1.0, u_kernelRadius / abs(fragPos.z - sampleDepth));
 

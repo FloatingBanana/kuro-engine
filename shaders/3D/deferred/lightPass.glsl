@@ -12,12 +12,14 @@ vec4 position(mat4 transformProjection, vec4 position) {
 #endif
 
 #ifdef PIXEL
+#pragma include "engine/shaders/incl_utils.glsl"
 #pragma include "engine/shaders/3D/misc/incl_phongLighting.glsl"
 #pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
 
 uniform PhongLight light;
 uniform vec3 u_viewPosition;
-uniform sampler2D u_gPosition;
+uniform mat4 u_invViewProjMatrix;
+uniform sampler2D u_depthBuffer;
 uniform sampler2D u_gNormal;
 uniform sampler2D u_gAlbedoSpec;
 uniform sampler2D u_ssaoTex;
@@ -26,9 +28,9 @@ uniform samplerCube u_pointLightShadowMap;
 uniform mat4 u_lightMatrix;
 
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
-	vec2 uv = screencoords / textureSize(u_gPosition, 0); // Handle various volume shapes
+	vec2 uv = screencoords / textureSize(u_depthBuffer, 0); // Handle various volume shapes
 	
-    vec3 fragPos = texture(u_gPosition, uv).rgb;
+    vec3 fragPos = ReconstructPosition(uv, u_depthBuffer, u_invViewProjMatrix);
     vec3 normal = texture(u_gNormal, uv).rgb;
     vec3 albedo = texture(u_gAlbedoSpec, uv).rgb;
     float specular = texture(u_gAlbedoSpec, uv).a * 32.0; // hackish way to get the specular value, gonna fix later

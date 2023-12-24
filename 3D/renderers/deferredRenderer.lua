@@ -51,7 +51,7 @@ function DeferredRenderer:renderMeshes(camera)
     -- G-Buffer --
     --------------
 
-    lg.setCanvas({self.gbuffer.position, self.gbuffer.normal, self.gbuffer.albedoSpec, self.velocityBuffer, depthstencil = self.depthCanvas})
+    lg.setCanvas({self.gbuffer.normal, self.gbuffer.albedoSpec, self.velocityBuffer, depthstencil = self.depthCanvas})
     lg.clear(black, black, black, black) ---@diagnostic disable-line param-type-mismatch
 
     lg.setDepthMode("lequal", true)
@@ -98,10 +98,11 @@ function DeferredRenderer:renderMeshes(camera)
 
         local lightShader = lightPassShaders[getmetatable(light)]
 
-        Utils.trySendUniform(lightShader, "u_viewPosition", camera.position:toFlatTable())
-        Utils.trySendUniform(lightShader, "u_gPosition",    self.gbuffer.position)
-        Utils.trySendUniform(lightShader, "u_gNormal",      self.gbuffer.normal)
-        Utils.trySendUniform(lightShader, "u_gAlbedoSpec",  self.gbuffer.albedoSpec)
+        Utils.trySendUniform(lightShader, "u_viewPosition",                camera.position:toFlatTable())
+        Utils.trySendUniform(lightShader, "u_invViewProjMatrix", "column", camera.viewProjectionMatrix:invert():toFlatTable())
+        Utils.trySendUniform(lightShader, "u_depthBuffer",                 self.depthCanvas)
+        Utils.trySendUniform(lightShader, "u_gNormal",                     self.gbuffer.normal)
+        Utils.trySendUniform(lightShader, "u_gAlbedoSpec",                 self.gbuffer.albedoSpec)
 
         light:generateShadowMap(self.meshparts)
         light:applyLighting(lightShader)
@@ -112,7 +113,7 @@ function DeferredRenderer:renderMeshes(camera)
 
         lg.setShader(lightShader)
 
-        if light:is(PointLight) then ---@cast light PointLight
+        if false and light:is(PointLight) then ---@cast light PointLight
             local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * camera.viewProjectionMatrix
             lightShader:send("u_volumeTransform", "column", transform:toFlatTable())
             lg.draw(volume.buffer)

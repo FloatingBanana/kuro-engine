@@ -1,13 +1,11 @@
 #pragma language glsl3
 #pragma include "engine/shaders/incl_utils.glsl"
 
-#define GPosition love_Canvases[0]
-#define GNormal love_Canvases[1]
-#define GAlbedoSpecular love_Canvases[2]
-#define GVelocity love_Canvases[3]
+#define GNormal love_Canvases[0]
+#define GAlbedoSpecular love_Canvases[1]
+#define GVelocity love_Canvases[2]
 
 
-varying vec3 v_fragPos;
 varying vec4 v_clipPos;
 varying vec4 v_prevClipPos;
 varying vec2 v_texCoords;
@@ -38,10 +36,9 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
 
     // Assigning outputs
-    v_tbnMatrix = GetTBNMatrix(u_world, normalSkinMat * VertexNormal, normalSkinMat * VertexTangent);
-    v_fragPos = worldPos.xyz;
-    v_texCoords = VertexTexCoords;
-    v_clipPos = screen;
+    v_tbnMatrix   = GetTBNMatrix(u_world, normalSkinMat * VertexNormal, normalSkinMat * VertexTangent);
+    v_texCoords   = VertexTexCoords;
+    v_clipPos     = screen;
     v_prevClipPos = u_prevTransform * position;
 
     // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
@@ -61,7 +58,6 @@ void effect() {
     vec2 clipPos = (v_clipPos.xy / v_clipPos.w);
     vec2 prevClipPos = (v_prevClipPos.xy / v_prevClipPos.w);
 
-    GPosition       = vec4(v_fragPos, 1.0);
     GNormal         = vec4(normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0)), 1.0);
     GAlbedoSpecular = vec4(texture(u_diffuseTexture, v_texCoords).rgb, u_shininess);
     GVelocity       = vec4(EncodeVelocity(clipPos - prevClipPos), 1, 1);
