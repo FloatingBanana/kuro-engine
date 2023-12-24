@@ -10,11 +10,9 @@ vec3 ReconstructPosition(vec2 uv, float depth, mat4 invProj) {
     float x = uv.x * 2.0 - 1.0;
     float y = (1.0 - uv.y) * 2.0 - 1.0;
     float z = depth * 2.0 - 1.0;
+    vec4 pos = invProj * vec4(x, y, z, 1.0);
 
-    vec4 position_s = vec4(x, y, z, 1.0);
-    vec4 position_v = invProj * position_s;
-    
-    return position_v.xyz / position_v.w;
+    return pos.xyz / pos.w;
 }
 
 vec3 ReconstructPosition(vec2 uv, sampler2D depthBuffer, mat4 invProj) {
