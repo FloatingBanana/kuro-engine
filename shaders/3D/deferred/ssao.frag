@@ -31,7 +31,7 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 #   else
         // For deferred rendering (best peformance and perfect accuracy)
         fragPos = ReconstructPosition(texcoords, u_depthBuffer, u_invProjection);
-        normal = mat3(u_view) * texture(u_gNormal, texcoords).xyz;
+        normal = mat3(u_view) * DecodeNormal(texture(u_gNormal, texcoords).xy);
 #   endif
 
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));

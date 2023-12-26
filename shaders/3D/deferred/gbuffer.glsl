@@ -57,8 +57,9 @@ uniform float u_shininess;
 void effect() {
     vec2 clipPos = (v_clipPos.xy / v_clipPos.w);
     vec2 prevClipPos = (v_prevClipPos.xy / v_prevClipPos.w);
+    vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0));
 
-    GNormal         = vec4(normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0)), 1.0);
+    GNormal         = vec4(EncodeNormal(normal), 1.0, 1.0);
     GAlbedoSpecular = vec4(texture(u_diffuseTexture, v_texCoords).rgb, u_shininess);
     GVelocity       = vec4(EncodeVelocity(clipPos - prevClipPos), 1, 1);
 }

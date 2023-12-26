@@ -39,8 +39,7 @@ function DeferredRenderer:new(screensize, postProcessingEffects)
     self.dummySquare = Utils.newSquareMesh(screensize)
 
     self.gbuffer = {
-        position   = lg.newCanvas(screensize.width, screensize.height, {format = "rgba16f"}),
-        normal     = lg.newCanvas(screensize.width, screensize.height, {format = "rgba16f"}),
+        normal     = lg.newCanvas(screensize.width, screensize.height),
         albedoSpec = lg.newCanvas(screensize.width, screensize.height)
     }
 end

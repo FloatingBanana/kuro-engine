@@ -28,12 +28,14 @@ uniform samplerCube u_pointLightShadowMap;
 uniform mat4 u_lightMatrix;
 
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
-	vec2 uv = screencoords / textureSize(u_depthBuffer, 0); // Handle various volume shapes
+    vec2 uv = screencoords / textureSize(u_depthBuffer, 0); // Handle various volume shapes
+
+	vec4 albedoSpecular = texture(u_gAlbedoSpec, uv);
 	
-    vec3 fragPos = ReconstructPosition(uv, u_depthBuffer, u_invViewProjMatrix);
-    vec3 normal = texture(u_gNormal, uv).rgb;
-    vec3 albedo = texture(u_gAlbedoSpec, uv).rgb;
-    float specular = texture(u_gAlbedoSpec, uv).a * 32.0; // hackish way to get the specular value, gonna fix later
+    vec3 fragPos   = ReconstructPosition(uv, u_depthBuffer, u_invViewProjMatrix);
+    vec3 normal    = DecodeNormal(texture(u_gNormal, uv).xy);
+    vec3 albedo    = albedoSpecular.rgb;
+    float specular = albedoSpecular.a * 32.0;
 
     vec4 lightSpaceFragPos = u_lightMatrix * vec4(fragPos, 1.0);
     vec3 viewDir = normalize(u_viewPosition - fragPos);
