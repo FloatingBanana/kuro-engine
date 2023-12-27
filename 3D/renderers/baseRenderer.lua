@@ -70,8 +70,10 @@ function Renderer:renderMeshes()
 end
 
 
----@param camera Camera
+---@param camera Camera3D
 function Renderer:render(camera)
+    camera:updateMatrices()
+
     love.graphics.push("all")
     self:renderMeshes(camera)
     love.graphics.pop()

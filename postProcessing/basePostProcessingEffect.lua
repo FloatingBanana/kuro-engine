@@ -7,7 +7,7 @@ local baseEffect = Object:extend()
 
 
 --- @param renderer BaseRenderer
---- @param camera Camera
+--- @param camera Camera3D
 function baseEffect:onPreRender(renderer, camera)
 
 end
@@ -22,7 +22,7 @@ end
 
 --- @param renderer BaseRenderer
 --- @param canvas love.Canvas
---- @param camera Camera
+--- @param camera Camera3D
 --- @return love.Canvas
 --- @nodiscard
 function baseEffect:onPostRender(renderer, canvas, camera)

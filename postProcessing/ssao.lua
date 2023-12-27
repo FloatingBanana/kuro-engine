@@ -67,14 +67,14 @@ end
 
 
 --- @param renderer BaseRenderer
---- @param camera Camera
+--- @param camera Camera3D
 function SSAO:onPreRender(renderer, camera)
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.setShader(self.shader)
     love.graphics.clear()
 
     self.shader:send("u_projection", "column", camera.projectionMatrix:toFlatTable())
-    self.shader:send("u_invProjection", "column", camera.projectionMatrix:invert():toFlatTable())
+    self.shader:send("u_invProjection", "column", camera.projectionMatrix.inverse:toFlatTable())
     self.shader:send("u_depthBuffer", renderer.depthCanvas)
 
     if self.algorithm == "deferred" then

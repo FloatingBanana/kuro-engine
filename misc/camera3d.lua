@@ -2,7 +2,7 @@ local Matrix  = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
 local Object  = require "engine.3rdparty.classic.classic"
 
---- @class Camera
+--- @class Camera3D
 --- 
 --- @field position Vector3
 --- @field rotation Quaternion
@@ -13,8 +13,11 @@ local Object  = require "engine.3rdparty.classic.classic"
 --- @field viewMatrix Matrix
 --- @field projectionMatrix Matrix
 --- @field viewProjectionMatrix Matrix
+--- @field invViewMatrix Matrix
+--- @field invProjectionMatrix Matrix
+--- @field invViewProjectionMatrix Matrix
 ---
---- @operator call: Camera
+--- @operator call: Camera3D
 local Camera = Object:extend()
 
 function Camera:new(position, rotation, fov, aspectRatio, nearPlane, farPlane)
@@ -24,6 +27,14 @@ function Camera:new(position, rotation, fov, aspectRatio, nearPlane, farPlane)
     self.aspectRatio = aspectRatio
     self.nearPlane = nearPlane
     self.farPlane = farPlane
+
+    self.viewMatrix = nil
+    self.projectionMatrix = nil
+    self.viewProjectionMatrix = nil
+
+    self.invViewMatrix = nil
+    self.invProjectionMatrix = nil
+    self.invViewProjectionMatrix = nil
 end
 
 function Camera:__index(key)
@@ -40,6 +51,16 @@ function Camera:__index(key)
     end
 
     return Camera[key]
+end
+
+function Camera:updateMatrices()
+    self.viewMatrix = Matrix.CreateLookAtDirection(self.position, Vector3(0,0,1):transform(self.rotation), Vector3(0,1,0):transform(self.rotation))
+    self.projectionMatrix = Matrix.CreatePerspectiveFOV(self.fov, self.aspectRatio, self.nearPlane, self.farPlane)
+    self.viewProjectionMatrix = self.viewMatrix * self.projectionMatrix
+
+    self.invViewMatrix = self.viewMatrix.inverse
+    self.invProjectionMatrix = self.projectionMatrix.inverse
+    self.invViewProjectionMatrix = self.viewProjectionMatrix.inverse
 end
 
 return Camera

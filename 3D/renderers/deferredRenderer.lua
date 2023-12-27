@@ -39,7 +39,7 @@ function DeferredRenderer:new(screensize, postProcessingEffects)
     self.dummySquare = Utils.newSquareMesh(screensize)
 
     self.gbuffer = {
-        normal     = lg.newCanvas(screensize.width, screensize.height),
+        normal     = lg.newCanvas(screensize.width, screensize.height, {format = "rg8"}),
         albedoSpec = lg.newCanvas(screensize.width, screensize.height)
     }
 end
@@ -98,7 +98,7 @@ function DeferredRenderer:renderMeshes(camera)
         local lightShader = lightPassShaders[getmetatable(light)]
 
         Utils.trySendUniform(lightShader, "u_viewPosition",                camera.position:toFlatTable())
-        Utils.trySendUniform(lightShader, "u_invViewProjMatrix", "column", camera.viewProjectionMatrix:invert():toFlatTable())
+        Utils.trySendUniform(lightShader, "u_invViewProjMatrix", "column", camera.viewProjectionMatrix.inverse:toFlatTable())
         Utils.trySendUniform(lightShader, "u_depthBuffer",                 self.depthCanvas)
         Utils.trySendUniform(lightShader, "u_gNormal",                     self.gbuffer.normal)
         Utils.trySendUniform(lightShader, "u_gAlbedoSpec",                 self.gbuffer.albedoSpec)
@@ -112,7 +112,7 @@ function DeferredRenderer:renderMeshes(camera)
 
         lg.setShader(lightShader)
 
-        if false and light:is(PointLight) then ---@cast light PointLight
+        if light:is(PointLight) then ---@cast light PointLight
             local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * camera.viewProjectionMatrix
             lightShader:send("u_volumeTransform", "column", transform:toFlatTable())
             lg.draw(volume.buffer)

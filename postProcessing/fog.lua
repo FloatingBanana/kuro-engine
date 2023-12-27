@@ -35,7 +35,7 @@ function Fog:onPostRender(renderer, canvas, camera)
 
     self.shader:send("u_depthBuffer", renderer.depthCanvas)
     self.shader:send("u_viewPos", camera.position:toFlatTable())
-    self.shader:send("u_invViewProj", "column", camera.viewProjectionMatrix:invert():toFlatTable())
+    self.shader:send("u_invViewProj", "column", camera.viewProjectionMatrix.inverse:toFlatTable())
     love.graphics.draw(canvas)
 
     love.graphics.setCanvas()

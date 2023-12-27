@@ -58,7 +58,7 @@ function ForwardRenderer:new(screensize, postProcessingEffects)
 end
 
 
---- @param camera Camera
+--- @param camera Camera3D
 function ForwardRenderer:renderMeshes(camera)
     local viewProj = camera.viewProjectionMatrix
 
