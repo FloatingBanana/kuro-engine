@@ -6,12 +6,10 @@ local Utils      = require "engine.misc.utils"
 
 local motionBlurShader = Utils.newPreProcessedShader([[
     #pragma language glsl3
+    #pragma include "engine/shaders/incl_utils.glsl"
 
     uniform sampler2D u_velocityBuffer;
     uniform float u_velocityScale;
-
-    vec2 DecodeVelocity(vec2 vel);
-    #pragma include "engine/shaders/incl_utils.glsl"
 
     vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
         vec2 pixelSize = 1.0 / textureSize(tex, 0);

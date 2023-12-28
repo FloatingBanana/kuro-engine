@@ -4,11 +4,9 @@ local lg = love.graphics
 
 local brightFilterShader = [[
 #pragma language glsl3
+#pragma include "engine/shaders/incl_utils.glsl"
 
 uniform float u_treshold;
-
-float Luminance(vec3 color);
-#pragma include "engine/shaders/incl_utils.glsl"
 
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
     vec3 pixel = texture(tex, texcoords).rgb;

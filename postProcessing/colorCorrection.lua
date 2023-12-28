@@ -3,17 +3,15 @@ local Utils = require "engine.misc.utils"
 
 local hdrShader = [[
     #pragma language glsl3
+    #pragma include "engine/shaders/incl_utils.glsl"
+
+    #define CLAMP(v) clamp(v, 0, 1)
 
     uniform vec3  u_filter;
     uniform float u_contrast;
     uniform float u_brightness;
     uniform float u_exposure;
     uniform float u_saturation;
-
-    #define CLAMP(v) clamp(v, 0, 1)
-
-    float Luminance(vec3 color);
-    #pragma include "engine/shaders/incl_utils.glsl"
 
     vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
         vec3 pixel = texture(tex, texcoords).rgb;
