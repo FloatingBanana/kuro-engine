@@ -1,4 +1,5 @@
 #pragma language glsl3
+#pragma include "engine/shaders/incl_commonBuffers.glsl"
 #pragma include "engine/shaders/3D/misc/incl_phongLighting.glsl"
 #pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
 
@@ -9,7 +10,6 @@ in mat3 v_tbnMatrix;
 in vec4 v_lightSpaceFragPos;
 
 uniform PhongLight light;
-uniform vec3 u_viewPosition;
 uniform float u_shininess;
 uniform sampler2D u_diffuseTexture;
 uniform sampler2D u_normalMap;
@@ -20,7 +20,7 @@ uniform samplerCube u_pointLightShadowMap;
 
 vec4 effect(EFFECTARGS) {
     vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0));
-    vec3 viewDir = normalize(u_viewPosition - v_fragPos);
+    vec3 viewDir = normalize(uViewPosition - v_fragPos);
     vec3 diffuseColor = texture(u_diffuseTexture, v_texCoords).xyz;
     vec3 result = vec3(0);
     float shadow = 0;
@@ -37,7 +37,7 @@ vec4 effect(EFFECTARGS) {
 
 #   ifdef LIGHT_TYPE_POINT
         result = CalculatePointLight(light, normal, viewDir, diffuseColor, u_shininess, v_fragPos);
-        shadow = ShadowCalculation(light.position, light.farPlane, u_pointLightShadowMap, u_viewPosition, v_fragPos);
+        shadow = ShadowCalculation(light.position, light.farPlane, u_pointLightShadowMap, uViewPosition, v_fragPos);
 #   endif
 
 #   ifdef LIGHT_TYPE_AMBIENT

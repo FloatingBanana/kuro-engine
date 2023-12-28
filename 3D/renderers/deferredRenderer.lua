@@ -62,15 +62,7 @@ function DeferredRenderer:renderMeshes(camera)
             settings.onDraw(part, settings)
         end
 
-        local mat = part.material
-        mat.worldMatrix = settings.worldMatrix
-        mat.viewProjectionMatrix = camera.viewProjectionMatrix
-        mat.previousTransformation = self.previousTransformations[part]
-
-        if settings.animator then
-            mat.boneMatrices = settings.animator.finalMatrices
-        end
-
+        self:sendCommonBuffers(part.material.shader, camera, part)
         part:draw()
     end
 
@@ -83,11 +75,11 @@ function DeferredRenderer:renderMeshes(camera)
     lg.setDepthMode()
     lg.setMeshCullMode("front")
     lg.setBlendMode("alpha", "alphamultiply")
-    
+
     for i, effect in ipairs(self.ppeffects) do
         effect:onPreRender(self, camera)
     end
-    
+
     lg.setBlendMode("add", "alphamultiply")
     lg.setCanvas(self.resultCanvas)
     lg.clear()
@@ -96,12 +88,7 @@ function DeferredRenderer:renderMeshes(camera)
         if not light.enabled then goto continue end
 
         local lightShader = lightPassShaders[getmetatable(light)]
-
-        Utils.trySendUniform(lightShader, "u_viewPosition",                camera.position:toFlatTable())
-        Utils.trySendUniform(lightShader, "u_invViewProjMatrix", "column", camera.viewProjectionMatrix.inverse:toFlatTable())
-        Utils.trySendUniform(lightShader, "u_depthBuffer",                 self.depthCanvas)
-        Utils.trySendUniform(lightShader, "u_gNormal",                     self.gbuffer.normal)
-        Utils.trySendUniform(lightShader, "u_gAlbedoSpec",                 self.gbuffer.albedoSpec)
+        self:sendCommonBuffers(lightShader, camera, nil)
 
         light:generateShadowMap(self.meshparts)
         light:applyLighting(lightShader)
@@ -120,13 +107,24 @@ function DeferredRenderer:renderMeshes(camera)
             lightShader:send("u_volumeTransform", "column", Matrix.CreateOrthographicOffCenter(0, WIDTH, HEIGHT, 0, 0, 1):toFlatTable())
             lg.draw(self.dummySquare)
         end
-        
+
         ::continue::
     end
-    
+
     lg.setShader()
     lg.setMeshCullMode("none")
     lg.setBlendMode("alpha", "alphamultiply")
+end
+
+
+---@param shader love.Shader
+---@param camera Camera3D
+---@param meshpart MeshPart?
+function DeferredRenderer:sendCommonBuffers(shader, camera, meshpart)
+    BaseRederer.sendCommonBuffers(self, shader, camera, meshpart)
+
+	Utils.trySendUniform(shader, "uGNormal", self.gbuffer.normal)
+	Utils.trySendUniform(shader, "uGAlbedoSpecular", self.gbuffer.albedoSpec)
 end
 
 

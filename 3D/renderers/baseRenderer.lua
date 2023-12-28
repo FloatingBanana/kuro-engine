@@ -1,5 +1,7 @@
-local Lume   = require "engine.3rdparty.lume"
-local Object = require "engine.3rdparty.classic.classic"
+local Lume    = require "engine.3rdparty.lume"
+local Vector3 = require "engine.math.vector3"
+local Utils   = require "engine.misc.utils"
+local Object  = require "engine.3rdparty.classic.classic"
 
 --- @alias MeshPartConfig {castShadows: boolean, ignoreLighting: boolean, worldMatrix: Matrix, animator: ModelAnimator, onDraw: function}
 
@@ -93,6 +95,42 @@ function Renderer:render(camera)
         local settings = self:getMeshpartSettings(meshpart)
 
         self.previousTransformations[meshpart] = settings.worldMatrix * camera.viewProjectionMatrix
+    end
+end
+
+
+---@param shader love.Shader
+---@param camera Camera3D
+---@param meshpart MeshPart?
+function Renderer:sendCommonBuffers(shader, camera, meshpart)
+	Utils.trySendUniform(shader, "uViewMatrix", "column", camera.viewMatrix:toFlatTable())
+	Utils.trySendUniform(shader, "uProjMatrix", "column", camera.projectionMatrix:toFlatTable())
+    Utils.trySendUniform(shader, "uViewProjMatrix", "column", camera.viewProjectionMatrix:toFlatTable())
+
+    Utils.trySendUniform(shader, "uInvViewMatrix", "column", camera.invViewMatrix:toFlatTable())
+	Utils.trySendUniform(shader, "uInvProjMatrix", "column", camera.invProjectionMatrix:toFlatTable())
+	Utils.trySendUniform(shader, "uInvViewProjMatrix", "column", camera.invViewProjectionMatrix:toFlatTable())
+
+    Utils.trySendUniform(shader, "uNearPlane", camera.nearPlane)
+    Utils.trySendUniform(shader, "uFarPlane", camera.farPlane)
+
+    Utils.trySendUniform(shader, "uViewPosition", camera.position:toFlatTable())
+	Utils.trySendUniform(shader, "uViewDirection", Vector3(0,0,1):transform(camera.rotation):toFlatTable())
+
+	Utils.trySendUniform(shader, "uTime", love.timer.getTime())
+	Utils.trySendUniform(shader, "uIsCanvasActive", love.graphics.getCanvas() ~= nil)
+	Utils.trySendUniform(shader, "uDepthBuffer", self.depthCanvas)
+	Utils.trySendUniform(shader, "uVelocityBuffer", self.velocityBuffer)
+
+    if meshpart then
+        local settings = self:getMeshpartSettings(meshpart)
+
+        Utils.trySendUniform(shader, "uWorldMatrix", "column", settings.worldMatrix:toFlatTable())
+        Utils.trySendUniform(shader, "uPrevTransform", "column", self.previousTransformations[meshpart]:toFlatTable())
+
+        if settings.animator then
+            Utils.trySendUniform(shader, "uBoneMatrices", settings.animator.finalMatrices)
+        end
     end
 end
 

@@ -1,9 +1,10 @@
 #pragma language glsl3
 #pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/incl_commonBuffers.glsl"
 
-#define GNormal love_Canvases[0]
-#define GAlbedoSpecular love_Canvases[1]
-#define GVelocity love_Canvases[2]
+#define oNormal love_Canvases[0]
+#define oAlbedoSpecular love_Canvases[1]
+#define oVelocity love_Canvases[2]
 
 
 varying vec4 v_clipPos;
@@ -19,30 +20,23 @@ in vec3 VertexTangent;
 in vec4 VertexBoneIDs;
 in vec4 VertexWeights;
 
-uniform mat4 u_world;
-uniform mat4 u_viewProj;
-uniform mat4 u_prevTransform;
-uniform bool u_isCanvasEnabled;
-uniform mat4 u_boneMatrices[MAX_BONE_COUNT];
-
-
 vec4 position(mat4 transformProjection, vec4 position) {
-    mat4 skinMat = GetSkinningMatrix(u_boneMatrices, VertexBoneIDs, VertexWeights);
+    mat4 skinMat = GetSkinningMatrix(uBoneMatrices, VertexBoneIDs, VertexWeights);
     mat3 normalSkinMat = mat3(skinMat);
     
     position = skinMat * position;
-    vec4 worldPos = u_world * position;
-    vec4 screen = u_viewProj * worldPos;
+    vec4 worldPos = uWorldMatrix * position;
+    vec4 screen = uViewProjMatrix * worldPos;
 
 
     // Assigning outputs
-    v_tbnMatrix   = GetTBNMatrix(u_world, normalSkinMat * VertexNormal, normalSkinMat * VertexTangent);
+    v_tbnMatrix   = GetTBNMatrix(uWorldMatrix, normalSkinMat * VertexNormal, normalSkinMat * VertexTangent);
     v_texCoords   = VertexTexCoords;
     v_clipPos     = screen;
-    v_prevClipPos = u_prevTransform * position;
+    v_prevClipPos = uPrevTransform * position;
 
     // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
-    screen.y *= (u_isCanvasEnabled ? -1 : 1);
+    screen.y *= (uIsCanvasActive ? -1 : 1);
 
     return screen;
 }
@@ -59,8 +53,8 @@ void effect() {
     vec2 prevClipPos = (v_prevClipPos.xy / v_prevClipPos.w);
     vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0));
 
-    GNormal         = vec4(EncodeNormal(normal), 1.0, 1.0);
-    GAlbedoSpecular = vec4(texture(u_diffuseTexture, v_texCoords).rgb, u_shininess);
-    GVelocity       = vec4(EncodeVelocity(clipPos - prevClipPos), 1, 1);
+    oNormal         = vec4(EncodeNormal(normal), 1.0, 1.0);
+    oAlbedoSpecular = vec4(texture(u_diffuseTexture, v_texCoords).rgb, u_shininess);
+    oVelocity       = vec4(EncodeVelocity(clipPos - prevClipPos), 1, 1);
 }
 #endif

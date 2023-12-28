@@ -1,15 +1,9 @@
 #pragma language glsl3
 #pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/incl_commonBuffers.glsl"
 
-uniform sampler2D u_gNormal;
-uniform sampler2D u_gAlbedoSpec;
 uniform sampler2D u_noiseTex;
-uniform sampler2D u_depthBuffer;
-
 uniform vec3 u_samples[64];
-uniform mat4 u_view;
-uniform mat4 u_projection;
-uniform mat4 u_invProjection;
 uniform vec2 u_noiseScale;
 uniform int u_kernelSize;
 uniform float u_kernelRadius;
@@ -23,15 +17,15 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 
 #   if defined(SAMPLE_DEPTH_ACCURATE)
         // Better quality
-        normal = ReconstructNormal(u_depthBuffer, texcoords, u_invProjection, fragPos);
+        normal = ReconstructNormal(uDepthBuffer, texcoords, uInvProjMatrix, fragPos);
 #   elif defined(SAMPLE_DEPTH_NAIVE)
         // Better peformance
-        fragPos = ReconstructPosition(texcoords, u_depthBuffer, u_invProjection);
+        fragPos = ReconstructPosition(texcoords, uDepthBuffer, uInvProjMatrix);
         normal = normalize(cross(dFdy(fragPos), dFdx(fragPos)));
 #   else
         // For deferred rendering (best peformance and perfect accuracy)
-        fragPos = ReconstructPosition(texcoords, u_depthBuffer, u_invProjection);
-        normal = mat3(u_view) * DecodeNormal(texture(u_gNormal, texcoords).xy);
+        fragPos = ReconstructPosition(texcoords, uDepthBuffer, uInvProjMatrix);
+        normal = mat3(uViewMatrix) * DecodeNormal(texture(uGNormal, texcoords).xy);
 #   endif
 
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
@@ -41,9 +35,9 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
     float occlusion = 0.0;
     for (int i = 0; i < u_kernelSize; i++) {
         vec3 samplePos = fragPos + (tbn * u_samples[i] * u_kernelRadius);
-        vec2 offset = ProjectUV(samplePos, u_projection).xy;
+        vec2 offset = ProjectUV(samplePos, uProjMatrix).xy;
 
-        vec3 samplePosView = ReconstructPosition(offset, u_depthBuffer, u_invProjection);
+        vec3 samplePosView = ReconstructPosition(offset, uDepthBuffer, uInvProjMatrix);
         float sampleDepth = samplePosView.z;
         float rangeCheck = smoothstep(0.0, 1.0, u_kernelRadius / abs(fragPos.z - sampleDepth));
 

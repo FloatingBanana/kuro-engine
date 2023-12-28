@@ -1,22 +1,19 @@
 #pragma language glsl3
+#pragma include "engine/shaders/incl_commonBuffers.glsl"
 
 #ifdef VERTEX
 in vec2 VertexTexCoords;
 in vec3 VertexNormal;
 out vec2 v_texCoords;
 
-uniform mat4 u_world;
-uniform mat4 u_viewProj;
-uniform bool u_isCanvasEnabled;
-
 vec4 position(mat4 transformProjection, vec4 position) {
-    vec4 worldPos = u_world * position;
-    vec4 screen = u_viewProj * worldPos;
+    vec4 worldPos = uWorldMatrix * position;
+    vec4 screen = uViewProjMatrix * worldPos;
 
     // Assigning outputs
     v_texCoords = VertexTexCoords;
     // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
-    screen.y *= (u_isCanvasEnabled ? -1 : 1);
+    screen.y *= (uIsCanvasActive ? -1 : 1);
 
     return screen;
 }

@@ -6,7 +6,7 @@ local black = {0,0,0,0}
 local depthPrePassShader = Utils.newPreProcessedShader([[
 #pragma language glsl3
 #pragma include "engine/shaders/incl_utils.glsl"
-#define Velocity love_Canvases[1]
+#define oVelocity love_Canvases[1]
 
 smooth varying vec4 v_clipPos;
 smooth varying vec4 v_prevClipPos;
@@ -16,18 +16,18 @@ smooth varying vec4 v_prevClipPos;
 in vec4 VertexBoneIDs;
 in vec4 VertexWeights;
 
-uniform mat4 u_viewProj;
-uniform mat4 u_world;
-uniform mat4 u_prevTransform;
-uniform mat4 u_boneMatrices[MAX_BONE_COUNT];
+uniform mat4 uViewProjMatrix;
+uniform mat4 uWorldMatrix;
+uniform mat4 uPrevTransform;
+uniform mat4 uBoneMatrices[MAX_BONE_COUNT];
 
 vec4 position(mat4 transformProjection, vec4 position) {
-    mat4 skinMat = GetSkinningMatrix(u_boneMatrices, VertexBoneIDs, VertexWeights);
+    mat4 skinMat = GetSkinningMatrix(uBoneMatrices, VertexBoneIDs, VertexWeights);
     position = skinMat * position;
 
-    vec4 screenPos = u_viewProj * u_world * position;
+    vec4 screenPos = uViewProjMatrix * uWorldMatrix * position;
     v_clipPos = screenPos;
-    v_prevClipPos = u_prevTransform * position;
+    v_prevClipPos = uPrevTransform * position;
     
     screenPos.y *= -1.0; // 3 days of my life wasted because of this bullshit
     screenPos.z += 0.00001; // Pre-pass bias to avoid depth conflict on some hardwares
@@ -41,7 +41,7 @@ void effect() {
     vec2 pos = v_clipPos.xy / v_clipPos.w;
     vec2 prevPos = v_prevClipPos.xy / v_prevClipPos.w;
 
-    Velocity = vec4(EncodeVelocity(pos - prevPos), 1, 1);
+    oVelocity = vec4(EncodeVelocity(pos - prevPos), 1, 1);
 }
 #endif
 ]])
@@ -60,8 +60,6 @@ end
 
 --- @param camera Camera3D
 function ForwardRenderer:renderMeshes(camera)
-    local viewProj = camera.viewProjectionMatrix
-
     for i, light in ipairs(self.lights) do
         light:generateShadowMap(self.meshparts)
     end
@@ -82,16 +80,9 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setMeshCullMode("back")
     lg.setBlendMode("replace")
     lg.setShader(depthPrePassShader)
-    depthPrePassShader:send("u_viewProj", "column", viewProj:toFlatTable())
 
     for meshpart, settings in pairs(self.meshparts) do
-        depthPrePassShader:send("u_world", "column", settings.worldMatrix:toFlatTable())
-        depthPrePassShader:send("u_prevTransform", "column", self.previousTransformations[meshpart]:toFlatTable())
-
-        if settings.animator then
-            depthPrePassShader:send("u_boneMatrices", settings.animator.finalMatrices)
-        end
-
+        self:sendCommonBuffers(depthPrePassShader, camera, meshpart)
         lg.draw(meshpart.buffer)
     end
 
@@ -117,33 +108,27 @@ function ForwardRenderer:renderMeshes(camera)
 
     for meshpart, settings in pairs(self.meshparts) do
         local mat = meshpart.material --[[@as ForwardMaterial]]
-        mat.viewPosition = camera.position
-        mat.worldMatrix = settings.worldMatrix
-        mat.viewProjectionMatrix = viewProj
-
-        if settings.animator then
-            mat.boneMatrices = settings.animator.finalMatrices
-        end
 
         if settings.onDraw then
             settings.onDraw(meshpart, settings)
         end
 
         if settings.ignoreLighting then
+            self:sendCommonBuffers(mat.shader, camera, meshpart)
             meshpart:draw()
         else
             for i, light in ipairs(self.lights) do
                 if not light.enabled then goto continue end
-                
+
                 mat:setLightType(getmetatable(light))
                 light:applyLighting(mat.shader)
+                self:sendCommonBuffers(mat.shader, camera, meshpart) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
 
                 for j, effect in ipairs(self.ppeffects) do
                     effect:onLightRender(light, mat.shader)
                 end
 
                 meshpart:draw()
-
                 ::continue::
             end
         end
