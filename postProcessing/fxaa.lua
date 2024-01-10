@@ -17,7 +17,7 @@ local FXAA = BaseEffect:extend()
 
 
 function FXAA:new(screenSize)
-    self.fxaaCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
+    self.fxaaCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rg11b10f"})
     self.shader = fxaaShader
 
     self.fxaaCanvas:setFilter("linear", "linear")

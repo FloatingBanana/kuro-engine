@@ -23,7 +23,7 @@ function Renderer:new(screensize, postProcessingEffects)
     self.screensize = screensize
     self.ppeffects = postProcessingEffects
 
-    self.resultCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rgba16f"})
+    self.resultCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg11b10f"})
     self.depthCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "depth24stencil8", readable = true})
     self.velocityBuffer = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg8"})
 

@@ -40,7 +40,7 @@ local MotionBlur = BaseEffect:extend()
 
 
 function MotionBlur:new(screenSize, amount)
-    self.blurCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
+    self.blurCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rg11b10f"})
     self.amount = amount
 end
 

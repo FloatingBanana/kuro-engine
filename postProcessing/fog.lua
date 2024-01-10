@@ -17,7 +17,7 @@ local Fog = BaseEffect:extend()
 
 
 function Fog:new(screenSize, min, max, color)
-    self.fogCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba16f"})
+    self.fogCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rg11b10f"})
     self.shader = Utils.newPreProcessedShader("engine/shaders/postprocessing/fog.frag")
 
     self.min = min

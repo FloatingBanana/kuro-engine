@@ -37,10 +37,10 @@ function Bloom:new(screenSize, strenght, luminanceTreshold)
     self.blurShader = Utils.newPreProcessedShader("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
     self.brightFilterShader = Utils.newPreProcessedShader(brightFilterShader)
 
-    self.bloomCanvas = lg.newCanvas(screenSize.width/2, screenSize.height/2, {format = "rgba16f"})
+    self.bloomCanvas = lg.newCanvas(screenSize.width/2, screenSize.height/2, {format = "rg11b10f"})
     self.blurCanvases = {
-        [0] = lg.newCanvas(screenSize.width/2, screenSize.height/2, {format = "rgba16f"}),
-        [1] = lg.newCanvas(screenSize.width/2, screenSize.height/2, {format = "rgba16f"})
+        [0] = lg.newCanvas(screenSize.width/2, screenSize.height/2, {format = "rg11b10f"}),
+        [1] = lg.newCanvas(screenSize.width/2, screenSize.height/2, {format = "rg11b10f"})
     }
 
     self.bloomCanvas:setFilter("linear", "linear")
