@@ -3,6 +3,9 @@ uniform mat4 uViewMatrix;
 uniform mat4 uProjMatrix;
 uniform mat4 uViewProjMatrix;
 
+uniform float uNearPlane;
+uniform float uFarPlane;
+
 uniform mat4 uInvViewMatrix;
 uniform mat4 uInvProjMatrix;
 uniform mat4 uInvViewProjMatrix;
