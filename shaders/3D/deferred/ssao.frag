@@ -37,8 +37,7 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
         vec3 samplePos = fragPos + (tbn * u_samples[i] * u_kernelRadius);
         vec2 offset = ProjectUV(samplePos, uProjMatrix).xy;
 
-        vec3 samplePosView = ReconstructPosition(offset, uDepthBuffer, uInvProjMatrix);
-        float sampleDepth = samplePosView.z;
+        float sampleDepth = LinearizeDepth(texture(uDepthBuffer, offset).r, uNearPlane, uFarPlane);
         float rangeCheck = smoothstep(0.0, 1.0, u_kernelRadius / abs(fragPos.z - sampleDepth));
 
         occlusion += (sampleDepth >= samplePos.z + depthBias) ? rangeCheck : 0.0;
