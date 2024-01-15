@@ -61,10 +61,9 @@ vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj, out vec3 po
 
 
 float LinearizeDepth(float depth, float near, float far) {
-    float z = depth * 2.0 - 1.0;
-    return (2.0 * near * far) / (far + near + z * (far - near)) / far;
+    depth = depth * 2.0 - 1.0;
+    return -((far * near) / (far + depth * (near-far)));
 }
-
 
 // https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
 vec2 EncodeNormal(vec3 n) {
