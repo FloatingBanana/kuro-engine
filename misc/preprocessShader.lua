@@ -1,33 +1,49 @@
 local ParserHelper = require "engine.text.parserHelper"
 
----@param shader string
+local function insertLine(t, ...)
+	for i = 1, select("#",...) do
+		t[#t+1] = select(i, ...)
+		t[#t+1] = "\n"
+	end
+end
+
+---@param shaderStr string
 ---@param defaultDefines table?
 ---@param isIncludedFile boolean?
 ---@return string
-local function preprocessShader(shader, defaultDefines, isIncludedFile)
+local function preprocessShader(shaderStr, defaultDefines, isIncludedFile)
 	local parser = ParserHelper("", true)
 	local lineNumber = 0
 	local mainBlock = {}
-	shader = love.filesystem.read(shader) or shader
-
+	local shader = love.filesystem.read(shaderStr) or shaderStr
 
 	-- Add default defines
 	for k, v in pairs(defaultDefines or {}) do
 		if type(k) == "number" then
-			table.insert(mainBlock, ("#define %s\n"):format(v))
+			insertLine(mainBlock, ("#define %s"):format(v))
 		else
-			table.insert(mainBlock, ("#define %s %s\n"):format(k, v))
+			insertLine(mainBlock, ("#define %s %s"):format(k, v))
 		end
 	end
 
 	if isIncludedFile then
-		table.insert(mainBlock, "#define INCLUDED\n")
+		local fileGuard = shaderStr:gsub("[^%w]", "_")
+
+		insertLine(
+			mainBlock,
+			("#ifndef %s"):format(fileGuard),
+			("#define %s"):format(fileGuard),
+			"#define INCLUDED"
+		)
 	else
-		table.insert(mainBlock, "#line 0\n")
-		table.insert(mainBlock, preprocessShader("engine/shaders/default.glsl", {}, true))
+		insertLine(
+			mainBlock,
+			"#line 0",
+			preprocessShader("engine/shaders/default.glsl", {}, true)
+		)
 	end
 
-	table.insert(mainBlock, "#line 0\n")
+	insertLine(mainBlock, "#line 0")
 
 	for line in shader:gmatch("[^\n]+") do
 		local result = line
@@ -53,8 +69,7 @@ local function preprocessShader(shader, defaultDefines, isIncludedFile)
 				-- Include files
 				if parser:eat("include") then
 					local path = parser:eatMatch("\".-\""):sub(2, -2)
-					local included = love.filesystem.read("string", path)
-					local code = preprocessShader(included, {}, true)
+					local code = preprocessShader(path, {}, true)
 
 					result = ("#line 0\n%s\n#line %d\n"):format(code, lineNumber)
 				end
@@ -66,10 +81,14 @@ local function preprocessShader(shader, defaultDefines, isIncludedFile)
 	end
 
 	if isIncludedFile then
-		table.insert(mainBlock, "#undef INCLUDED")
+		insertLine(
+			mainBlock,
+			"#undef INCLUDED",
+			"#endif"
+		)
 	end
 
-	return table.concat(mainBlock, "\r\n")
+	return table.concat(mainBlock, "\n")
 end
 
 
