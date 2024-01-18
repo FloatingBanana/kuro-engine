@@ -293,51 +293,53 @@ function Vector3:transform(value)
         self.z = self.z + z * value.w + (value.x * y - value.y * x);
     else
         -- Matrix
-        self.x = (self.x * value.m11) + (self.y * value.m21) + (self.z * value.m31) + value.m41;
-        self.y = (self.x * value.m12) + (self.y * value.m22) + (self.z * value.m32) + value.m42;
-        self.z = (self.x * value.m13) + (self.y * value.m23) + (self.z * value.m33) + value.m43;
+        local x = (self.x * value.m11) + (self.y * value.m21) + (self.z * value.m31) + value.m41;
+        local y = (self.x * value.m12) + (self.y * value.m22) + (self.z * value.m32) + value.m42;
+        local z = (self.x * value.m13) + (self.y * value.m23) + (self.z * value.m33) + value.m43;
+
+        self:new(x, y, z)
     end
 
     return self
 end
 
 
---- Transform this vector from world space to screen space
---- @param screenMatrix Matrix: The full transformation matrix (`projection * view * world`)
+--- Transform this vector to screen space
+--- @param screenMatrix Matrix: The full transformation matrix from current space to screen space
 --- @param screenSize Vector2: The resolution of the screen
 --- @param minDepth number: The smallest depth value allowed
 --- @param maxDepth number: The greatest depht value allowed
 --- @return Vector3: This vector
 function Vector3:worldToScreen(screenMatrix, screenSize, minDepth, maxDepth)
-	local a = (((self.x * screenMatrix.m14) + (self.y * screenMatrix.m24)) + (self.z * screenMatrix.m34)) + screenMatrix.m44
+	local w = self.x * screenMatrix.m14 + self.y * screenMatrix.m24 + self.z * screenMatrix.m34 + screenMatrix.m44
 
     self:transform(screenMatrix)
+    self:divide(w == 0 and 1 or w)
 
-    if abs(a-1) > double_epsilon then
-        self:divide(a)
-    end
-
-    self.x = (((self.x + 1) * 0.5) * screenSize.width)
-	self.y = (((-self.y + 1) * 0.5) * screenSize.height)
+    self.x = ( self.x * 0.5 + 0.5) * screenSize.width
+    self.y = (-self.y * 0.5 + 0.5) * screenSize.height
 	self.z = (self.z * (maxDepth - minDepth)) + minDepth;
 
     return self;
 end
 
 
+--- Transform this vector from screen space to another space
+--- @param screenMatrix Matrix: The full transformation matrix from screen space to the desired
+--- @param screenSize Vector2: The resolution of the screen
+--- @param minDepth number: The smallest depth value allowed
+--- @param maxDepth number: The greatest depht value allowed
+--- @return Vector3: This vector
 function Vector3:screenToWorld(screenMatrix, screenSize, minDepth, maxDepth)
-    self.x = (((self.x) / (screenSize.width)) * 2) - 1
-	self.y = -((((self.y) / (screenSize.height)) * 2) - 1)
+    self.x = self.x / screenSize.width * 2 - 1
+	self.y = -self.y / screenSize.height * 2 - 1
 	self.z = (self.z - minDepth) / (maxDepth - minDepth)
 
     local mat = screenMatrix.inverse
-	local a = (((self.x * mat.m14) + (self.y * mat.m24)) + (self.z * mat.m34)) + mat.m44;
+	local w = self.x * mat.m14 + self.y * mat.m24 + self.z * mat.m34 + mat.m44;
 
     self:transform(mat)
-
-	if abs(a-1) > double_epsilon then
-        self:divide(a)
-    end
+    self:divide(w == 0 and 1 or w)
 
 	return self;
 end
