@@ -1,5 +1,4 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
-local Matrix     = require "engine.math.matrix"
 local Utils      = require "engine.misc.utils"
 
 -- http://john-chapman-graphics.blogspot.com/2013/01/per-object-motion-blur.html
@@ -40,7 +39,7 @@ local MotionBlur = BaseEffect:extend()
 
 
 function MotionBlur:new(screenSize, amount)
-    self.blurCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rg11b10f"})
+    self.blurCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height)
     self.amount = amount
 end
 
