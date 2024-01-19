@@ -38,8 +38,8 @@ function PointLight:new(position, constant, linear, quadratic, diffuse, specular
 end
 
 
----@param meshparts table<MeshPart, MeshPartConfig>
-function PointLight:generateShadowMap(meshparts)
+---@param meshes table<integer, MeshConfig>
+function PointLight:generateShadowMap(meshes)
     local proj = Matrix.CreatePerspectiveFOV(math.rad(90), 1, self.near, self.far)
 
     depthShader:send("lightPos", self.position:toFlatTable())
@@ -51,17 +51,18 @@ function PointLight:generateShadowMap(meshparts)
 
         self:beginShadowMapping(viewProj, i)
 
-        for part, settings in pairs(meshparts) do
-            if settings.castShadows then
-                local worldMatrix = settings.worldMatrix
-                depthShader:send("u_world", "column", worldMatrix:toFlatTable())
+        for id, config in pairs(meshes) do
+            if config.castShadows then
+                depthShader:send("u_world", "column", config.worldMatrix:toFlatTable())
 
-                local animator = settings.animator
+                local animator = config.animator
                 if animator then
                     depthShader:send("u_boneMatrices", animator.finalMatrices)
                 end
 
-                love.graphics.draw(part.buffer)
+                for j, part in ipairs(config.mesh.parts) do
+                    love.graphics.draw(part.buffer)
+                end
             end
         end
 

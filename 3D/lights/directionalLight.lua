@@ -21,8 +21,8 @@ function Dirlight:new(position, diffuse, specular)
 end
 
 
----@param meshparts table<MeshPart, MeshPartConfig>
-function Dirlight:generateShadowMap(meshparts)
+---@param meshes table<integer, MeshConfig>
+function Dirlight:generateShadowMap(meshes)
     local view = Matrix.CreateLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
     local proj = Matrix.CreateOrthographicOffCenter(-10, 10, 10, -10, self.near, self.far)
     local viewProj = view * proj
@@ -31,18 +31,19 @@ function Dirlight:generateShadowMap(meshparts)
     self:beginShadowMapping(viewProj)
     depthShader:send("lightDir", direction:toFlatTable())
 
-    for part, settings in pairs(meshparts) do
-        if settings.castShadows then
-            local worldMatrix = settings.worldMatrix
-
-            local animator = settings.animator
+    for id, config in pairs(meshes) do
+        if config.castShadows then
+            local animator = config.animator
             if animator then
                 depthShader:send("u_boneMatrices", animator.finalMatrices)
             end
 
-            depthShader:send("u_world", "column", worldMatrix:toFlatTable())
-            depthShader:send("u_invTranspWorld", "column", worldMatrix.inverse:transpose():to3x3():toFlatTable())
-            love.graphics.draw(part.buffer)
+            depthShader:send("u_world", "column", config.worldMatrix:toFlatTable())
+            depthShader:send("u_invTranspWorld", "column", config.worldMatrix.inverse:transpose():to3x3():toFlatTable())
+            
+            for j, part in ipairs(config.mesh.parts) do
+                love.graphics.draw(part.buffer)
+            end
         end
     end
     self:endShadowMapping()

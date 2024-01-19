@@ -57,13 +57,15 @@ function DeferredRenderer:renderMeshes(camera)
     lg.setBlendMode("replace")
     lg.setMeshCullMode("back")
 
-    for part, settings in pairs(self.meshparts) do
-        if settings.onDraw then
-            settings.onDraw(part, settings)
+    for id, config in pairs(self.meshes) do
+        if config.onDraw then
+            config.onDraw(id, config)
         end
 
-        self:sendCommonBuffers(part.material.shader, camera, part)
-        part:draw()
+        for i, part in ipairs(config.mesh.parts) do
+            self:sendCommonBuffers(part.material.shader, camera, id)
+            part:draw()
+        end
     end
 
 
@@ -90,7 +92,7 @@ function DeferredRenderer:renderMeshes(camera)
         local lightShader = lightPassShaders[getmetatable(light)]
         self:sendCommonBuffers(lightShader, camera, nil)
 
-        light:generateShadowMap(self.meshparts)
+        light:generateShadowMap(self.meshes)
         light:applyLighting(lightShader)
 
         for j, effect in ipairs(self.ppeffects) do
@@ -119,9 +121,9 @@ end
 
 ---@param shader love.Shader
 ---@param camera Camera3D
----@param meshpart MeshPart?
-function DeferredRenderer:sendCommonBuffers(shader, camera, meshpart)
-    BaseRederer.sendCommonBuffers(self, shader, camera, meshpart)
+---@param meshid integer?
+function DeferredRenderer:sendCommonBuffers(shader, camera, meshid)
+    BaseRederer.sendCommonBuffers(self, shader, camera, meshid)
 
 	Utils.trySendUniform(shader, "uGNormal", self.gbuffer.normal)
 	Utils.trySendUniform(shader, "uGAlbedoSpecular", self.gbuffer.albedoSpec)
