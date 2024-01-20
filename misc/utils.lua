@@ -40,10 +40,19 @@ end
 ---@return love.Shader
 function Utils.newPreProcessedShader(shaderStr, defaultDefines)
 	local code = Utils.preprocessShader(shaderStr, defaultDefines)
+	local shadername = shaderStr:gsub("\n.*", "...")
+
 	local ok, err = love.graphics.validateShader(false, code);
-	
-	assert(ok, ("Failed to load shader '%s': %s"):format(shaderStr:gsub("\n.*", "..."), err))
-	return love.graphics.newShader(code)
+	assert(ok, ("Failed to load shader '%s': %s"):format(shadername, err))
+
+	local shader = love.graphics.newShader(code)
+
+	local warnings = shader:getWarnings()
+	if warnings:gsub("vertex shader:\npixel shader:\n", "") ~= "" then
+		print(("Warnings at shader '%s':\n%s"):format(shadername, warnings))
+	end
+
+	return shader
 end
 
 
