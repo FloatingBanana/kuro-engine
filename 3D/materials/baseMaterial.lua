@@ -58,7 +58,7 @@ function Material:apply()
         if attr.value then
             if Utils.getType(attr.value) == "matrix" then
                 Utils.trySendUniform(self.shader, attr.uniform, "column", attr.value:toFlatTable())
-            elseif type(attr.value) == "cdata" then
+            elseif attr.toFlatTable then
                 Utils.trySendUniform(self.shader, attr.uniform, attr.value:toFlatTable())
             else
                 Utils.trySendUniform(self.shader, attr.uniform, attr.value)
@@ -67,10 +67,6 @@ function Material:apply()
     end
 
     love.graphics.setShader(self.shader)
-
-    if self.shader:hasUniform("u_isCanvasEnabled") then
-        self.shader:send("u_isCanvasEnabled", love.graphics.getCanvas() ~= nil)
-    end
 end
 
 
