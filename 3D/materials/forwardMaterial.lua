@@ -23,9 +23,6 @@ local lightShaders = {
 --- @field shininess number
 --- @field diffuseTexture love.Texture
 --- @field normalMap love.Texture
---- @field worldMatrix Matrix
---- @field viewProjectionMatrix Matrix
---- @field viewPosition Vector3
 ---
 --- @overload fun(model: Model, aiMat: unknown): ForwardMaterial
 local FRMaterial = Material:extend()
@@ -36,10 +33,6 @@ function FRMaterial:new(model, aiMat)
         shininess            = {uniform = "u_shininess",      value = 32 --[[mat:shininess()]]},
         diffuseTexture       = {uniform = "u_diffuseTexture", value = model:getTexture(aiMat, "diffuse")},
         normalMap            = {uniform = "u_normalMap",      value = model:getTexture(aiMat, "normals")},
-        worldMatrix          = {uniform = "u_world",          value = Matrix()},
-        viewProjectionMatrix = {uniform = "u_viewProj",       value = Matrix()},
-        viewPosition         = {uniform = "u_viewPosition",   value = Vector3()},
-        boneMatrices         = {uniform = "u_boneMatrices",   value = nil}
     }
 
     Material.new(self, model, lightShaders[SpotLight], attributes)

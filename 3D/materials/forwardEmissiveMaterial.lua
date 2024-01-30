@@ -7,8 +7,6 @@ local Utils    = require "engine.misc.utils"
 ---
 --- @field shininess number
 --- @field diffuseTexture love.Texture
---- @field worldMatrix Matrix
---- @field viewProjectionMatrix Matrix
 ---
 --- @overload fun(model: Model, aiMat: unknown): ForwardEmissiveMaterial
 local EmissiveMat = Material:extend()
@@ -17,8 +15,6 @@ function EmissiveMat:new(model, aiMat)
     local attributes = {
         shininess            = {uniform = "u_strenght",       value = 5},
         diffuseTexture       = {uniform = "u_diffuseTexture", value = model:getTexture(aiMat, "diffuse")},
-        worldMatrix          = {uniform = "u_world",          value = Matrix()},
-        viewProjectionMatrix = {uniform = "u_viewProj",       value = Matrix()},
     }
 
     local shader = Utils.newPreProcessedShader("engine/shaders/3D/forwardRendering/emissive.glsl")
