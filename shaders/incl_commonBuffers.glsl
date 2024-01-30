@@ -18,6 +18,7 @@ uniform vec3 uViewDirection;
 
 uniform sampler2D uDepthBuffer;
 uniform sampler2D uVelocityBuffer;
+uniform sampler2D uColorBuffer;
 uniform sampler2D uGNormal;
 uniform sampler2D uGAlbedoSpecular;
 

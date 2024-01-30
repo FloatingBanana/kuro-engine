@@ -122,6 +122,7 @@ function Renderer:sendCommonBuffers(shader, camera, meshId)
 	Utils.trySendUniform(shader, "uIsCanvasActive", love.graphics.getCanvas() ~= nil)
 	Utils.trySendUniform(shader, "uDepthBuffer", self.depthCanvas)
 	Utils.trySendUniform(shader, "uVelocityBuffer", self.velocityBuffer)
+	Utils.trySendUniform(shader, "uColorBuffer", self.resultCanvas)
 
     if meshId then
         local settings = self:getMeshConfig(meshId)
