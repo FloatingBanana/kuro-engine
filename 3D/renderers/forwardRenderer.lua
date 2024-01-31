@@ -6,10 +6,9 @@ local black = {0,0,0,0}
 local depthPrePassShader = Utils.newPreProcessedShader([[
 #pragma language glsl3
 #pragma include "engine/shaders/incl_utils.glsl"
-#define oVelocity love_Canvases[1]
 
-smooth varying vec4 v_clipPos;
-smooth varying vec4 v_prevClipPos;
+varying vec4 v_clipPos;
+varying vec4 v_prevClipPos;
 
 
 #ifdef VERTEX
@@ -37,6 +36,8 @@ vec4 position(mat4 transformProjection, vec4 position) {
 #endif
 
 #ifdef PIXEL
+out vec4 oVelocity;
+
 void effect() {
     vec2 pos = v_clipPos.xy / v_clipPos.w;
     vec2 prevPos = v_prevClipPos.xy / v_prevClipPos.w;
@@ -64,7 +65,7 @@ function ForwardRenderer:renderMeshes(camera)
         light:generateShadowMap(self.meshes)
     end
 
-    lg.setCanvas({self.resultCanvas, self.velocityBuffer, depthstencil = self.depthCanvas})
+    lg.setCanvas({self.velocityBuffer, depthstencil = self.depthCanvas})
     lg.clear(black)
 
     --------------------
@@ -104,6 +105,7 @@ function ForwardRenderer:renderMeshes(camera)
     ---------------
 
     lg.setCanvas({self.resultCanvas, depthstencil = self.depthCanvas})
+    lg.clear(true, false, false)
     lg.setDepthMode("lequal", false)
     lg.setMeshCullMode("back")
     lg.setBlendMode("add")
