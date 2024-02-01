@@ -75,7 +75,7 @@ function SSAO:onPreRender(renderer, camera)
     love.graphics.setShader(self.shader)
     love.graphics.clear()
 
-    renderer:sendCommonBuffers(self.shader, camera, nil)
+    renderer:sendCommonRendererBuffers(self.shader, camera)
     love.graphics.draw(self.dummySquare)
 
     love.graphics.setCanvas(self.blurCanvas)

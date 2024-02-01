@@ -63,7 +63,8 @@ function DeferredRenderer:renderMeshes(camera)
         end
 
         for i, part in ipairs(config.mesh.parts) do
-            self:sendCommonBuffers(part.material.shader, camera, id)
+            self:sendCommonRendererBuffers(part.material.shader, camera)
+            self:sendCommonMeshBuffers(part.material.shader, id)
             part:draw()
         end
     end
@@ -90,7 +91,7 @@ function DeferredRenderer:renderMeshes(camera)
         if not light.enabled then goto continue end
 
         local lightShader = lightPassShaders[getmetatable(light)]
-        self:sendCommonBuffers(lightShader, camera, nil)
+        self:sendCommonRendererBuffers(lightShader, camera)
 
         light:generateShadowMap(self.meshes)
         light:applyLighting(lightShader)
@@ -121,9 +122,8 @@ end
 
 ---@param shader love.Shader
 ---@param camera Camera3D
----@param meshid integer?
-function DeferredRenderer:sendCommonBuffers(shader, camera, meshid)
-    BaseRederer.sendCommonBuffers(self, shader, camera, meshid)
+function DeferredRenderer:sendCommonRendererBuffers(shader, camera)
+    BaseRederer.sendCommonRendererBuffers(self, shader, camera)
 
 	Utils.trySendUniform(shader, "uGNormal", self.gbuffer.normal)
 	Utils.trySendUniform(shader, "uGAlbedoSpecular", self.gbuffer.albedoSpec)

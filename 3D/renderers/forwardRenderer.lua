@@ -81,10 +81,11 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setMeshCullMode("back")
     lg.setBlendMode("replace")
     lg.setShader(depthPrePassShader)
+    self:sendCommonRendererBuffers(depthPrePassShader, camera)
 
     for id, config in pairs(self.meshes) do
         for i, meshpart in ipairs(config.mesh.parts) do
-            self:sendCommonBuffers(depthPrePassShader, camera, id)
+            self:sendCommonMeshBuffers(depthPrePassShader, id)
             lg.draw(meshpart.buffer)
         end
     end
@@ -119,7 +120,8 @@ function ForwardRenderer:renderMeshes(camera)
             end
 
             if config.ignoreLighting then
-                self:sendCommonBuffers(mat.shader, camera, id)
+                self:sendCommonRendererBuffers(mat.shader, camera)
+                self:sendCommonMeshBuffers(mat.shader, id)
                 meshpart:draw()
             else
                 for i, light in ipairs(self.lights) do
@@ -127,7 +129,8 @@ function ForwardRenderer:renderMeshes(camera)
 
                     mat:setLightType(getmetatable(light))
                     light:applyLighting(mat.shader)
-                    self:sendCommonBuffers(mat.shader, camera, id) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                    self:sendCommonRendererBuffers(mat.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                    self:sendCommonMeshBuffers(mat.shader, id)
 
                     for j, effect in ipairs(self.ppeffects) do
                         effect:onLightRender(light, mat.shader)

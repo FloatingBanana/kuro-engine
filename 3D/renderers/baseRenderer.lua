@@ -102,8 +102,7 @@ end
 
 ---@param shader love.Shader
 ---@param camera Camera3D
----@param meshId integer?
-function Renderer:sendCommonBuffers(shader, camera, meshId)
+function Renderer:sendCommonRendererBuffers(shader, camera)
 	Utils.trySendUniform(shader, "uViewMatrix", "column", camera.viewMatrix:toFlatTable())
 	Utils.trySendUniform(shader, "uProjMatrix", "column", camera.projectionMatrix:toFlatTable())
     Utils.trySendUniform(shader, "uViewProjMatrix", "column", camera.viewProjectionMatrix:toFlatTable())
@@ -123,16 +122,19 @@ function Renderer:sendCommonBuffers(shader, camera, meshId)
 	Utils.trySendUniform(shader, "uDepthBuffer", self.depthCanvas)
 	Utils.trySendUniform(shader, "uVelocityBuffer", self.velocityBuffer)
 	Utils.trySendUniform(shader, "uColorBuffer", self.resultCanvas)
+end
 
-    if meshId then
-        local settings = self:getMeshConfig(meshId)
 
-        Utils.trySendUniform(shader, "uWorldMatrix", "column", settings.worldMatrix:toFlatTable())
-        Utils.trySendUniform(shader, "uPrevTransform", "column", self.previousTransformations[meshId]:toFlatTable())
+---@param shader love.Shader
+---@param meshId integer
+function Renderer:sendCommonMeshBuffers(shader, meshId)
+    local config = self:getMeshConfig(meshId)
 
-        if settings.animator then
-            Utils.trySendUniform(shader, "uBoneMatrices", settings.animator.finalMatrices)
-        end
+    Utils.trySendUniform(shader, "uWorldMatrix",   "column", config.worldMatrix:toFlatTable())
+    Utils.trySendUniform(shader, "uPrevTransform", "column", self.previousTransformations[meshId]:toFlatTable())
+
+    if config.animator then
+        Utils.trySendUniform(shader, "uBoneMatrices", config.animator.finalMatrices)
     end
 end
 
