@@ -5,6 +5,7 @@ local Utils = require "engine.misc.utils"
 
 --- @class BaseMaterial: Object
 ---
+--- @field model Model
 --- @field shader love.Shader
 --- @field private __attrs MaterialDefinition
 ---
