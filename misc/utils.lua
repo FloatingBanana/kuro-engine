@@ -1,5 +1,6 @@
 local Lume   = require "engine.3rdparty.lume"
 local Object = require "engine.3rdparty.classic.classic"
+local Kuro   = require "engine.kuro"
 local ffi    = require "ffi"
 
 
@@ -118,10 +119,10 @@ end
 
 
 ---@param v any
----@return string|ffi.ctype*|Object
+---@return string|ffi.ctype*
 function Utils.getType(v)
-	if type(v) == "table" and v.is and v:is(Object) then
-		return getmetatable(v)
+	if type(v) == "table" and v.ClassName then
+		return v.ClassName
 	elseif type(v) == "table" and v.typename then
 		return v.typename
 	elseif type(v) == "cdata" then
