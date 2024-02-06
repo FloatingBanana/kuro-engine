@@ -7,13 +7,17 @@
 -- the terms of the MIT license. See LICENSE for details.
 --
 
--- Modified to include annotations
+-- Modified to include annotations and to store a list of classes inside engine/kuro.lua
 
+local Kuro = require "engine.kuro"
 
 --- Base class for all other classes. Uses the classic.lua library.
 --- @class Object
-local Object = {}
+--- @field public ClassName string
+local Object = {ClassName = "Object"}
 Object.__index = Object
+
+Kuro.classes["Object"] = Object
 
 
 function Object:new()
@@ -21,8 +25,9 @@ end
 
 
 --- Creates a child class of this object.
+---@param className string
 --- @return any
-function Object:extend()
+function Object:extend(className)
   local cls = {}
   for k, v in pairs(self) do
     if k:find("__") == 1 then
@@ -32,6 +37,9 @@ function Object:extend()
   cls.__index = cls
   cls.super = self
   setmetatable(cls, self)
+
+  cls.ClassName = className
+  Kuro.classes[className] = cls
   return cls
 end
 

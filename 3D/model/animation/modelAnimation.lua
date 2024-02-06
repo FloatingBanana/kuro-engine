@@ -15,7 +15,7 @@ local Object   = require "engine.3rdparty.classic.classic"
 --- @field public isPlaying boolean
 ---
 --- @overload fun(model: Model, aiAnim: unknown): ModelAnimation
-local Anim = Object:extend()
+local Anim = Object:extend("ModelAnimation")
 
 
 function Anim:new(model, aiAnim)

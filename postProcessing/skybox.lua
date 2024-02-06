@@ -59,7 +59,7 @@ local cube = love.graphics.newMesh(cubeVertexFormat, cubeVertices, "triangles", 
 --- @field texture love.Image
 ---
 --- @overload fun(file: string | string[]): Skybox
-local Skybox = BaseEffect:extend()
+local Skybox = BaseEffect:extend("Skybox")
 
 function Skybox:new(file)
     self.texture = love.graphics.newCubeImage(file)

@@ -19,7 +19,7 @@ local hdrShader = [[
 --- @field public exposure number
 ---
 --- @overload fun(screenSize: Vector2, exposure: number): HDR
-local HDR = BaseEffect:extend()
+local HDR = BaseEffect:extend("HDR")
 
 
 function HDR:new(screenSize, exposure)

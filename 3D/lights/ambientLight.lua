@@ -5,7 +5,7 @@ local BaseLight = require "engine.3D.lights.baseLight"
 ---
 --- @field color table
 --- @overload fun(color: table): AmbientLight
-local AmbientLight = BaseLight:extend()
+local AmbientLight = BaseLight:extend("AmbientLight")
 
 
 function AmbientLight:new(color)

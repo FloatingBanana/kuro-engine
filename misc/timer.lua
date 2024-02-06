@@ -9,7 +9,7 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @field public justEnded boolean
 ---
 --- @overload fun(initialTime: number, duration: number, isLoop: boolean): Timer
-local Timer = Object:extend()
+local Timer = Object:extend("Timer")
 
 
 function Timer:new(initialTime, duration, isLoop)

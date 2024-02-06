@@ -9,7 +9,7 @@ local Utils    = require "engine.misc.utils"
 --- @field diffuseTexture love.Texture
 ---
 --- @overload fun(model: Model, aiMat: unknown): ForwardEmissiveMaterial
-local EmissiveMat = Material:extend()
+local EmissiveMat = Material:extend("ForwardEmissiveMaterial")
 
 function EmissiveMat:new(model, aiMat)
     local attributes = {

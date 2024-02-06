@@ -11,7 +11,7 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @field public IdentifierPattern string
 ---
 --- @overload fun(text: string?, autoSkipWhitespaces: boolean?): ParserHelper
-local Parser = Object:extend()
+local Parser = Object:extend("ParserHelper")
 
 
 Parser.WhitespacePattern = "%s*"

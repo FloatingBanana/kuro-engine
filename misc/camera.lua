@@ -4,7 +4,7 @@ local Vector2 = require "engine.math.vector2"
 local Timer   = require "engine.misc.timer"
 local Object  = require "engine.3rdparty.classic.classic"
 
-local Camera = Object:extend()
+local Camera = Object:extend("Camera")
 
 function Camera:new(position, zoom)
     self.position = position

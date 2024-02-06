@@ -17,7 +17,7 @@ local ffi    = require "ffi"
 --- @field private finalMatricesPtr ffi.cdata*
 ---
 --- @overload fun(animation: ModelAnimation, armature: ModelNode, modelOriginalGlobalMatrix: Matrix): ModelAnimator
-local Animator = Object:extend()
+local Animator = Object:extend("ModelAnimator")
 
 
 function Animator:new(animation, armature, modelOriginalGlobalMatrix)

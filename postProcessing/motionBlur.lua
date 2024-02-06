@@ -35,7 +35,7 @@ local motionBlurShader = Utils.newPreProcessedShader([[
 --- @field public amount number
 ---
 --- @overload fun(screenSize: Vector2, amount: number): MotionBlur
-local MotionBlur = BaseEffect:extend()
+local MotionBlur = BaseEffect:extend("MotionBlur")
 
 
 function MotionBlur:new(screenSize, amount)

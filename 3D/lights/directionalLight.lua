@@ -13,7 +13,7 @@ local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/sha
 --- @field viewProjMatrix Matrix
 ---
 --- @overload fun(position: Vector3, diffuse: table, specular: table): DirectionalLight
-local Dirlight = BaseLight:extend()
+local Dirlight = BaseLight:extend("DirectionalLight")
 
 
 function Dirlight:new(position, diffuse, specular)

@@ -28,7 +28,7 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 --- @field private blurCanvases love.Canvas[]
 ---
 --- @overload fun(screenSize: Vector2, strenght: integer, luminanceTreshold: number): Bloom
-local Bloom = BaseEffect:extend()
+local Bloom = BaseEffect:extend("Bloom")
 
 
 function Bloom:new(screenSize, strenght, luminanceTreshold)

@@ -21,7 +21,7 @@ end
 --- @class PriorityQueue
 ---
 --- @operator call: PriorityQueue
-local PriorityQueue = Object:extend()
+local PriorityQueue = Object:extend("PriorityQueue")
 
 function PriorityQueue:new()
     self.items = {}

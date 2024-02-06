@@ -13,7 +13,7 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @field shadowmap love.Texture
 ---
 --- @overload fun(position: Vector3, diffuse: table, specular: table, depthShader: love.Shader): BaseLight
-local BaseLight = Object:extend()
+local BaseLight = Object:extend("BaseLight")
 
 
 function BaseLight:new(position, diffuse, specular, depthShader)

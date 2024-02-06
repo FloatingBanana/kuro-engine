@@ -1,7 +1,7 @@
 local Vector2 = require "engine.math.vector2"
 local Lume    = require "engine.3rdparty.lume"
 local Object  = require "engine.3rdparty.classic.classic"
-local Grid    = Object:extend()
+local Grid    = Object:extend("Grid")
 
 function Grid:new(size, callback)
     self.map = {}

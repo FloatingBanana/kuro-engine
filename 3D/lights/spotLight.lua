@@ -15,7 +15,7 @@ local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/sha
 --- @field projMatrix Matrix
 --- @field viewProjMatrix Matrix
 --- @overload fun(position: Vector3, direction: Vector3, innerAngle: number, outerAngle: number, diffuse: table, specular: table): SpotLight
-local Spotlight = BaseLight:extend()
+local Spotlight = BaseLight:extend("SpotLight")
 
 
 function Spotlight:new(position, direction, innerAngle, outerAngle, diffuse, specular)

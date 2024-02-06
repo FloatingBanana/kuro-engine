@@ -6,7 +6,7 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @class Stack: {[integer]: any}
 ---
 --- @operator call: Stack
-local Stack = Object:extend()
+local Stack = Object:extend("Stack")
 
 function Stack:new(...)
     for i=1, select("#", ...)do

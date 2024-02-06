@@ -37,7 +37,7 @@ local linearTexTypes = {normals = true}
 --- @field private _boneCount integer
 ---
 --- @overload fun(file: string, opts: ModelLoadingOptions): Model
-local Model = Object:extend()
+local Model = Object:extend("Model")
 
 
 function Model:new(file, opts)

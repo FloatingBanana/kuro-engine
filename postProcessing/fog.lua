@@ -13,7 +13,7 @@ local Utils = require "engine.misc.utils"
 --- @field public color table
 ---
 --- @overload fun(screenSize: Vector2, min: number, max: number, color: table): Fog
-local Fog = BaseEffect:extend()
+local Fog = BaseEffect:extend("Fog")
 
 
 function Fog:new(screenSize, min, max, color)

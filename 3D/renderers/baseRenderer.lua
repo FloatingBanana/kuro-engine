@@ -17,7 +17,7 @@ local Object  = require "engine.3rdparty.classic.classic"
 --- @field protected previousTransformations table<integer, Matrix>
 ---
 --- @overload fun(screenSize: Vector2, postProcessingEffects: BasePostProcessingEffect[]): BaseRenderer
-local Renderer = Object:extend()
+local Renderer = Object:extend("BaseRenderer")
 
 
 function Renderer:new(screensize, postProcessingEffects)

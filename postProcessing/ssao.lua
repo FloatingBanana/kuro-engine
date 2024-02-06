@@ -43,7 +43,7 @@ boxBlurShader:send("size", 2)
 --- @field public kernelRadius number
 ---
 --- @overload fun(screenSize: Vector2, kernelSize: integer, kernelRadius: number, algorithm: "accurate" | "naive" | "deferred" | nil): SSAO
-local SSAO = BaseEffect:extend()
+local SSAO = BaseEffect:extend("SSAO")
 
 
 function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)

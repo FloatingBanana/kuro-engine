@@ -51,7 +51,7 @@ void effect() {
 --- @class ForwardRenderer: BaseRenderer
 ---
 --- @overload fun(screenSize: Vector2, postProcessingEffects: BasePostProcessingEffect[]): ForwardRenderer
-local ForwardRenderer = BaseRederer:extend()
+local ForwardRenderer = BaseRederer:extend("ForwardRenderer")
 
 
 function ForwardRenderer:new(screensize, postProcessingEffects)

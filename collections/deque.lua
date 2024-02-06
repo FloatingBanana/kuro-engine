@@ -6,7 +6,7 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @class Deque
 ---
 --- @operator call: Deque
-local Deque = Object:extend()
+local Deque = Object:extend("Deque")
 
 function Deque:new(...)
     self.first = 0

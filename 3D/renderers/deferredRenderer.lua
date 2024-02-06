@@ -30,7 +30,7 @@ local lightPassShaders = {
 --- @field public gbuffer GBuffer
 ---
 --- @overload fun(screensize: Vector2, posProcessingEffects: BasePostProcessingEffect[]): DeferredRenderer
-local DeferredRenderer = BaseRederer:extend()
+local DeferredRenderer = BaseRederer:extend("DeferredRenderer")
 
 
 function DeferredRenderer:new(screensize, postProcessingEffects)

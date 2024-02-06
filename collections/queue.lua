@@ -8,7 +8,7 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @class Queue
 ---
 --- @operator call: Queue
-local Queue = Object:extend()
+local Queue = Object:extend("Queue")
 
 function Queue:new(...)
     self.first = 0

@@ -13,7 +13,7 @@ local fxaaShader = Utils.newPreProcessedShader("engine/shaders/postprocessing/fx
 --- @field private shader love.Shader
 ---
 --- @overload fun(screenSize: Vector2): FXAA
-local FXAA = BaseEffect:extend()
+local FXAA = BaseEffect:extend("FXAA")
 
 
 function FXAA:new(screenSize)

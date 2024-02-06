@@ -1,6 +1,6 @@
 local Matrix    = require "engine.math.matrix"
 local Object    = require "engine.3rdparty.classic.classic"
-local Transform = Object:extend()
+local Transform = Object:extend("Transform")
 
 local function rebuildMatrix(matrix, rotation, scale)
     assert(matrix:canDecompose(), "Can't decompose matrix")

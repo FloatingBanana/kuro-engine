@@ -1,6 +1,8 @@
 -- Helper for creating C structs using FFI.
 -- If jit is disabled then it falls back to using tables, which are slower.
 
+local Kuro = require "engine.kuro"
+
 local ffi = nil
 local hasJit = false
 
@@ -95,6 +97,7 @@ local function DefineStruct(structname, definition)
         ffi.metatype(structname --[[@as ffi.ctype*]], struct)
     end
 
+    Kuro.structs[structname] = struct
     return struct
 end
 

@@ -12,7 +12,7 @@ local shader = Utils.newPreProcessedShader("engine/shaders/3D/deferred/gbuffer.g
 --- @field normalMap love.Texture
 ---
 --- @overload fun(model: Model, aiMat: unknown): DeferredMaterial
-local DRMaterial = Material:extend()
+local DRMaterial = Material:extend("DeferredMaterial")
 
 function DRMaterial:new(model, aiMat)
     local attributes = {

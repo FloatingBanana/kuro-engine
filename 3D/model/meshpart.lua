@@ -41,7 +41,7 @@ local defaultWeights = {0, 0, 0, 0}
 --- @field model Model
 ---
 --- @overload fun(part: unknown, model: Model): MeshPart
-local Meshpart = Object:extend()
+local Meshpart = Object:extend("MeshPart")
 
 
 function Meshpart:new(part, model)

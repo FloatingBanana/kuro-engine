@@ -18,7 +18,7 @@ local Object  = require "engine.3rdparty.classic.classic"
 --- @field invViewProjectionMatrix Matrix
 ---
 --- @operator call: Camera3D
-local Camera = Object:extend()
+local Camera = Object:extend("Camera3D")
 
 function Camera:new(position, rotation, fov, aspectRatio, nearPlane, farPlane)
     self.position = position

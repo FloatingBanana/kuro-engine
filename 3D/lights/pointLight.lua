@@ -21,7 +21,7 @@ local dirs = {
 --- @field linear number
 --- @field quadratic number
 --- @overload fun(position: Vector3, constant: number, linear: number, quadratic: number, diffuse: table, specular: table): PointLight
-local PointLight = BaseLight:extend()
+local PointLight = BaseLight:extend("PointLight")
 
 
 function PointLight:new(position, constant, linear, quadratic, diffuse, specular)

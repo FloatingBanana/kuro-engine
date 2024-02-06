@@ -7,7 +7,7 @@ local Lume = require "engine.3rdparty.lume"
 --- @class Event: Object
 --- 
 --- @field private callbacks EventCallback[]
-local Event = Object:extend()
+local Event = Object:extend("Event")
 
 
 function Event:new()

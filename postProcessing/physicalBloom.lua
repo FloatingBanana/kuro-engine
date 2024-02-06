@@ -32,7 +32,7 @@ local MIPMAP_COUNT = 5
 --- @field private mipmaps love.Canvas[]
 ---
 --- @overload fun(screenSize: Vector2): PhysicalBloom
-local Bloom = BaseEffect:extend()
+local Bloom = BaseEffect:extend("PhysicalBloom")
 
 
 function Bloom:new(screenSize)

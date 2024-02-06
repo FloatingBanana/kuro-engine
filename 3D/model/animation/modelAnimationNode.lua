@@ -9,7 +9,7 @@ local Object     = require "engine.3rdparty.classic.classic"
 --- @field private _positionKeys {time: number, value: Vector3}[]
 --- @field private _rotationKeys {time: number, value: Quaternion}[]
 --- @field private _scaleKeys {time: number, value: Vector3}[]
-local AnimNode = Object:extend()
+local AnimNode = Object:extend("ModelAnimationNode")
 
 
 function AnimNode:new(aiAnimNode)

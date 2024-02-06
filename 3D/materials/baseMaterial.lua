@@ -10,7 +10,7 @@ local Utils = require "engine.misc.utils"
 --- @field private __attrs MaterialDefinition
 ---
 --- @overload fun(model: Model, shader: love.Shader, attributes: MaterialDefinition)
-local Material = Object:extend()
+local Material = Object:extend("BaseMaterial")
 
 
 function Material:new(model, shader, attributes)

@@ -25,7 +25,7 @@ local lightShaders = {
 --- @field normalMap love.Texture
 ---
 --- @overload fun(model: Model, aiMat: unknown): ForwardMaterial
-local FRMaterial = Material:extend()
+local FRMaterial = Material:extend("ForwardMaterial")
 
 
 function FRMaterial:new(model, aiMat)

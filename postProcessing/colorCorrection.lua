@@ -51,7 +51,7 @@ local hdrShader = [[
 --- @field public colorFilter table
 ---
 --- @overload fun(screenSize: Vector2, contrast: number, brightness: number, exposure: number, saturation: number, colorFilter: table): ColorCorrection
-local ColorCorrection = BaseEffect:extend()
+local ColorCorrection = BaseEffect:extend("ColorCorrection")
 
 
 function ColorCorrection:new(screenSize, contrast, brightness, exposure, saturation, colorFilter)

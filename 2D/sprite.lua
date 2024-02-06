@@ -14,7 +14,7 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @field private _quad love.Quad
 ---
 ---@overload fun(texture: love.Texture | love.SpriteBatch, color: number[]?, size: Vector2?, rotation: number?, origin: Vector2?, renderArea: Rect?)
-local Sprite = Object:extend()
+local Sprite = Object:extend("Sprite")
 
 
 function Sprite:new(texture, color, size, rotation, origin, renderArea)
