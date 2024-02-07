@@ -1,5 +1,5 @@
 local Base = require "engine.transitions.transitionBase"
-local Fade = Base:extend()
+local Fade = Base:extend("Fade")
 
 function Fade:new(maxTime, isFadingOut, color)
     Base.new(self, maxTime, isFadingOut)
