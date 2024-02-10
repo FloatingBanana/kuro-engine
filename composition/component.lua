@@ -6,7 +6,6 @@ local Object = require "engine.3rdparty.classic.classic"
 local Component = Object:extend("Component")
 
 function Component:new()
-    self.enabled = true
 end
 
 function Component:onAttach(entity)end
