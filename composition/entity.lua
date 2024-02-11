@@ -19,7 +19,10 @@ function Entity:attachComponents(...)
         local comp = select(i, ...)
 
         assert(not self.components[comp.ClassName] and not self._disabledComponents[comp.ClassName], "Entity already has component "..comp.ClassName)
+        assert(not comp.entity, "Component is already attached to another entity")
         self.components[comp.ClassName] = comp
+
+        comp.entity = self
         comp:onAttach(self)
     end
 
@@ -34,6 +37,7 @@ function Entity:detachComponent(compClassName)
 
     assert(comp, "Entity does not have component "..compClassName)
     comp:onDetach(self)
+    self.entity = nil
 
     self.components[compClassName] = nil
     self._disabledComponents[compClassName] = nil
@@ -86,7 +90,7 @@ end
 function Entity:broadcastToComponents(funcname, ...)
     for _, comp in pairs(self.components) do
         if comp[funcname] then
-            comp[funcname](comp, self, ...)
+            comp[funcname](comp, ...)
         end
     end
     return self

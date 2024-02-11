@@ -8,14 +8,14 @@ function CM.addEntity(entity)
     assert(not CM.entities[entity], "Entity already exists")
     CM.entities[entity] = true
 
-    entity:broadcastToComponents("onEntityAdded")
+    entity:broadcastToComponents("onEntityAdded", entity)
 end
 
 
 ---@param entity Entity
 function CM.removeEntity(entity)
     CM.entities[entity] = nil
-    entity:broadcastToComponents("onEntityRemoved")
+    entity:broadcastToComponents("onEntityRemoved", entity)
 end
 
 
