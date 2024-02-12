@@ -1,5 +1,6 @@
 local Vector2    = require "engine.math.vector2"
 local Inter2d    = require "engine.math.intersection2d"
+local Utils      = require "engine.misc.utils"
 local Object     = require "engine.3rdparty.classic.classic"
 local lg         = love.graphics
 
@@ -17,17 +18,20 @@ vec4 position(mat4 transform_projection, vec4 vertex_pos) {
 }
 ]]
 
-local lightShader = lg.newShader [[
+local lightShader = Utils.newPreProcessedShader [[
+#pragma language glsl3
+#pragma include "engine/shaders/postprocessing/boxBlur.frag"
+
 uniform vec2 u_lightpos;
 uniform float u_radius;
 uniform sampler2D u_shadowMap;
 
-vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
+vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
     float dist = distance(screencoords, u_lightpos);
     float attenuation = max(1.0 - dist / u_radius, 0.0);
-    float visibility = Texel(u_shadowMap, texcoords).r;
+    float visibility = BoxBlur(u_shadowMap, texcoords, 2).r;
     
-    return Texel(texture, texcoords) * color * (attenuation * attenuation) * visibility;
+    return Texel(tex, texcoords) * color * (attenuation * attenuation) * visibility;
 }
 ]]
 
@@ -128,7 +132,7 @@ function Renderer2d:addLight(position, radius, color)
         pos = position,
         radius = radius,
         color = color,
-        shadowMap = lg.newCanvas(self.size.x, self.size.y, {format = "r8"})
+        shadowMap = lg.newCanvas(self.size.x/2, self.size.y/2, {format = "r8"})
     }
 
     self.lights[light] = true
@@ -153,7 +157,7 @@ function Renderer2d:_updateShadows()
     for light in pairs(self.lights) do
         lg.setCanvas(light.shadowMap)
         lg.clear(1,1,1,1)
-        shadowShader:send("u_lightpos", light.pos:toFlatTable())
+        shadowShader:send("u_lightpos", (light.pos/2):toFlatTable())
 
         for occluder in pairs(self.occluders) do
             -- if Inter2d.AABB_circle(occluder.boundingMin + occluder.pos.x, occluder.boundingMax + occluder.pos.y, light.pos, light.radius) then
@@ -173,7 +177,7 @@ function Renderer2d:_updateShadows()
                         end
                     end
 
-                    updateVertices(p1, p2)
+                    updateVertices(p1/2, p2/2)
     
                     lg.draw(shadowMesh)
     
