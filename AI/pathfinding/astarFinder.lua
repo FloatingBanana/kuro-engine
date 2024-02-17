@@ -39,7 +39,8 @@ function Finder:findPath(grid, from, to)
         end
 
         for i, nextPos in ipairs(grid:getNeighbors(currPos)) do --- @cast nextPos Vector2
-            local newCost = total_cost[currHash] + grid:getCell(nextPos).cost
+            local nextType, nextCost = grid:getCell(nextPos)
+            local newCost = total_cost[currHash] + nextCost
             local nextHash = hash(nextPos)
 
             if not total_cost[nextHash] or newCost < total_cost[nextHash] then
