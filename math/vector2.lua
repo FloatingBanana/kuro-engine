@@ -129,6 +129,16 @@ function Vector2:__eq(other)
            self.y == other.y
 end
 
+function Vector2:__lt(other)
+    return self.x < other.x or
+           self.y < other.y
+end
+
+function Vector2:__le(other)
+    return self.x <= other.x or
+           self.y <= other.y
+end
+
 function Vector2:__tostring()
     return ("Vector2(x: %f, y: %f)"):format(self.x, self.y)
 end

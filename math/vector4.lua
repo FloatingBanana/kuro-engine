@@ -184,6 +184,20 @@ function Vector4:__eq(other)
            self.z == other.z
 end
 
+function Vector4:__lt(other)
+    return self.x < other.x or
+           self.y < other.y or
+           self.z < other.z or
+           self.w < other.w
+end
+
+function Vector4:__le(other)
+    return self.x <= other.x or
+           self.y <= other.y or
+           self.z <= other.z or
+           self.w <= other.w
+end
+
 function Vector4:__tostring()
     return ("Vector4(x: %f, y: %f, z: %f, w: %f)"):format(self.x, self.y, self.z, self.w)
 end

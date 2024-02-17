@@ -140,6 +140,18 @@ function Vector3:__eq(other)
            self.z == other.z
 end
 
+function Vector3:__lt(other)
+    return self.x < other.x or
+           self.y < other.y or
+           self.z < other.z
+end
+
+function Vector3:__le(other)
+    return self.x <= other.x or
+           self.y <= other.y or
+           self.z <= other.z
+end
+
 function Vector3:__tostring()
     return ("Vector3(x: %f, y: %f, z: %f)"):format(self.x, self.y, self.z)
 end
