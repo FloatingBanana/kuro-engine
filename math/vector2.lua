@@ -27,6 +27,8 @@ end
 ---
 --- @field width number: Alias to X
 --- @field height number: Alias to Y
+--- @field min number: Alias to X
+--- @field max number: Alias to Y
 --- @field u number: Alias to X
 --- @field v number: Alias to Y
 ---
@@ -50,8 +52,8 @@ end
 -----------------------
 
 local aliases = {
-    width  = "x", u = "x",
-    height = "y", v = "y",
+    width  = "x", min = "x", u = "x",
+    height = "y", max = "y", v = "y",
 }
 
 function Vector2:__index(key)
