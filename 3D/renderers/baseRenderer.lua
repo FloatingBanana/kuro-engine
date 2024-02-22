@@ -134,7 +134,7 @@ function Renderer:sendCommonMeshBuffers(shader, meshId)
     Utils.trySendUniform(shader, "uPrevTransform", "column", self.previousTransformations[meshId]:toFlatTable())
 
     if config.animator then
-        Utils.trySendUniform(shader, "uBoneMatrices", config.animator.finalMatrices)
+        Utils.trySendUniform(shader, "uBoneMatrices", "column", config.animator.finalMatrices)
     end
 end
 

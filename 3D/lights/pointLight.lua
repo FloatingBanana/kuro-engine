@@ -57,7 +57,7 @@ function PointLight:generateShadowMap(meshes)
 
                 local animator = config.animator
                 if animator then
-                    depthShader:send("u_boneMatrices", animator.finalMatrices)
+                    depthShader:send("u_boneMatrices", "column", animator.finalMatrices)
                 end
 
                 for j, part in ipairs(config.mesh.parts) do

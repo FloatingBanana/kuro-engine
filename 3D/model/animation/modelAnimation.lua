@@ -65,7 +65,7 @@ function Anim:updateBones(time, matrixList, node, parentTransform, armatureToMod
 
     if bone then
         local index = bone.id
-        matrixList[index] = (bone.offset * globalTransform):multiply(armatureToModelMatrix):transpose()
+        matrixList[index] = (bone.offset * globalTransform):multiply(armatureToModelMatrix)
     end
 
     for i, child in ipairs(node.children) do

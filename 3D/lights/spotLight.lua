@@ -51,7 +51,7 @@ function Spotlight:generateShadowMap(meshes)
         if config.castShadows then
             local animator = config.animator
             if animator then
-                depthShader:send("u_boneMatrices", animator.finalMatrices)
+                depthShader:send("u_boneMatrices", "column", animator.finalMatrices)
             end
 
             depthShader:send("u_world", "column", config.worldMatrix:toFlatTable())
