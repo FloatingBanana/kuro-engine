@@ -125,8 +125,10 @@ function Utils.getType(v)
 		return v.ClassName
 	elseif type(v) == "table" and v.typename then
 		return v.typename
+	elseif type(v) == "userdata" and v.type then
+		return v:type()
 	elseif type(v) == "cdata" then
-		return ffi.typeof(v)
+		return v.typename or ffi.typeof(v)
 	else
 		return type(v)
 	end
