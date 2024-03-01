@@ -22,6 +22,7 @@ function Timer:new(initialTime, duration, isLoop)
 
     self.running = false
     self.justEnded = false
+    self.autoRestart = true
 
     self.onEndedEvent = Event()
 end
@@ -50,9 +51,11 @@ function Timer:update(dt)
         if self.time >= self.duration then
             if self.isLoop then
                 self.time = self.time - self.duration
+            else
+                self.running = false
+                self.time = self.autoRestart and 0 or self.time
             end
             self.justEnded = true
-            self.running = false
             self.onEndedEvent:trigger(self)
         end
     end
