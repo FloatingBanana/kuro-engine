@@ -32,6 +32,8 @@ function Timer:__index(k)
     if k == "progress" then
         return self.time / self.duration
     end
+
+    return Timer[k]
 end
 
 ---@private
