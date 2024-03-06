@@ -2,6 +2,16 @@ local CM = {
     entities = {} ---@type table<Entity, boolean>
 }
 
+local waitingForRemove = {}
+
+local function removeWaitingEntities()
+    for entity in pairs(waitingForRemove) do
+        waitingForRemove[entity] = nil
+        CM.entities[entity] = nil
+        entity:broadcastToComponents("onEntityRemoved", entity)
+    end
+end
+
 
 ---@param entity Entity
 function CM.addEntity(entity)
@@ -14,8 +24,7 @@ end
 
 ---@param entity Entity
 function CM.removeEntity(entity)
-    CM.entities[entity] = nil
-    entity:broadcastToComponents("onEntityRemoved", entity)
+    waitingForRemove[entity] = true
 end
 
 
@@ -23,6 +32,7 @@ function CM.clear()
     for entity in pairs(CM.entities) do
         CM.removeEntity(entity)
     end
+    removeWaitingEntities()
 end
 
 
@@ -32,6 +42,8 @@ function CM.broadcastToAllComponents(funcname, ...)
     for entity in pairs(CM.entities) do
         entity:broadcastToComponents(funcname, ...)
     end
+
+    removeWaitingEntities()
 end
 
 return CM
