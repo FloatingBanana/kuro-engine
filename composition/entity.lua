@@ -4,6 +4,8 @@ local Object = require "engine.3rdparty.classic.classic"
 ---
 ---@field public components table<string, Component>
 ---@field private _disabledComponents table<string, Component>
+---
+---@overload fun(): Entity
 local Entity = Object:extend("Entity")
 
 function Entity:new()
