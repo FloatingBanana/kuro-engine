@@ -41,6 +41,8 @@ function Timer:__newindex(k, v)
     if k == "progress" then
         self.time = self.duration * v
     end
+
+    rawset(self, k, v)
 end
 
 
