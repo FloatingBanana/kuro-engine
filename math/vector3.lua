@@ -379,6 +379,17 @@ function Vector3:ceil()
 end
 
 
+--- Makes all components of this vector positive
+--- @return Vector3: This vector
+function Vector3:abs()
+    self.x = abs(self.x)
+    self.y = abs(self.y)
+    self.z = abs(self.z)
+
+    return self
+end
+
+
 --- Checks if any of the components is equal to `Nan`
 --- @return boolean
 function Vector3:isNan()

@@ -1,6 +1,6 @@
 local Lume    = require "engine.3rdparty.lume"
 local CStruct = require "engine.misc.cstruct"
-local sin, cos, atan2, sqrt, floor, ceil, min, max = math.sin, math.cos, math.atan2, math.sqrt, math.floor, math.ceil, math.min, math.max
+local sin, cos, abs, atan2, sqrt, floor, ceil, min, max = math.sin, math.cos, math.abs, math.atan2, math.sqrt, math.floor, math.ceil, math.min, math.max
 
 -- Helper function for overloads of commutative operations to ensure that the order
 -- of the arguments will always be the same (first the object, then the number), so we
@@ -310,6 +310,16 @@ end
 function Vector2:ceil()
     self.x = ceil(self.x)
     self.y = ceil(self.y)
+
+    return self
+end
+
+
+--- Makes all components of this vector positive
+--- @return Vector2: This vector
+function Vector2:abs()
+    self.x = abs(self.x)
+    self.y = abs(self.y)
 
     return self
 end
