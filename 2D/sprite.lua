@@ -10,10 +10,11 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @field public color number[]
 --- @field public rotation number
 --- @field public origin Vector2
+--- @field public shear Vector2
 --- @field public renderArea Rect
 --- @field private _quad love.Quad
 ---
----@overload fun(texture: love.Texture | love.SpriteBatch, color: number[]?, size: Vector2?, rotation: number?, origin: Vector2?, renderArea: Rect?)
+---@overload fun(texture: love.Texture | love.SpriteBatch, color: number[]?, size: Vector2?, rotation: number?, origin: Vector2?, renderArea: Rect?): Sprite
 local Sprite = Object:extend("Sprite")
 
 
@@ -23,6 +24,7 @@ function Sprite:new(texture, color, size, rotation, origin, renderArea)
     self.color = color or {1,1,1,1}
     self.rotation = rotation or 0
     self.origin = origin or Vector2(0,0)
+    self.shear = Vector2(0,0)
     self.renderArea = renderArea or Rect(Vector2(0,0), Vector2(texture:getDimensions()))
 
     self._quad = love.graphics.newQuad(0,0,0,0,0,0)
@@ -44,8 +46,9 @@ function Sprite:draw(pos, shader, blendMode, alphaBlendMode)
         love.graphics.setBlendMode(blendMode or "alpha", alphaBlendMode or "alphamultiply")
     end
 
+    local origin = self.origin * self.renderArea.size
     love.graphics.setColor(self.color)
-    love.graphics.draw(self.texture, self._quad, pos.x, pos.y, self.rotation, self.size.x, self.size.y, self.origin.x, self.origin.y)
+    love.graphics.draw(self.texture, self._quad, pos.x, pos.y, self.rotation, self.size.x, self.size.y, origin.x, origin.y, self.shear.x, self.shear.y)
 end
 
 
@@ -53,7 +56,8 @@ end
 function Sprite:batchAdd(pos)
     self:_updateQuad()
 
-    self.texture:add(self._quad, pos.x, pos.y, self.rotation, self.size.x, self.size.y, self.origin.x, self.origin.y)
+    local origin = self.origin * self.renderArea.size
+    self.texture:add(self._quad, pos.x, pos.y, self.rotation, self.size.x, self.size.y, origin.x, origin.y, self.shear.x, self.shear.y)
     self.texture:setColor(unpack(self.color))
 end
 
