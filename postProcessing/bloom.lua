@@ -75,6 +75,7 @@ function Bloom:onPostRender(renderer, canvas, camera)
     end
 
     lg.setCanvas(canvas)
+    lg.setShader()
     lg.setBlendMode("add")
     lg.draw(self.blurCanvases[1], 0, 0, 0, 2, 2)
 
