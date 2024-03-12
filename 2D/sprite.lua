@@ -38,6 +38,10 @@ end
 function Sprite:draw(pos, shader, blendMode, alphaBlendMode)
     self:_updateQuad()
 
+    local pShader = love.graphics.getShader()
+    local pBlendMode, pAlphaMode = love.graphics.getBlendMode()
+    local pr, pg, pb, pa = love.graphics.getColor()
+
     if shader then
         lg.setShader(shader)
     end
@@ -49,6 +53,10 @@ function Sprite:draw(pos, shader, blendMode, alphaBlendMode)
     local origin = self.origin * self.renderArea.size
     love.graphics.setColor(self.color)
     love.graphics.draw(self.texture, self._quad, pos.x, pos.y, self.rotation, self.size.x, self.size.y, origin.x, origin.y, self.shear.x, self.shear.y)
+
+    love.graphics.setShader(pShader)
+    love.graphics.setBlendMode(pBlendMode, pAlphaMode)
+    love.graphics.setColor(pr, pg, pb, pa)
 end
 
 
