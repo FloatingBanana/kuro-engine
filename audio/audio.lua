@@ -142,8 +142,11 @@ function Audio:updateBaseProperties(group)
     -- Trigger metamethods
     self.volume   = self._volume
     self.pitch    = self._pitch
-    self.position = self._position
-    self.velocity = self._velocity
+
+    if self.source:getChannelCount() == 1 then
+        self.position = self._position
+        self.velocity = self._velocity
+    end
 
     self.enableFilter = self.enableFilter
 end
