@@ -91,7 +91,7 @@ function Camera:attach()
     love.graphics.translate(WIDTH / 2, HEIGHT / 2)
     love.graphics.scale(self.zoom)
 
-    love.graphics.translate(-self.actualPosition.x, -self.actualPosition.y)
+    love.graphics.translate(-math.floor(self.actualPosition.x), -math.floor(self.actualPosition.y))
 end
 
 
