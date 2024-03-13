@@ -54,15 +54,15 @@ function Audio:new(source, type)
 
     self._baseVolume = self.source:getVolume()
     self._basePitch = self.source:getPitch()
-    self._basePosition = Vector3(self.source:getPosition())
-    self._baseVelocity = Vector3(self.source:getVelocity())
+    self._basePosition = Vector3(0)
+    self._baseVelocity = Vector3(0)
     self._baseHighgain = 1
     self._baseLowgain = 1
 
     self._volume = self.source:getVolume()
     self._pitch = self.source:getPitch()
-    self._position = Vector3(self.source:getPosition())
-    self._velocity = Vector3(self.source:getVelocity())
+    self._position = Vector3(0)
+    self._velocity = Vector3(0)
     self._filter = {type = "lowpass", lowgain = 1, highgain = 1}
 
 
@@ -97,32 +97,36 @@ function Audio:__index(k)
     if k == "absolutePitch"        then return self._pitch * self._basePitch end
     if k == "absolutePosition"     then return self._position + self._basePosition end
     if k == "absoluteVelocity"     then return self._velocity + self._baseVelocity end
+
+    return Audio[k]
 end
 
 function Audio:__newindex(k, v)
-    if k == "volume"               then self._volume   = v; self.source:setVolume(self.absoluteVolume) end
-    if k == "pitch"                then self._pitch    = v; self.source:setPitch(self.absolutePitch) end
-    if k == "position"             then self._position = v; self.source:setPosition(self.absolutePosition:split()) end
-    if k == "velocity"             then self._velocity = v; self.source:setVelocity(self.absoluteVelocity:split()) end
-    if k == "direction"            then self.source:setDirection(v.x, v.y, v.z) end
-    if k == "attenuationDistances" then self.source:setAttenuationDistances(v.min, v.max) end
-    if k == "volumeLimits"         then self.source:setVolumeLimits(v.min, v.max) end
-    if k == "currentSecond"        then self.source:seek(v, "seconds") end
-    if k == "currentSample"        then self.source:seek(v, "samples") end
-    if k == "airAbsorption"        then self.source:setAirAbsorption(v) end
-    if k == "rollof"               then self.source:setRolloff(v) end
-    if k == "isPlaying"            then if v then self.source:play() else self.source:pause() end end
-    if k == "loop"                 then self.source:setLooping(v) end
+    if k == "volume"               then self._volume   = v; self.source:setVolume(self.absoluteVolume); return end
+    if k == "pitch"                then self._pitch    = v; self.source:setPitch(self.absolutePitch); return end
+    if k == "position"             then self._position = v; self.source:setPosition(self.absolutePosition:split()); return end
+    if k == "velocity"             then self._velocity = v; self.source:setVelocity(self.absoluteVelocity:split()); return end
+    if k == "direction"            then self.source:setDirection(v.x, v.y, v.z); return end
+    if k == "attenuationDistances" then self.source:setAttenuationDistances(v.min, v.max); return end
+    if k == "volumeLimits"         then self.source:setVolumeLimits(v.min, v.max); return end
+    if k == "currentSecond"        then self.source:seek(v, "seconds"); return end
+    if k == "currentSample"        then self.source:seek(v, "samples"); return end
+    if k == "airAbsorption"        then self.source:setAirAbsorption(v); return end
+    if k == "rollof"               then self.source:setRolloff(v); return end
+    if k == "isPlaying"            then if v then self.source:play() else self.source:pause() end; return end
+    if k == "loop"                 then self.source:setLooping(v); return end
 
-    if k == "enableFilter"         then self.source:setFilter(v and self._filter or nil)end
-    if k == "filter"               then self._filter.type     = v; self.source:setFilter(self.enableFilter and self._filter or nil)end
-    if k == "highgain"             then self._filter.highgain = v; self.source:setFilter(self.enableFilter and self._filter or nil)end
-    if k == "lowgain"              then self._filter.lowgain  = v; self.source:setFilter(self.enableFilter and self._filter or nil)end
+    if k == "enableFilter"         then self.source:setFilter(v and self._filter or nil); return end
+    if k == "filter"               then self._filter.type     = v; self.source:setFilter(self.enableFilter and self._filter or nil); return end
+    if k == "highgain"             then self._filter.highgain = v; self.source:setFilter(self.enableFilter and self._filter or nil); return end
+    if k == "lowgain"              then self._filter.lowgain  = v; self.source:setFilter(self.enableFilter and self._filter or nil); return end
 
-    if k == "absoluteVolume"       then self.volume   = v / self._baseVolume end
-    if k == "absolutePitch"        then self.pitch    = v / self._basePitch end
-    if k == "absolutePosition"     then self.position = v - self._basePosition end
-    if k == "absoluteVelocity"     then self.velocity = v - self._baseVelocity end
+    if k == "absoluteVolume"       then self.volume   = v / self._baseVolume; return end
+    if k == "absolutePitch"        then self.pitch    = v / self._basePitch; return end
+    if k == "absolutePosition"     then self.position = v - self._basePosition; return end
+    if k == "absoluteVelocity"     then self.velocity = v - self._baseVelocity; return end
+
+    rawset(self, k, v)
 end
 
 
@@ -167,7 +171,7 @@ function Audio:play(fade)
         self._fadeInTimer:restart():play()
     end
 
-    self.source:play()
+    self.source:clone():play()
     return self
 end
 
