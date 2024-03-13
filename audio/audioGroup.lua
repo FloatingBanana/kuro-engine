@@ -22,8 +22,8 @@ local Lume = require "engine.3rdparty.lume"
 local AudioGroup = Object:extend("AudioGroup")
 
 function AudioGroup:new()
-    self._volume = 0
-    self._pitch = 0
+    self._volume = 1
+    self._pitch = 1
     self._velocity = Vector3(0,0,0)
     self._position = Vector3(0,0,0)
 
@@ -42,17 +42,21 @@ function AudioGroup:__index(k)
     if k == "position" then return self._position end
     if k == "highgain" then return self._highgain end
     if k == "lowgain"  then return self._lowgain  end
+
+    return AudioGroup[k]
 end
 
 
 ---@private
 function AudioGroup:__newindex(k, v)
-    if k == "volume"   then self._volume   = v; self:_updateAudioProperties() end
-    if k == "pitch"    then self._pitch    = v; self:_updateAudioProperties() end
-    if k == "velocity" then self._velocity = v; self:_updateAudioProperties() end
-    if k == "position" then self._position = v; self:_updateAudioProperties() end
-    if k == "highgain" then self._highgain = v; self:_updateAudioProperties() end
-    if k == "lowgain"  then self._lowgain  = v; self:_updateAudioProperties() end
+    if k == "volume"   then self._volume   = v; self:_updateAudioProperties(); return end
+    if k == "pitch"    then self._pitch    = v; self:_updateAudioProperties(); return end
+    if k == "velocity" then self._velocity = v; self:_updateAudioProperties(); return end
+    if k == "position" then self._position = v; self:_updateAudioProperties(); return end
+    if k == "highgain" then self._highgain = v; self:_updateAudioProperties(); return end
+    if k == "lowgain"  then self._lowgain  = v; self:_updateAudioProperties(); return end
+
+    rawset(self, k, v)
 end
 
 
