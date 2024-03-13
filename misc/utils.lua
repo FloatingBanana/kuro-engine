@@ -264,4 +264,20 @@ function Utils.newSquareMesh(size)
 end
 
 
+
+---@param ... number[]
+---@return love.Image
+function Utils.newGradient(...)
+	local n = select("#", ...)
+	local data = love.image.newImageData(1, n)
+
+	for i=1, n do
+		local c = select(i, ...)
+		data:setPixel(0, i-1, c[1], c[2], c[3], c[4])
+	end
+
+	return love.graphics.newImage(data)
+end
+
+
 return Utils
