@@ -43,7 +43,7 @@ function Sprite:draw(pos, shader, blendMode, alphaBlendMode)
     local pr, pg, pb, pa = love.graphics.getColor()
 
     if shader then
-        lg.setShader(shader)
+        love.graphics.setShader(shader)
     end
 
     if blendMode or alphaBlendMode then
