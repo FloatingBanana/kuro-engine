@@ -276,7 +276,10 @@ function Utils.newGradient(...)
 		data:setPixel(0, i-1, c[1], c[2], c[3], c[4])
 	end
 
-	return love.graphics.newImage(data)
+	local img = love.graphics.newImage(data)
+	img:setFilter("linear", "linear")
+
+	return img
 end
 
 
