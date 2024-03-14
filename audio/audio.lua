@@ -10,6 +10,7 @@ local Utils = require "engine.misc.utils"
 ---
 ---@field public source love.Source
 ---
+---@field public multiSource boolean
 ---@field public volume number
 ---@field public pitch number
 ---@field public position Vector3
@@ -51,6 +52,8 @@ function Audio:new(source, type)
     else
         self.source = love.audio.newSource(source, type)
     end
+
+    self.multiSource = true
 
     self._baseVolume = self.source:getVolume()
     self._basePitch = self.source:getPitch()
@@ -174,7 +177,11 @@ function Audio:play(fade)
         self._fadeInTimer:restart():play()
     end
 
-    self.source:clone():play()
+    if self.multiSource then
+        self.source:clone():play()
+    else
+        self.source:play()
+    end
     return self
 end
 
