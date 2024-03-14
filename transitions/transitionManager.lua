@@ -17,9 +17,9 @@ function TM.update(dt)
         current:update(dt)
 
         if current.time >= current.maxTime then
-            current:onStop()
             TM.current = nil
             TM.isPlaying = false
+            current:onStop()
         end
     end
 end
