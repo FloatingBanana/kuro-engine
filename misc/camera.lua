@@ -26,6 +26,7 @@ function Camera:new(position, zoom)
     self.easing = Easing.linear
     self.speed = 100
 
+    self.shakeOffset = Vector2()
     self._shakeTimer = Timer(0, 0, false)
     self._shakeShiftTimer = Timer(0, 0, true)
     self._shakeIntensity = 0
@@ -70,18 +71,18 @@ end
 
 ---@param dt number
 function Camera:update(dt)
-    local shakeOffset = Vector2()
+    self.shakeOffset = Vector2()
 
     if self._shakeTimer:update(dt).running then
         if self._shakeShiftTimer:update(dt).justEnded then
             local int = 1 - (self._shakeTimer.time / self._shakeTimer.duration)
 
-            shakeOffset.x = math.random(-int, int) * self._shakeIntensity
-            shakeOffset.y = math.random(-int, int) * self._shakeIntensity
+            self.shakeOffset.x = math.random(-int, int) * self._shakeIntensity
+            self.shakeOffset.y = math.random(-int, int) * self._shakeIntensity
         end
     end
 
-    self.actualPosition = Vector2.Lerp(self.actualPosition, self.position, self.easing(self.speed * dt)):add(shakeOffset)
+    self.actualPosition = Vector2.Lerp(self.actualPosition, self.position, self.easing(self.speed * dt)):add(self.shakeOffset)
 end
 
 
