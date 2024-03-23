@@ -12,6 +12,9 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @field public origin Vector2
 --- @field public shear Vector2
 --- @field public renderArea Rect
+--- @field public filter love.FilterMode
+--- @field public wrap love.WrapMode
+--- @field public dimensions Vector2
 --- @field private _quad love.Quad
 ---
 ---@overload fun(texture: love.Texture | love.SpriteBatch, color: number[]?, size: Vector2?, rotation: number?, origin: Vector2?, renderArea: Rect?): Sprite
@@ -25,16 +28,46 @@ function Sprite:new(texture, color, size, rotation, origin, renderArea)
     self.rotation = rotation or 0
     self.origin = origin or Vector2(0,0)
     self.shear = Vector2(0,0)
-    self.renderArea = renderArea or Rect(Vector2(0,0), Vector2(texture:getDimensions()))
+    self.renderArea = renderArea or Rect(Vector2(0,0), self.dimensions)
 
     self._quad = love.graphics.newQuad(0,0,0,0,0,0)
 end
 
 
+function Sprite:__newindex(k, v)
+    if k == "filter" then
+        self.texture:setFilter(v, v)
+        return
+    end
+    if k == "wrap" then
+        self.texture:setWrap(v)
+        return
+    end
+
+    rawset(self, k, v)
+end
+
+
+function Sprite:__index(k)
+    if k == "filter" then
+        return (self.texture:getFilter())
+    end
+    if k == "wrap" then
+        return (self.texture:getWrap())
+    end
+    if k == "dimensions" then
+        return Vector2(self.texture:getDimensions())
+    end
+
+    return Sprite[k]
+end
+
+-- TODO: remove blendmode parameters and add a color parameter
 ---@param pos Vector2
 ---@param shader love.Shader?
 ---@param blendMode love.BlendMode?
 ---@param alphaBlendMode love.BlendAlphaMode?
+---@overload fun()
 function Sprite:draw(pos, shader, blendMode, alphaBlendMode)
     self:_updateQuad()
 
