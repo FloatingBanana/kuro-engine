@@ -1,5 +1,3 @@
-#pragma language glsl3
-
 vec4 BoxBlur(sampler2D tex, vec2 texCoord, int kernelSize) {
     vec2 texelSize = 1.0 / vec2(textureSize(tex, 0));
     vec4 result = vec4(0);
@@ -15,6 +13,7 @@ vec4 BoxBlur(sampler2D tex, vec2 texCoord, int kernelSize) {
 }
 
 #ifndef INCLUDED
+#pragma language glsl3
 uniform int size;
 
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
