@@ -27,8 +27,7 @@ local defines = {
     deferred = "SAMPLE_DEPTH_DEFERRED"
 }
 
-local boxBlurShader = love.graphics.newShader(Utils.preprocessShader((love.filesystem.read("engine/shaders/postprocessing/boxBlur.frag"))))
-boxBlurShader:send("size", 2)
+local gaussianBlurShader = Utils.newPreProcessedShader("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
 
 
 --- @class SSAO: BasePostProcessingEffect
@@ -73,16 +72,19 @@ function SSAO:onPreRender(renderer, camera)
 
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.setShader(self.shader)
-    love.graphics.clear()
 
     renderer:sendCommonRendererBuffers(self.shader, camera)
     love.graphics.draw(self.dummySquare)
 
-    love.graphics.setCanvas(self.blurCanvas)
-    love.graphics.setShader(boxBlurShader)
-    love.graphics.clear()
+    love.graphics.setShader(gaussianBlurShader)
 
+    gaussianBlurShader:send("direction", {1,0})
+    love.graphics.setCanvas(self.blurCanvas)
     love.graphics.draw(self.ssaoCanvas)
+
+    gaussianBlurShader:send("direction", {0,1})
+    love.graphics.setCanvas(self.ssaoCanvas)
+    love.graphics.draw(self.blurCanvas)
 
     love.graphics.setCanvas()
     love.graphics.setShader()
@@ -91,7 +93,7 @@ end
 
 function SSAO:onLightRender(light, shader)
     if light:is(AmbientLight) then
-        shader:send("u_ssaoTex", self.blurCanvas)
+        shader:send("u_ssaoTex", self.ssaoCanvas)
     end
 end
 
