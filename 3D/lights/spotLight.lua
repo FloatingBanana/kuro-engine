@@ -68,7 +68,7 @@ end
 
 function Spotlight:applyLighting(lightingShader)
     lightingShader:send("u_lightShadowMap", self.shadowmap)
-    lightingShader:send("u_lightMatrix",    self.viewProjMatrix:transpose():toFlatTable())
+    lightingShader:send("u_lightMatrix", "column", self.viewProjMatrix:toFlatTable())
 
     lightingShader:send("light.position",    self.position:toFlatTable())
     lightingShader:send("light.direction",   self.direction:toFlatTable())
