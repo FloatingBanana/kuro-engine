@@ -1,9 +1,13 @@
 local Lume    = require "engine.3rdparty.lume"
 local Vector3 = require "engine.math.vector3"
+local Matrix  = require "engine.math.matrix"
+local Stack   = require "engine.collections.stack"
 local Utils   = require "engine.misc.utils"
 local Object  = require "engine.3rdparty.classic.classic"
 
---- @alias MeshConfig {mesh: ModelMesh, castShadows: boolean, ignoreLighting: boolean, worldMatrix: Matrix, animator: ModelAnimator?, onDraw: function?}
+local configPool = Stack()
+
+--- @alias MeshPartConfig {meshPart: MeshPart, material: BaseMaterial, castShadows: boolean, ignoreLighting: boolean, worldMatrix: Matrix, animator: ModelAnimator?}
 
 --- @class BaseRenderer: Object
 ---
@@ -12,9 +16,8 @@ local Object  = require "engine.3rdparty.classic.classic"
 --- @field resultCanvas love.Canvas
 --- @field depthCanvas love.Canvas
 --- @field velocityBuffer love.Canvas
---- @field protected meshes table<integer, MeshConfig>
+--- @field protected meshParts Stack
 --- @field protected lights BaseLight[]
---- @field protected previousTransformations table<integer, Matrix>
 ---
 --- @overload fun(screenSize: Vector2, postProcessingEffects: BasePostProcessingEffect[]): BaseRenderer
 local Renderer = Object:extend("BaseRenderer")
@@ -28,19 +31,34 @@ function Renderer:new(screensize, postProcessingEffects)
     self.depthCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "depth24stencil8", readable = true})
     self.velocityBuffer = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg8"})
 
-    self.meshes = {}
+    self.meshParts = Stack()
     self.lights = {}
-    self.previousTransformations = {} -- for velocity buffer
+end
+
+---@param meshPart MeshPart
+---@return MeshPartConfig
+function Renderer:pushMeshPart(meshPart)
+    local config = configPool:pop() or {}
+
+    config.material = meshPart.material
+    config.meshPart = meshPart
+    config.castShadows = true
+    config.ignoreLighting = false
+    config.worldMatrix = Matrix.Identity()
+    config.animator = nil
+
+    self.meshParts:push(config)
+    return config
 end
 
 
----@param config MeshConfig
-function Renderer:addMesh(config)
-    local id = #self.meshes + 1
-    self.meshes[id] = config
-    self.previousTransformations[id] = config.worldMatrix:clone()
-
-    return id
+---@protected
+---@param config MeshPartConfig
+function Renderer:recycleConfigTable(config)
+    config.animator = nil
+    config.meshPart = nil
+    config.material = nil
+    configPool:push(config)
 end
 
 
@@ -53,18 +71,6 @@ end
 ---@param light BaseLight
 function Renderer:removeLight(light)
     table.remove(self.lights, Lume.find(self.lights, light))
-end
-
-function Renderer:removeMesh(id)
-    self.meshes[id] = nil
-    self.previousTransformations[id] = nil
-end
-
-
----@param meshId integer
----@return MeshConfig
-function Renderer:getMeshConfig(meshId)
-    return self.meshes[meshId]
 end
 
 
@@ -81,6 +87,8 @@ function Renderer:render(camera)
     self:renderMeshes(camera)
     love.graphics.pop()
 
+    assert(#self.meshParts == 0, "Failed to consume all queued meshes")
+
     love.graphics.push("all")
 
     local result = self.resultCanvas
@@ -90,13 +98,6 @@ function Renderer:render(camera)
 
     love.graphics.pop()
     love.graphics.draw(result)
-
-    -- Store mesh transfomation from this frame to calculate the velocity buffer on the next frame
-    for id, prevMatrix in pairs(self.previousTransformations) do
-        local config = self:getMeshConfig(id)
-
-        self.previousTransformations[id] = config.worldMatrix * camera.viewProjectionMatrix
-    end
 end
 
 
@@ -126,12 +127,10 @@ end
 
 
 ---@param shader love.Shader
----@param meshId integer
-function Renderer:sendCommonMeshBuffers(shader, meshId)
-    local config = self:getMeshConfig(meshId)
-
+---@param config MeshPartConfig
+function Renderer:sendCommonMeshBuffers(shader, config)
     Utils.trySendUniform(shader, "uWorldMatrix",   "column", config.worldMatrix:toFlatTable())
-    Utils.trySendUniform(shader, "uPrevTransform", "column", self.previousTransformations[meshId]:toFlatTable())
+    -- Utils.trySendUniform(shader, "uPrevTransform", "column", self.previousTransformations[meshId]:toFlatTable())
 
     if config.animator then
         Utils.trySendUniform(shader, "uBoneMatrices", "column", config.animator.finalMatrices)

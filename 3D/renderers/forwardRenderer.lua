@@ -62,7 +62,7 @@ end
 --- @param camera Camera3D
 function ForwardRenderer:renderMeshes(camera)
     for i, light in ipairs(self.lights) do
-        light:generateShadowMap(self.meshes)
+        light:generateShadowMap(self.meshParts)
     end
 
     lg.setCanvas({self.velocityBuffer, depthstencil = self.depthCanvas})
@@ -83,11 +83,9 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setShader(depthPrePassShader)
     self:sendCommonRendererBuffers(depthPrePassShader, camera)
 
-    for id, config in pairs(self.meshes) do
-        for i, meshpart in ipairs(config.mesh.parts) do
-            self:sendCommonMeshBuffers(depthPrePassShader, id)
-            lg.draw(meshpart.buffer)
-        end
+    for i, config in ipairs(self.meshParts) do
+        self:sendCommonMeshBuffers(depthPrePassShader, config)
+        lg.draw(config.meshPart.buffer)
     end
 
 
@@ -111,36 +109,33 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setMeshCullMode("back")
     lg.setBlendMode("add")
 
-    for id, config in pairs(self.meshes) do
-        for i, meshpart in pairs(config.mesh.parts) do
-            local mat = meshpart.material --[[@as ForwardMaterial]]
+    while self.meshParts:peek() do
+        local config = self.meshParts:pop() --[[@as MeshPartConfig]]
+        local mat = config.meshPart.material --[[@as ForwardMaterial]]
 
-            if config.onDraw then
-                config.onDraw(meshpart, config)
-            end
+        if config.ignoreLighting then
+            self:sendCommonRendererBuffers(mat.shader, camera)
+            self:sendCommonMeshBuffers(mat.shader, config)
+            config.meshPart:draw()
+        else
+            for i, light in ipairs(self.lights) do
+                if not light.enabled then goto continue end
 
-            if config.ignoreLighting then
-                self:sendCommonRendererBuffers(mat.shader, camera)
-                self:sendCommonMeshBuffers(mat.shader, id)
-                meshpart:draw()
-            else
-                for i, light in ipairs(self.lights) do
-                    if not light.enabled then goto continue end
+                mat:setLightType(getmetatable(light))
+                light:applyLighting(mat.shader)
+                self:sendCommonRendererBuffers(mat.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                self:sendCommonMeshBuffers(mat.shader, config)
 
-                    mat:setLightType(getmetatable(light))
-                    light:applyLighting(mat.shader)
-                    self:sendCommonRendererBuffers(mat.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
-                    self:sendCommonMeshBuffers(mat.shader, id)
-
-                    for j, effect in ipairs(self.ppeffects) do
-                        effect:onLightRender(light, mat.shader)
-                    end
-
-                    meshpart:draw()
-                    ::continue::
+                for j, effect in ipairs(self.ppeffects) do
+                    effect:onLightRender(light, mat.shader)
                 end
+
+                config.meshPart:draw()
+                ::continue::
             end
         end
+
+        self:recycleConfigTable(config)
     end
 
 

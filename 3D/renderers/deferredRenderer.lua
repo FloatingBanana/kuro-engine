@@ -57,16 +57,10 @@ function DeferredRenderer:renderMeshes(camera)
     lg.setBlendMode("replace")
     lg.setMeshCullMode("back")
 
-    for id, config in pairs(self.meshes) do
-        if config.onDraw then
-            config.onDraw(id, config)
-        end
-
-        for i, part in ipairs(config.mesh.parts) do
-            self:sendCommonRendererBuffers(part.material.shader, camera)
-            self:sendCommonMeshBuffers(part.material.shader, id)
-            part:draw()
-        end
+    for i, config in ipairs(self.meshParts) do
+        self:sendCommonRendererBuffers(config.material.shader, camera)
+        self:sendCommonMeshBuffers(config.material.shader, config)
+        config.meshPart:draw()
     end
 
 
@@ -93,7 +87,7 @@ function DeferredRenderer:renderMeshes(camera)
         local lightShader = lightPassShaders[getmetatable(light)]
         self:sendCommonRendererBuffers(lightShader, camera)
 
-        light:generateShadowMap(self.meshes)
+        light:generateShadowMap(self.meshParts)
         light:applyLighting(lightShader)
 
         for j, effect in ipairs(self.ppeffects) do
@@ -112,6 +106,10 @@ function DeferredRenderer:renderMeshes(camera)
         end
 
         ::continue::
+    end
+
+    while self.meshParts:peek() do
+        self:recycleConfigTable(self.meshParts:pop())
     end
 
     lg.setShader()

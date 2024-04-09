@@ -38,7 +38,7 @@ function Spotlight:new(position, direction, innerAngle, outerAngle, diffuse, spe
 end
 
 
----@param meshes table<integer, MeshConfig>
+---@param meshes table<integer, MeshPartConfig>
 function Spotlight:generateShadowMap(meshes)
     self.viewMatrix = Matrix.CreateLookAtDirection(self.position, self.direction, Vector3(0,1,0))
     self.projMatrix = Matrix.CreatePerspectiveFOV(self.outerAngle * 2, -1, self.near, self.far)
@@ -47,7 +47,7 @@ function Spotlight:generateShadowMap(meshes)
     self:beginShadowMapping(self.viewProjMatrix)
     depthShader:send("lightDir", self.direction:toFlatTable())
 
-    for id, config in pairs(meshes) do
+    for i, config in ipairs(meshes) do
         if config.castShadows then
             local animator = config.animator
             if animator then
@@ -56,10 +56,8 @@ function Spotlight:generateShadowMap(meshes)
 
             depthShader:send("u_world", "column", config.worldMatrix:toFlatTable())
             depthShader:send("u_invTranspWorld", "column", config.worldMatrix.inverse:transpose():to3x3():toFlatTable())
-            
-            for i, part in ipairs(config.mesh.parts) do
-                love.graphics.draw(part.buffer)
-            end
+
+            love.graphics.draw(config.meshPart.buffer)
         end
     end
     self:endShadowMapping()
