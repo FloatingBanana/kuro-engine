@@ -2,7 +2,6 @@ local BaseRederer = require "engine.3D.renderers.baseRenderer"
 local Utils = require "engine.misc.utils"
 local lg = love.graphics
 
-local black = {0,0,0,0}
 local depthPrePassShader = Utils.newPreProcessedShader([[
 #pragma language glsl3
 #pragma include "engine/shaders/incl_utils.glsl"
@@ -66,7 +65,7 @@ function ForwardRenderer:renderMeshes(camera)
     end
 
     lg.setCanvas({self.velocityBuffer, depthstencil = self.depthCanvas})
-    lg.clear(black)
+    lg.clear()
 
     --------------------
     -- Depth pre-pass --
@@ -107,7 +106,7 @@ function ForwardRenderer:renderMeshes(camera)
     lg.clear(true, false, false)
     lg.setDepthMode("lequal", false)
     lg.setMeshCullMode("back")
-    lg.setBlendMode("add")
+    lg.setBlendMode("add", "premultiplied")
 
     while self.meshParts:peek() do
         local config = self.meshParts:pop() --[[@as MeshPartConfig]]
