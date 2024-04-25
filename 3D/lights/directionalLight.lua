@@ -30,28 +30,28 @@ end
 
 
 ---@param meshes table<integer, MeshPartConfig>
-function Dirlight:generateShadowMap(meshes)
+function Dirlight:drawShadows(shader, meshes)
     self.viewMatrix = Matrix.CreateLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
     self.projMatrix = Matrix.CreateOrthographicOffCenter(-10, 10, 10, -10, self.near, self.far)
     self.viewProjMatrix = self.viewMatrix * self.projMatrix
 
-    self:beginShadowMapping(self.viewProjMatrix)
-    depthShader:send("lightDir", self.position.normalized:toFlatTable())
+    love.graphics.setCanvas {depthstencil = self.shadowmap}
+    love.graphics.clear()
+    shader:send("lightDir", self.position.normalized:toFlatTable())
+    shader:send("u_viewProj", "column", self.viewProjMatrix:toFlatTable())
 
     for i, config in ipairs(meshes) do
         if config.castShadows then
-            local animator = config.animator
-            if animator then
-                depthShader:send("u_boneMatrices", "column", animator.finalMatrices)
+            if config.animator then
+                shader:send("u_boneMatrices", "column", config.animator.finalMatrices)
             end
 
-            depthShader:send("u_world", "column", config.worldMatrix:toFlatTable())
-            depthShader:send("u_invTranspWorld", "column", config.worldMatrix.inverse:transpose():to3x3():toFlatTable())
+            shader:send("u_world", "column", config.worldMatrix:toFlatTable())
+            shader:send("u_invTranspWorld", "column", config.worldMatrix.inverse:transpose():to3x3():toFlatTable())
 
             love.graphics.draw(config.meshPart.buffer)
         end
     end
-    self:endShadowMapping()
 end
 
 

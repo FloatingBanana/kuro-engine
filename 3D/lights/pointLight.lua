@@ -34,37 +34,36 @@ function PointLight:new(position, constant, linear, quadratic, diffuse, specular
     self.near = 0.1
     self.far = self:getLightRadius()
 
-    self.shadowmap = love.graphics.newCanvas(256, 256, {format = "depth24", type = "cube", readable = true})
+    self.shadowmap = love.graphics.newCanvas(256, 256, {format = "depth16", type = "cube", readable = true})
 end
 
 
 ---@param meshes table<integer, MeshPartConfig>
-function PointLight:generateShadowMap(meshes)
+function PointLight:drawShadows(shader, meshes)
     local proj = Matrix.CreatePerspectiveFOV(math.rad(90), 1, self.near, self.far)
 
-    depthShader:send("lightPos", self.position:toFlatTable())
-    depthShader:send("farPlane", self.far)
+    shader:send("lightPos", self.position:toFlatTable())
+    shader:send("farPlane", self.far)
 
     for i = 1, 6 do
         local view = Matrix.CreateLookAtDirection(self.position, dirs[i].dir, dirs[i].up)
         local viewProj = view * proj
 
-        self:beginShadowMapping(viewProj, i)
+        love.graphics.setCanvas {depthstencil = {self.shadowmap, face = i}}
+        love.graphics.clear()
+        shader:send("u_viewProj", "column", viewProj:toFlatTable())
 
         for j, config in ipairs(meshes) do
             if config.castShadows then
-                depthShader:send("u_world", "column", config.worldMatrix:toFlatTable())
+                shader:send("u_world", "column", config.worldMatrix:toFlatTable())
 
-                local animator = config.animator
-                if animator then
-                    depthShader:send("u_boneMatrices", "column", animator.finalMatrices)
+                if config.animator then
+                    shader:send("u_boneMatrices", "column", config.animator.finalMatrices)
                 end
 
                 love.graphics.draw(config.meshPart.buffer)
             end
         end
-
-        self:endShadowMapping()
     end
 end
 

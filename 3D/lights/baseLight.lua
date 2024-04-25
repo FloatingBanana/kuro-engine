@@ -33,31 +33,24 @@ function BaseLight:new(position, diffuse, specular, depthShader)
 end
 
 
---- @protected
---- @param viewProj Matrix
---- @param mapFace number?
-function BaseLight:beginShadowMapping(viewProj, mapFace)
+--- @param meshparts table
+function BaseLight:generateShadowMap(meshparts)
     love.graphics.push("all")
 
-    love.graphics.setCanvas {depthstencil = {self.shadowmap, face = mapFace or 1}}
-    love.graphics.clear()
     love.graphics.setDepthMode("lequal", true)
     love.graphics.setMeshCullMode("none")
     love.graphics.setBlendMode("replace")
     love.graphics.setShader(self.depthShader)
 
-    self.depthShader:send("u_viewProj", "column", viewProj:toFlatTable())
-end
+    self:drawShadows(self.depthShader, meshparts)
 
-
---- @protected
-function BaseLight:endShadowMapping()
     love.graphics.pop()
 end
 
 
---- @param meshparts table
-function BaseLight:generateShadowMap(meshparts)
+---@param shader love.Shader
+---@param meshparts MeshPartConfig[]
+function BaseLight:drawShadows(shader, meshparts)
     error("Not implemented")
 end
 
