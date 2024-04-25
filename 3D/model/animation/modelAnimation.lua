@@ -14,26 +14,19 @@ local Object   = require "engine.3rdparty.classic.classic"
 --- @field public time number
 --- @field public isPlaying boolean
 ---
---- @overload fun(model: Model, aiAnim: unknown): ModelAnimation
+--- @overload fun(model: Model, animData: table): ModelAnimation
 local Anim = Object:extend("ModelAnimation")
 
 
-function Anim:new(model, aiAnim)
+function Anim:new(model, animData)
     self.model = model
-    self.name = aiAnim:name()
-    self.duration = aiAnim:duration()
-    self.fps = aiAnim:ticks_per_second()
+    self.name = animData.name
+    self.duration = animData.duration
+    self.fps = animData.fps
     self.animNodes = {}
 
-    for i, aiAnimNode in ipairs(aiAnim:node_anims()) do
-        local nodeName = aiAnimNode:node_name()
-
-        -- Read missing bones
-        if not model.boneInfos[nodeName] then
-            model:addBone(nodeName, Matrix.Identity())
-        end
-
-        self.animNodes[nodeName] = AnimationNode(aiAnimNode)
+    for name, animNodeData in pairs(animData.nodes) do
+        self.animNodes[name] = AnimationNode(animNodeData)
     end
 end
 

@@ -29,9 +29,6 @@ if jitEnabled then
     ]]
 end
 
-local defaultBoneIds = {-1, -1, -1, -1}
-local defaultWeights = {0, 0, 0, 0}
-
 --- @alias VertexWeightArray table<integer, number>
 
 
@@ -44,60 +41,37 @@ local defaultWeights = {0, 0, 0, 0}
 local Meshpart = Object:extend("MeshPart")
 
 
-function Meshpart:new(part, model)
-    self.buffer = love.graphics.newMesh(vertexFormat, part:num_vertices(), "triangles", "static")
-    self.material = model.materials[part:material():name()]
+function Meshpart:new(meshPartData, model)
+    self.buffer = love.graphics.newMesh(vertexFormat, #meshPartData.verts, "triangles", "static")
+    self.material = model.materials[meshPartData.material]
     self.model = model
 
-    self:__loadVertices(part)
+    self:__loadVertices(meshPartData)
 end
 
 
 --- @private
---- @param aiPart unknown
-function Meshpart:__loadVertices(aiPart)
+--- @param meshPartData table
+function Meshpart:__loadVertices(meshPartData)
     assert(jitEnabled, "Mesh loading requires jit to be enabled")
 
     -- Vertices
-    local vertices = love.data.newByteData(ffi.sizeof("struct vertex") * aiPart:num_vertices())
+    local vertices = love.data.newByteData(ffi.sizeof("struct vertex") * #meshPartData.verts)
     local pointer = ffi.cast("struct vertex*", vertices:getFFIPointer())
 
-    for i=1, aiPart:num_vertices() do
+    for i, vert in ipairs(meshPartData.verts) do
         local index = i-1
 
-        pointer[index].position  = Vector3(aiPart:position(i))
-        pointer[index].uv        = Vector2(aiPart:texture_coords(1, i))
-        pointer[index].normal    = Vector3(aiPart:normal(i))
-        pointer[index].tangent   = Vector3(aiPart:tangent(i))
-        pointer[index].boneIds   = defaultBoneIds
-        pointer[index].weights   = defaultWeights
-    end
-
-    for b=1, aiPart:num_bones() do
-        local aiBone = aiPart:bone(b)
-        local boneInfo = self.model.boneInfos[aiBone:name()]
-
-        for bv, weight in pairs(aiBone:weights() or {}) do
-            local boneVert = bv-1
-
-            for i=0, 3 do
-                if pointer[boneVert].boneIds[i] == -1 then
-                    pointer[boneVert].boneIds[i] = boneInfo.id
-                    pointer[boneVert].weights[i] = weight
-                    break
-                end
-            end
-        end
-    end
-
-    -- Indices
-    local indices = {}
-    for i=1, aiPart:num_faces() do
-        Lume.push(indices, aiPart:face(i):indices())
+        pointer[index].position  = vert.position
+        pointer[index].uv        = Vector2(vert.uv.x, vert.uv.y)
+        pointer[index].normal    = vert.normal
+        pointer[index].tangent   = vert.tangent
+        pointer[index].boneIds   = vert.boneIds
+        pointer[index].weights   = vert.weights
     end
 
     self.buffer:setVertices(vertices)
-    self.buffer:setVertexMap(indices)
+    self.buffer:setVertexMap(meshPartData.indices)
 end
 
 

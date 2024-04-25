@@ -12,24 +12,11 @@ local Object     = require "engine.3rdparty.classic.classic"
 local AnimNode = Object:extend("ModelAnimationNode")
 
 
-function AnimNode:new(aiAnimNode)
-    self.name = aiAnimNode:node_name()
-    self._positionKeys = {}
-    self._rotationKeys = {}
-    self._scaleKeys = {}
-
-    for i, key in ipairs(aiAnimNode:position_keys()) do
-        self._positionKeys[i] = {time = key.time, value = Vector3(unpack(key.value))}
-    end
-
-    for i, key in ipairs(aiAnimNode:rotation_keys()) do
-        -- for some fucking stupid reason moonassimp quaternion values are in the order of {w, x, y, z} (i'm tired boss)
-        self._rotationKeys[i] = {time = key.time, value = Quaternion(key.value[2], key.value[3], key.value[4], key.value[1])}
-    end
-
-    for i, key in ipairs(aiAnimNode:scaling_keys()) do
-        self._scaleKeys[i] = {time = key.time, value = Vector3(unpack(key.value))}
-    end
+function AnimNode:new(animNodeData)
+    self.name = animNodeData.name
+    self._positionKeys = animNodeData.positionKeys
+    self._rotationKeys = animNodeData.rotationKeys
+    self._scaleKeys = animNodeData.scaleKeys
 end
 
 

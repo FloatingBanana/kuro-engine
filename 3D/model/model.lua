@@ -1,18 +1,18 @@
-local Assimp         = require "moonassimp"
-local Matrix         = require "engine.math.matrix"
 local Mesh           = require "engine.3D.model.modelMesh"
 local Meshpart       = require "engine.3D.model.meshpart"
 local ModelNode      = require "engine.3D.model.modelNode"
 local ModelAnimation = require "engine.3D.model.animation.modelAnimation"
 local Object         = require "engine.3rdparty.classic.classic"
+local utils          = require "engine.misc.utils"
+local vector2        = require "engine.math.vector2"
 
 
 -- Default textures
 local texData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAQSURBVBhXY/gPhBDwn+E/ABvyA/1Bas9NAAAAAElFTkSuQmCC")
-local normalData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAANSURBVBhXY2ho+P8fAAaCAv+ce/dzAAAAAElFTkSuQmCC")
+-- local normalData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAANSURBVBhXY2ho+P8fAAaCAv+ce/dzAAAAAElFTkSuQmCC")
 
 local blankTex = love.graphics.newImage(texData, {linear = true})
-local blankNormal = love.graphics.newImage(normalData, {linear = true})
+local blankNormal = utils.newColorImage(vector2(1), {.5,.5,1})--love.graphics.newImage(normalData, {linear = true})
 blankTex:setWrap("repeat")
 blankTex:setFilter("nearest", "nearest")
 
@@ -52,21 +52,20 @@ function Model:new(file, opts)
 
     -- Read model data
     local data = love.filesystem.read("string", file)
-    local aiModel, err = Assimp.import_file_from_memory(data, unpack(opts.flags or {"none"}))
 
-    assert(aiModel, err)
+    local importer = require "engine.3D.model.assimp_importer"
+    local modelData = importer(data)
 
     -- Load materials
     if opts.materials then
-        for i, aiMat in ipairs(aiModel:materials()) do
-            local name = aiMat:name()
+        for name, matData in pairs(modelData.materials) do
             local matClass = opts.materials[name] or opts.materials.default
 
             assert(matClass, "Material class for '"..name.."' not defined")
 
             -- Load textures
             for j, textype in ipairs(textureTypes) do
-                local texpath = aiMat:texture_path(textype, 1)
+                local texpath = matData["tex_"..textype]
 
                 if texpath and not self.textures[texpath] then
                     local fullpath = file:match("^.*/")..texpath
@@ -75,83 +74,64 @@ function Model:new(file, opts)
             end
 
 
-            self.materials[name] = matClass(self, aiMat)
+            self.materials[name] = matClass(self, matData)
         end
     end
 
+    self.boneInfos = modelData.bones
+
     -- Start loading from root node
-    local root = aiModel:root_node()
-    self.rootNode = self:__loadNode(root, aiModel)
+    local root = modelData.nodes.RootNode
+    self.rootNode = self:__loadNode(root, modelData)
 
     -- Load animations
-    for i, aiAnim in ipairs(aiModel:animations()) do
-        self.animations[aiAnim:name()] = ModelAnimation(self, aiAnim)
+    for name, animData in pairs(modelData.animations) do
+        self.animations[name] = ModelAnimation(self, animData)
     end
 end
 
 
----@param aiMat unknown
+---@param materialData table
 ---@param type "diffuse"|"normals"
-function Model:getTexture(aiMat, type)
-    local path = aiMat:texture_path(type, 1)
+function Model:getTexture(materialData, type)
+    local path = materialData["tex_"..type]
 
     if path and self.textures[path] then
         return self.textures[path]
     end
 
-    print(("%s: No texture of type '%s' at path %s, using a default one."):format(aiMat:name(), type, path or "<no path>"))
+    print(("%s: No texture of type '%s' at path %s, using a default one."):format(materialData.name, type, path or "<no path>"))
     return textureDefaults[type] or blankTex
 end
 
 
----@param name string
----@param offset Matrix
-function Model:addBone(name, offset)
-    self.boneInfos[name] = {id = self._boneCount, offset = offset}
-    self._boneCount = self._boneCount + 1
-end
-
-
 --- @private
---- @param aiNode unknown
---- @param aiModel unknown
-function Model:__loadNode(aiNode, aiModel)
-    local transform = Matrix(aiNode:transformation()):transpose()
-    local name = aiNode:name()
+--- @param nodeData table
+--- @param modelData table
+function Model:__loadNode(nodeData, modelData)
     local node = nil
 
-    if aiNode:num_meshes() > 0 then
+    if nodeData.meshparts then
         local parts = {}
 
         -- Get mesh parts and bones
-        for i, aiMesh in pairs(aiNode:meshes()) do
-            for j=1, aiMesh:num_bones() do
-                local aiBone = aiMesh:bone(j)
-                local boneName = aiBone:name()
-
-                if not self.boneInfos[boneName] then
-                    local boneOffset = Matrix(aiBone:offset_matrix()):transpose() -- convert to column major
-                    self:addBone(boneName, boneOffset)
-                end
-            end
-
-            parts[i] = Meshpart(aiMesh, self)
+        for name, partData in pairs(nodeData.meshparts) do
+            parts[#parts+1] = Meshpart(partData, self)
         end
 
         -- Create mesh
-        node = Mesh(self, name, transform, parts)
-        self.meshes[name] = node
+        node = Mesh(self, nodeData.name, nodeData.transform, parts)
+        self.meshes[nodeData.name] = node
     else
         -- empty node
-        node = ModelNode(self, name, transform)
+        node = ModelNode(self, nodeData.name, nodeData.transform)
     end
 
-    self.nodes[name] = node
+    self.nodes[nodeData.name] = node
 
     -- Load children
-    for i, aiChild in ipairs(aiNode:children()) do
-        local child = self:__loadNode(aiChild, aiModel)
-
+    for i, childname in ipairs(nodeData.children) do
+        local child = self:__loadNode(modelData.nodes[childname], modelData)
         node:addChild(child)
     end
 
