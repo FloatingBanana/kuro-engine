@@ -61,7 +61,7 @@ end
 
 
 
-local function importer(data)
+local function importer(data, triangulate, flipUVs, calculateTangents)
     local materials = {}
     local nodes = {}
     local bones = {}
@@ -71,11 +71,11 @@ local function importer(data)
 
     ---@diagnostic disable: param-type-mismatch
     local flags = bit.bor(
-        Assimp.aiProcess_CalcTangentSpace,
-        Assimp.aiProcess_Triangulate,
-        Assimp.aiProcess_SortByPType,
         Assimp.aiProcess_OptimizeMeshes,
-        Assimp.aiProcess_FlipUVs
+        Assimp.aiProcess_SortByPType,
+        triangulate and Assimp.aiProcess_Triangulate or 0,
+        flipUVs and Assimp.aiProcess_FlipUVs or 0,
+        calculateTangents and Assimp.aiProcess_CalcTangentSpace or 0
     )
     ---@diagnostic enable: param-type-mismatch
 

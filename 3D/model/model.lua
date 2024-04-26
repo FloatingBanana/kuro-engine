@@ -22,7 +22,7 @@ local textureTypes = {"diffuse", "normals"}
 local linearTexTypes = {normals = true}
 
 
---- @alias ModelLoadingOptions {materials: table<string, BaseMaterial>, flags: string[]}
+--- @alias ModelLoadingOptions {materials: table<string, BaseMaterial>, triangulate: boolean, flipUVs: boolean, calculateTangents: boolean}
 --- @alias BoneInfo {id: integer, offset: Matrix}
 
 --- @class Model: Object
@@ -54,7 +54,7 @@ function Model:new(file, opts)
     local data = love.filesystem.read("string", file)
 
     local importer = require "engine.3D.model.assimp_importer"
-    local modelData = importer(data)
+    local modelData = importer(data, opts.triangulate, opts.flipUVs, opts.calculateTangents)
 
     -- Load materials
     if opts.materials then
