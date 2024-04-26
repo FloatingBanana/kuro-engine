@@ -33,7 +33,7 @@ function Fog:onPostRender(renderer, canvas, camera)
     love.graphics.setCanvas(self.fogCanvas)
     love.graphics.setShader(self.shader)
 
-    renderer:sendCommonBuffers(self.shader, camera, nil)
+    renderer:sendCommonRendererBuffers(self.shader, camera)
     love.graphics.draw(canvas)
 
     love.graphics.setCanvas()
