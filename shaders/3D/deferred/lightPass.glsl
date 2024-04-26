@@ -19,8 +19,8 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
 uniform PhongLight light;
 uniform sampler2D u_ssaoTex;
-uniform sampler2D u_lightShadowMap;
-uniform samplerCube u_pointLightShadowMap;
+uniform sampler2DShadow u_lightShadowMap;
+uniform samplerCubeShadow u_pointLightShadowMap;
 uniform mat4 u_lightMatrix;
 
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {

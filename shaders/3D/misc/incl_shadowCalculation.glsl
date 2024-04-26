@@ -10,28 +10,27 @@ const vec3 sampleOffsetDirections[POINT_SAMPLES] = vec3[] (
 );
 
 // Point light
-float ShadowCalculation(vec3 position, float farPlane, samplerCube shadowMap, vec3 viewPos, vec3 fragPos) {
+float ShadowCalculation(vec3 position, float farPlane, samplerCubeShadow shadowMap, vec3 viewPos, vec3 fragPos) {
     vec3 fragToLight = fragPos - position;
     float currentDepth = length(fragToLight);
 
+    float currentDepthNormalized = (currentDepth - POINT_SHADOW_BIAS) / farPlane;
     float viewDist = length(viewPos - fragPos);
     float diskRadius = (1.0 - (viewDist / farPlane)) / 25.0;
     float shadow = 0.0;
 
     for (int i=0; i < POINT_SAMPLES; i++) {
-        float closestDepth = texture(shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r * farPlane;
-        shadow += step(closestDepth, currentDepth - POINT_SHADOW_BIAS);
+        shadow += texture(shadowMap, vec4(fragToLight + sampleOffsetDirections[i] * diskRadius, currentDepthNormalized));
     }
 
     return shadow / float(POINT_SAMPLES);
 }
 
 // Directional and spot lights
-float ShadowCalculation(sampler2D shadowMap, vec4 lightFragPos) {
+float ShadowCalculation(sampler2DShadow shadowMap, vec4 lightFragPos) {
     vec3 projCoords = (lightFragPos.xyz / lightFragPos.w) * 0.5 + 0.5;
-    float currentDepth = projCoords.z;
 
-    if (currentDepth > 1.0)
+    if (projCoords.z > 1.0)
         return 0.0;
     
     float shadow = 0.0;
@@ -39,8 +38,7 @@ float ShadowCalculation(sampler2D shadowMap, vec4 lightFragPos) {
 
     for (int x = -1; x <= 1; ++x) {
         for (int y = -1; y <= 1; ++y) {
-            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
-            shadow += step(pcfDepth, currentDepth);
+            shadow += texture(shadowMap, projCoords + vec3(vec2(x, y) * texelSize, 0));
         }
     }
 

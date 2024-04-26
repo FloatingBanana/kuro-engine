@@ -29,8 +29,9 @@ function Spotlight:new(position, direction, innerAngle, outerAngle, diffuse, spe
     self.far = 50
 
     self.shadowmap = love.graphics.newCanvas(1024, 1024, {format = "depth16", readable = true})
-    self.shadowmap:setFilter("nearest", "nearest")
+    self.shadowmap:setFilter("linear", "linear")
     self.shadowmap:setWrap("clamp")
+    self.shadowmap:setDepthSampleMode("less")
 
     self.viewMatrix = Matrix.Identity()
     self.projMatrix = Matrix.Identity()

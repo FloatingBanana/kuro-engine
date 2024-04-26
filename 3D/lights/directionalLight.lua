@@ -20,8 +20,9 @@ function Dirlight:new(position, diffuse, specular)
     BaseLight.new(self, position, diffuse, specular, depthShader)
 
     self.shadowmap = love.graphics.newCanvas(2048, 2048, {format = "depth16", readable = true})
-    self.shadowmap:setFilter("nearest", "nearest")
+    self.shadowmap:setFilter("linear", "linear")
     self.shadowmap:setWrap("clamp")
+    self.shadowmap:setDepthSampleMode("less")
 
     self.viewMatrix = Matrix.Identity()
     self.projMatrix = Matrix.Identity()
@@ -57,7 +58,7 @@ end
 
 function Dirlight:applyLighting(lightingShader)
     lightingShader:send("u_lightShadowMap", self.shadowmap)
-    lightingShader:send("u_lightMatrix", self.viewProjMatrix:transpose():toFlatTable())
+    lightingShader:send("u_lightMatrix", "column", self.viewProjMatrix:toFlatTable())
 
     lightingShader:send("light.direction", self.position.normalized:toFlatTable())
 

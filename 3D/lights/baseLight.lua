@@ -38,7 +38,7 @@ function BaseLight:generateShadowMap(meshparts)
     love.graphics.push("all")
 
     love.graphics.setDepthMode("lequal", true)
-    love.graphics.setMeshCullMode("none")
+    love.graphics.setMeshCullMode("front")
     love.graphics.setBlendMode("replace")
     love.graphics.setShader(self.depthShader)
 

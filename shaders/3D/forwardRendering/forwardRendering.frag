@@ -14,8 +14,8 @@ uniform float u_shininess;
 uniform sampler2D u_diffuseTexture;
 uniform sampler2D u_normalMap;
 uniform sampler2D u_ssaoTex;
-uniform sampler2D u_lightShadowMap;
-uniform samplerCube u_pointLightShadowMap;
+uniform sampler2DShadow u_lightShadowMap;
+uniform samplerCubeShadow u_pointLightShadowMap;
 
 
 vec4 effect(EFFECTARGS) {

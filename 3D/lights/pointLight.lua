@@ -35,6 +35,8 @@ function PointLight:new(position, constant, linear, quadratic, diffuse, specular
     self.far = self:getLightRadius()
 
     self.shadowmap = love.graphics.newCanvas(256, 256, {format = "depth16", type = "cube", readable = true})
+    self.shadowmap:setFilter("linear", "linear")
+    self.shadowmap:setDepthSampleMode("less")
 end
 
 
