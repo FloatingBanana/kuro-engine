@@ -140,6 +140,29 @@ function Utils.getType(v)
 end
 
 
+---@param value any
+---@param t table|string|ffi.ctype*
+---@return boolean
+function Utils.isType(value, t)
+	if type(t) == "table" then
+		local mt = getmetatable(value)
+		while mt do
+			if mt == t or mt.ClassName == t.ClassName then
+				return true
+			end
+			mt = getmetatable(mt)
+		end
+		return false
+	end
+
+	local vtype = type(value)
+	if t == "cstruct" and (vtype == "table" or vtype == "cdata") and value.typename then
+		return true
+	end
+
+	return Utils.getType(value) == t
+end
+
 
 local function copyTable(t, refs)
 	local result = {}
@@ -162,6 +185,17 @@ end
 ---@return table
 function Utils.deepCopy(t)
 	return setmetatable(copyTable(t, {}), getmetatable(t))
+end
+
+
+---@param t table
+---@return table
+function Utils.shallowCopy(t)
+	local result = {}
+	for k, v in pairs(t) do
+        result[k] = v
+	end
+	return result
 end
 
 
