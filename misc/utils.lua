@@ -204,7 +204,7 @@ end
 ---@param ignoreArrayOrder boolean
 ---@return boolean
 function Utils.isTableEqual(t1, t2, ignoreArrayOrder)
-	return Utils.containsTable(t1, t2, ignoreArrayOrder) and Utils.containsTable(t2, t1, ignoreArrayOrder)
+	return t1 == t2 or Utils.containsTable(t1, t2, ignoreArrayOrder) and Utils.containsTable(t2, t1, ignoreArrayOrder)
 end
 
 
