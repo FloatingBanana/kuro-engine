@@ -15,7 +15,12 @@ local Utils = {
 }
 
 
+---@param vert string
+---@param frag string
+---@return string
 function Utils.combineShaders(vert, frag)
+	assert(love.graphics.validateShader(false, vert, frag))
+
 	vert = love.filesystem.read(vert) or vert
 	frag = love.filesystem.read(frag) or frag
 
