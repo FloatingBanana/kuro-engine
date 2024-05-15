@@ -1,11 +1,6 @@
 local ParserHelper = require "engine.text.parserHelper"
+local Lume = require "engine.3rdparty.lume"
 
-local function insertLine(t, ...)
-	for i = 1, select("#",...) do
-		t[#t+1] = select(i, ...)
-		t[#t+1] = "\n"
-	end
-end
 
 ---@param shaderStr string
 ---@param defaultDefines table?
@@ -16,59 +11,66 @@ local function preprocessShader(shaderStr, defaultDefines, isIncludedFile)
 	local lineNumber = 0
 	local mainBlock = {}
 	local shader = love.filesystem.read(shaderStr) or shaderStr
+	local insertLine = function(...) Lume.push(mainBlock, ...) end
+
 
 	-- Add default defines
 	for k, v in pairs(defaultDefines or {}) do
-		if type(k) == "number" then
-			insertLine(mainBlock, ("#define %s"):format(v))
+		if v == true then
+			insertLine(("#define %s"):format(k))
+		elseif type(k) == "number" then
+			insertLine(("#define %s"):format(v))
 		else
-			insertLine(mainBlock, ("#define %s %s"):format(k, v))
+			insertLine(("#define %s %s"):format(k, v))
 		end
 	end
 
 	if isIncludedFile then
 		local fileGuard = shaderStr:gsub("[^%w]", "_")
 
+		-- Setup a file guard to prevent redefinitions
 		insertLine(
-			mainBlock,
 			("#ifndef %s"):format(fileGuard),
 			("#define %s"):format(fileGuard),
 			"#define INCLUDED"
 		)
 	else
+		-- Load default header
 		insertLine(
-			mainBlock,
 			"#line 0",
 			preprocessShader("engine/shaders/default.glsl", {}, true)
 		)
 	end
 
-	insertLine(mainBlock, "#line 0")
+	-- Reset line number (for error handling)
+	insertLine("#line 0")
 
+
+	-- Begin file processing
 	for line in shader:gmatch("[^\n]+") do
 		local result = line
 
 		lineNumber = lineNumber + 1
 		parser:reset(line)
 
+		-- Handle preprocessor directives
 		if parser:eat("#") then
+			-- Keep track of explicit line number changes
 			if parser:eat("line") then
 				local number = parser:eatMatch(ParserHelper.NumberPattern)
 				lineNumber = tonumber(number)
-			end
 
 			-- Handle special pragma directives
-			if parser:eat("pragma") then
+			elseif parser:eat("pragma") then
 				-- Special case for love2d shaders, "#pragma language" should be declared at
 				-- the very beginning of the file, or else the shader will fail to compile.
 				if parser:eat("language") then
 					table.insert(mainBlock, 1, result)
-					result = ""
-				end
+					goto continue
 
 				-- Include files
-				if parser:eat("include") then
-					local path = parser:eatMatch("\".-\""):sub(2, -2)
+				elseif parser:eat("include") then
+					local path = parser:eatMatch("\"(.-)\"")
 					local code = preprocessShader(path, {}, true)
 
 					result = ("#line 0\n%s\n#line %d\n"):format(code, lineNumber)
@@ -77,12 +79,13 @@ local function preprocessShader(shaderStr, defaultDefines, isIncludedFile)
 		end
 
 		-- commit result
-		table.insert(mainBlock, result)
+		insertLine(result)
+		::continue::
 	end
 
 	if isIncludedFile then
+		-- End file guard
 		insertLine(
-			mainBlock,
 			"#undef INCLUDED",
 			"#endif"
 		)
