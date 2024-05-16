@@ -52,7 +52,7 @@ function Utils.newPreProcessedShader(shaderStr, defaultDefines)
 	local shader = love.graphics.newShader(code)
 
 	local warnings = shader:getWarnings()
-	if warnings:gsub("vertex shader:\npixel shader:\n", "") ~= "" then
+	if warnings ~= "vertex shader:\npixel shader:\n" then
 		print(("Warnings at shader '%s':\n%s"):format(shadername, warnings))
 	end
 
@@ -157,7 +157,7 @@ end
 ---@param ignoreArrayOrder boolean
 ---@return boolean
 function Utils.isTableEqual(t1, t2, ignoreArrayOrder)
-	return t1 == t2 or Utils.containsTable(t1, t2, ignoreArrayOrder) and Utils.containsTable(t2, t1, ignoreArrayOrder)
+	return t1 == t2 or (Utils.containsTable(t1, t2, ignoreArrayOrder) and Utils.containsTable(t2, t1, ignoreArrayOrder))
 end
 
 
