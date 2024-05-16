@@ -10,8 +10,6 @@ local Utils = {
 	fontName = "default",
 	fontSize = 13,
 	fontcache = {}, ---@type love.Font[]
-
-	shaderCache = {} ---@type table<string, table<table, love.Shader>>
 }
 
 
@@ -59,51 +57,6 @@ function Utils.newPreProcessedShader(shaderStr, defaultDefines)
 	end
 
 	return shader
-end
-
-
----@param shaderStr string
----@param defaultDefines table?
----@return love.Shader
-function Utils.newPreProcessedShaderCache(shaderStr, defaultDefines)
-	defaultDefines = defaultDefines or {}
-	local shader = Utils.getCachedShader(shaderStr, defaultDefines)
-
-	if not shader then
-		shader = Utils.newPreProcessedShader(shaderStr, defaultDefines)
-		Utils.cacheShader(shaderStr, defaultDefines, shader)
-	end
-
-	return shader
-end
-
-
----@param shaderStr string
----@param defines table
----@param shader love.Shader
-function Utils.cacheShader(shaderStr, defines, shader)
-	local cache = Utils.shaderCache
-
-	cache[shaderStr] = cache[shaderStr] or {}
-	cache[shaderStr][defines] = shader
-end
-
-
----@param shaderStr string
----@param defines table
----@return love.Shader?
-function Utils.getCachedShader(shaderStr, defines)
-	local cache = Utils.shaderCache
-
-	if cache[shaderStr] then
-		for cacheDefs, shader in pairs(cache[shaderStr]) do
-			if Utils.isTableEqual(cacheDefs, defines, true) then
-				return shader
-			end
-		end
-	end
-
-	return nil
 end
 
 
