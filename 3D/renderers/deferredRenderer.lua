@@ -7,19 +7,12 @@ local BaseRederer      = require "engine.3D.renderers.baseRenderer"
 local Matrix           = require "engine.math.matrix"
 local Vector3          = require "engine.math.vector3"
 local Utils            = require "engine.misc.utils"
+local ShaderEffect     = require "engine.misc.shaderEffect"
 local lg               = love.graphics
 
 
-local black = {0,0,0,0}
-local volume = Model("engine/3D/renderers/lightvolume.fbx", {flags = {"calc tangent space", "triangulate"}}).meshes.Sphere.parts[1]
-local code = love.filesystem.read("engine/shaders/3D/deferred/lightPass.glsl")
-
-local lightPassShaders = {
-    [AmbientLight]     = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_AMBIENT"}),
-    [DirectionalLight] = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_DIRECTIONAL"}),
-    [SpotLight]        = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_SPOT"}),
-    [PointLight]       = Utils.newPreProcessedShader(code, {"LIGHT_TYPE_POINT"}),
-}
+local volume = Model("engine/3D/renderers/lightvolume.fbx", {triangulate = true}).meshes.Sphere.parts[1]
+local lightShaderEffect = ShaderEffect("engine/shaders/3D/deferred/lightPass.glsl")
 
 
 --- @alias GBuffer {position: love.Canvas, normal: love.Canvas, albedoSpec: love.Canvas}
@@ -51,7 +44,7 @@ function DeferredRenderer:renderMeshes(camera)
     --------------
 
     lg.setCanvas({self.gbuffer.normal, self.gbuffer.albedoSpec, self.velocityBuffer, depthstencil = self.depthCanvas})
-    lg.clear(black, black, black, black) ---@diagnostic disable-line param-type-mismatch
+    lg.clear()
 
     lg.setDepthMode("lequal", true)
     lg.setBlendMode("replace")
@@ -84,26 +77,36 @@ function DeferredRenderer:renderMeshes(camera)
     for i, light in ipairs(self.lights) do
         if not light.enabled then goto continue end
 
-        local lightShader = lightPassShaders[getmetatable(light)]
-        self:sendCommonRendererBuffers(lightShader, camera)
+        local lightTypeDef =
+            light:is(AmbientLight)     and "LIGHT_TYPE_AMBIENT"     or
+            light:is(DirectionalLight) and "LIGHT_TYPE_DIRECTIONAL" or
+            light:is(SpotLight)        and "LIGHT_TYPE_SPOT"        or
+            light:is(PointLight)       and "LIGHT_TYPE_POINT"       or nil
+
+
+        lightShaderEffect:define(lightTypeDef)
+        lightShaderEffect:updateShader()
+        self:sendCommonRendererBuffers(lightShaderEffect.shader, camera)
 
         light:generateShadowMap(self.meshParts)
-        light:applyLighting(lightShader)
+        light:applyLighting(lightShaderEffect.shader)
 
         for j, effect in ipairs(self.ppeffects) do
-            effect:onLightRender(light, lightShader)
+            effect:onLightRender(light, lightShaderEffect.shader)
         end
 
-        lg.setShader(lightShader)
+        lightShaderEffect:use()
 
         if light:is(PointLight) then ---@cast light PointLight
             local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * camera.viewProjectionMatrix
-            lightShader:send("u_volumeTransform", "column", transform:toFlatTable())
+            lightShaderEffect:sendUniform("u_volumeTransform", transform)
             lg.draw(volume.buffer)
         else
-            lightShader:send("u_volumeTransform", "column", Matrix.CreateOrthographicOffCenter(0, WIDTH, HEIGHT, 0, 0, 1):toFlatTable())
+            lightShaderEffect:sendUniform("u_volumeTransform", Matrix.CreateOrthographicOffCenter(0, WIDTH, HEIGHT, 0, 0, 1))
             lg.draw(self.dummySquare)
         end
+
+        lightShaderEffect:undefine(lightTypeDef)
 
         ::continue::
     end

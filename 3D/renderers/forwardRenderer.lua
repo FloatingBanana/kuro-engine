@@ -1,8 +1,10 @@
-local BaseRederer = require "engine.3D.renderers.baseRenderer"
-local Utils = require "engine.misc.utils"
-local lg = love.graphics
+local BaseRederer  = require "engine.3D.renderers.baseRenderer"
+local ShaderEffect = require "engine.misc.shaderEffect"
+local Utils        = require "engine.misc.utils"
+local lg           = love.graphics
 
-local prePassShader = Utils.newPreProcessedShader("engine/shaders/3D/forwardRendering/prepass.glsl")
+
+local prePassShader = ShaderEffect("engine/shaders/3D/forwardRendering/prepass.glsl")
 
 
 --- @class ForwardRenderer: BaseRenderer
@@ -37,11 +39,12 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setDepthMode("lequal", true)
     lg.setMeshCullMode("back")
     lg.setBlendMode("replace")
-    lg.setShader(prePassShader)
-    self:sendCommonRendererBuffers(prePassShader, camera)
+
+    prePassShader:use()
+    self:sendCommonRendererBuffers(prePassShader.shader, camera)
 
     for i, config in ipairs(self.meshParts) do
-        self:sendCommonMeshBuffers(prePassShader, config)
+        self:sendCommonMeshBuffers(prePassShader.shader, config)
         lg.draw(config.meshPart.buffer)
     end
 
