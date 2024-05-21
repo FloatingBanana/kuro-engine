@@ -73,9 +73,18 @@ local function importer(data, triangulate, flipUVs, calculateTangents)
     local flags = bit.bor(
         Assimp.aiProcess_OptimizeMeshes,
         Assimp.aiProcess_SortByPType,
-        triangulate and Assimp.aiProcess_Triangulate or 0,
-        flipUVs and Assimp.aiProcess_FlipUVs or 0,
-        calculateTangents and Assimp.aiProcess_CalcTangentSpace or 0
+        Assimp.aiProcess_ValidateDataStructure,
+        Assimp.aiProcess_JoinIdenticalVertices,
+        Assimp.aiProcess_LimitBoneWeights,
+        Assimp.aiProcess_ImproveCacheLocality,
+        Assimp.aiProcess_RemoveRedundantMaterials,
+        Assimp.aiProcess_PopulateArmatureData,
+        Assimp.aiProcess_FindDegenerates,
+        Assimp.aiProcess_FindInvalidData,
+
+        triangulate       and Assimp.aiProcess_Triangulate      or 0x0,
+        flipUVs           and Assimp.aiProcess_FlipUVs          or 0x0,
+        calculateTangents and Assimp.aiProcess_CalcTangentSpace or 0x0
     )
     ---@diagnostic enable: param-type-mismatch
 
