@@ -197,7 +197,12 @@ local function importer(data, triangulate, flipUVs, calculateTangents)
             end
         end
 
-        nodes[node.name] = node
+        -- Set root node to the default "RootNode" field
+        if aiNode == aiScene.mRootNode then
+            nodes.RootNode = node
+        else
+            nodes[node.name] = node
+        end
 
         -- Load children
         for c=1, aiNode.mNumChildren do
