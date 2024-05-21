@@ -56,7 +56,7 @@ function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
     self.kernelSize = kernelSize
     self.kernelRadius = kernelRadius
 
-    self.shader = Utils.newPreProcessedShader("engine/shaders/3D/deferred/ssao.frag", {defines[self.algorithm]})
+    self.shader = Utils.newPreProcessedShader("engine/shaders/postprocessing/ssao.frag", {defines[self.algorithm]})
 
     self.shader:send("u_noiseScale", (ssaoSize / 4):toFlatTable())
     self.shader:send("u_noiseTex", ssaoNoise)
