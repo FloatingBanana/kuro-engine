@@ -6,6 +6,8 @@ local globalCache = {}
 
 ---@class ShaderEffect: Object
 ---
+---@field public shader love.Shader
+---@field private _shader love.Shader
 ---@field private _shadercode string
 ---@field private _defines table
 ---@field private _isDirty boolean
@@ -23,22 +25,35 @@ function ShaderEffect:new(vertexshader, pixelshader, defines)
         self._shadercode = Utils.combineShaders(vertexshader, pixelshader)
     end
 
+    self._shader = nil
     self._defines = defines or {}
     self._isDirty = true
 
-    self:updateShader()
+    self:_updateShader()
 end
 
 
 
-function ShaderEffect:updateShader()
+---@private
+function ShaderEffect:__index(key)
+    if key == "shader" then
+        self:_updateShader()
+        return self._shader
+    end
+
+    return ShaderEffect[key]
+end
+
+
+---@private
+function ShaderEffect:_updateShader()
     if self._isDirty then
         local cache = globalCache[self._shadercode] or {}
         globalCache[self._shadercode] = cache
 
         for defs, shader in pairs(cache) do
             if Utils.isTableEqual(defs, self._defines, false) then
-                self.shader = shader
+                self._shader = shader
                 self._isDirty = false
                 return
             end
@@ -46,16 +61,15 @@ function ShaderEffect:updateShader()
 
 
         local defsCopy = Utils.shallowCopy(self._defines)
-        self.shader = Utils.newPreProcessedShader(self._shadercode, defsCopy)
-        globalCache[self._shadercode][defsCopy] = self.shader
+        self._shader = Utils.newPreProcessedShader(self._shadercode, defsCopy)
+        globalCache[self._shadercode][defsCopy] = self._shader
         self._isDirty = false
     end
 end
 
 
-function ShaderEffect:use()
-    self:updateShader()
 
+function ShaderEffect:use()
     if not self:isInUse() then
         love.graphics.setShader(self.shader)
     end
@@ -81,8 +95,6 @@ end
 ---@param name string
 ---@param ... any
 function ShaderEffect:sendUniform(name, ...)
-    self:updateShader()
-
     local argcount = select("#", ...)
 
     if argcount == 1 then
@@ -123,11 +135,11 @@ function ShaderEffect:define(name, value)
         return
     end
 
+    local inUse = self:isInUse()
     self._defines[name] = value
     self._isDirty = true
 
-    if self:isInUse() then
-        self:updateShader()
+    if inUse then
         self:use()
     end
 end
@@ -140,11 +152,11 @@ function ShaderEffect:undefine(name)
         return
     end
 
+    local inUse = self:isInUse()
     self._defines[name] = nil
     self._isDirty = true
 
-    if self:isInUse() then
-        self:updateShader()
+    if inUse then
         self:use()
     end
 end
