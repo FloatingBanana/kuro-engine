@@ -6,6 +6,9 @@ local bit        = require("bit")
 local ffi        = require("ffi")
 
 
+local ENABLE_LOGGING = true
+
+
 -- Load definitions
 local def, err = love.filesystem.read("string", "engine/3D/model/assimp_cdef.h")
 assert(def, err)
@@ -84,6 +87,13 @@ local function importer(data, triangulate, flipUVs, calculateTangents)
     local boneId = 0
 
 
+    if ENABLE_LOGGING then
+        Assimp.aiEnableVerboseLogging(true)
+        Assimp.aiAttachLogStream(aiLogStream)
+    end
+
+
+    -- Setup scene postprocessing flags
     ---@diagnostic disable: param-type-mismatch
     local flags = bit.bor(
         Assimp.aiProcess_OptimizeMeshes,
@@ -279,7 +289,7 @@ local function importer(data, triangulate, flipUVs, calculateTangents)
     end
 
     Assimp.aiReleaseImport(aiScene)
-    Assimp.aiDetachLogStream(aiLogStream)
+    Assimp.aiDetachAllLogStreams()
 
 
     return {
