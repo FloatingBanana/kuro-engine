@@ -58,6 +58,21 @@ local function readVector3(vec)
     return Vector3(vec.x, vec.y, vec.z)
 end
 
+local function getMaterialTexture(aiMat, aiTextureType)
+    return checkSuccess(Assimp.aiGetMaterialTexture(aiMat, aiTextureType, 0, aiStringPtr, nil, nil, nil, nil, nil, nil)) and readString(aiStringPtr[0]) or nil
+end
+
+local function getMaterialValue(aiMat, property, type)
+    uintPtr[0] = 1
+
+    if type == "float" then
+        return checkSuccess(Assimp.aiGetMaterialFloatArray(aiMat, property, 0, 0, aiRealPtr, uintPtr)) and aiRealPtr[0] or nil
+    elseif type == "string" then
+        return checkSuccess(Assimp.aiGetMaterialString(aiMat, property, 0, 0, aiStringPtr)) and readString(aiStringPtr[0]) or nil
+    end
+end
+
+
 
 
 
@@ -99,20 +114,24 @@ local function importer(data, triangulate, flipUVs, calculateTangents)
     -- Load materials
     for i=1, aiScene.mNumMaterials do
         local aiMat = aiScene.mMaterials[i-1]
-        local name = checkSuccess(Assimp.aiGetMaterialString(aiMat, "?mat.name", 0, 0, aiStringPtr[0])) and readString(aiStringPtr[0]) or ""
-
-        uintPtr[0] = 1
+        local name = getMaterialValue(aiMat, "?mat.name", "string") or ""
 
         materials[name] = {
             name         = name,
-            tex_diffuse  = checkSuccess(Assimp.aiGetMaterialTexture(aiMat, Assimp.aiTextureType_DIFFUSE,  0, aiStringPtr[0], nil, nil, nil, nil, nil, nil)) and readString(aiStringPtr[0]) or nil,
-            tex_specular = checkSuccess(Assimp.aiGetMaterialTexture(aiMat, Assimp.aiTextureType_SPECULAR, 0, aiStringPtr[0], nil, nil, nil, nil, nil, nil)) and readString(aiStringPtr[0]) or nil,
-            tex_normals  = checkSuccess(Assimp.aiGetMaterialTexture(aiMat, Assimp.aiTextureType_NORMALS,  0, aiStringPtr[0], nil, nil, nil, nil, nil, nil)) and readString(aiStringPtr[0]) or nil,
-            tex_emissive = checkSuccess(Assimp.aiGetMaterialTexture(aiMat, Assimp.aiTextureType_EMISSIVE, 0, aiStringPtr[0], nil, nil, nil, nil, nil, nil)) and readString(aiStringPtr[0]) or nil,
-            shininess    = checkSuccess(Assimp.aiGetMaterialFloatArray(aiMat, "$mat.shininess"   , 0, 0, aiRealPtr, uintPtr)) and aiRealPtr[0] or 0,
-            opacity      = checkSuccess(Assimp.aiGetMaterialFloatArray(aiMat, "$mat.opacity"     , 0, 0, aiRealPtr, uintPtr)) and aiRealPtr[0] or 0,
-            reflectivity = checkSuccess(Assimp.aiGetMaterialFloatArray(aiMat, "$mat.reflectivity", 0, 0, aiRealPtr, uintPtr)) and aiRealPtr[0] or 0,
-            refraction   = checkSuccess(Assimp.aiGetMaterialFloatArray(aiMat, "$mat.refracti"    , 0, 0, aiRealPtr, uintPtr)) and aiRealPtr[0] or 0,
+            tex_diffuse  = getMaterialTexture(aiMat, Assimp.aiTextureType_DIFFUSE),
+            tex_specular = getMaterialTexture(aiMat, Assimp.aiTextureType_SPECULAR),
+            tex_emissive = getMaterialTexture(aiMat, Assimp.aiTextureType_EMISSIVE),
+            tex_normals  = getMaterialTexture(aiMat, Assimp.aiTextureType_NORMALS),
+
+            tex_basecolor = getMaterialTexture(aiMat, Assimp.aiTextureType_BASE_COLOR),
+            tex_metalness = getMaterialTexture(aiMat, Assimp.aiTextureType_METALNESS),
+            tex_roughness = getMaterialTexture(aiMat, Assimp.aiTextureType_DIFFUSE_ROUGHNESS),
+
+            shininess          = getMaterialValue(aiMat, "$mat.shininess"        , "float") or 0,
+            opacity            = getMaterialValue(aiMat, "$mat.opacity"          , "float") or 1,
+            reflectivity       = getMaterialValue(aiMat, "$mat.reflectivity"     , "float") or 0,
+            refraction         = getMaterialValue(aiMat, "$mat.emissiveIntensity", "float") or 0,
+            emissive_intensity = getMaterialValue(aiMat, "$mat.refracti"         , "float") or 0,
         }
 
     end
@@ -139,7 +158,7 @@ local function importer(data, triangulate, flipUVs, calculateTangents)
                 local aiMesh = aiScene.mMeshes[aiNode.mMeshes[m-1]]
                 local part = {
                     name = readString(aiMesh.mName),
-                    material = checkSuccess(Assimp.aiGetMaterialString(aiScene.mMaterials[aiMesh.mMaterialIndex], "?mat.name", 0, 0, aiStringPtr[0])) and readString(aiStringPtr[0]) or "",
+                    material = getMaterialValue(aiScene.mMaterials[aiMesh.mMaterialIndex], "?mat.name", "string"),
                     verts = {},
                     indices = {}
                 }
