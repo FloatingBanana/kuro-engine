@@ -10,8 +10,7 @@ local ENABLE_LOGGING = true
 
 
 -- Load definitions
-local def, err = love.filesystem.read("string", "engine/3D/model/assimp_cdef.h")
-assert(def, err)
+local def = love.filesystem.read("string", "engine/3D/model/assimp_cdef.h")
 ffi.cdef(def)
 
 
@@ -39,6 +38,84 @@ end
 
 
 
+
+-- Custom file IO callbacks
+local files = {} ---@type table<string, love.File>
+local fileindex = 1
+local defaultAiFileIO = ffi.new("struct aiFileIO[1]")
+
+local readProc = ffi.cast("aiFileReadProc", function(aiFile, data, size, count)
+    local content, contSize = files[aiFile.UserData[0]]:read("data", tonumber(size*count))
+
+    ffi.copy(data, content:getFFIPointer(), contSize)
+    return contSize / size
+end)
+
+local writeProc = ffi.cast("aiFileWriteProc", function(aiFile, data, size, count)
+    success, err = files[aiFile.UserData[0]]:write(ffi.string(data), tonumber(size*count))
+    return success and count or 0
+end)
+
+local tellProc = ffi.cast("aiFileTellProc", function(aiFile)
+    return files[aiFile.UserData[0]]:tell()
+end)
+
+local fileSizeProc = ffi.cast("aiFileTellProc", function(aiFile)
+    return files[aiFile.UserData[0]]:getSize()
+end)
+
+local flushProc = ffi.cast("aiFileFlushProc", function(aiFile)
+    files[aiFile.UserData[0]]:flush()
+end)
+
+local seekProc = ffi.cast("aiFileSeek", function(aiFile, offset, origin)
+    local file = files[aiFile.UserData[0]]
+    local pos =
+        origin == Assimp.aiOrigin_SET and offset or
+        origin == Assimp.aiOrigin_CUR and file:tell() + offset or
+        file:getSize() - offset
+
+    return file:seek(tonumber(pos)) and Assimp.aiReturn_SUCCESS or Assimp.aiReturn_FAILURE
+end)
+
+
+
+defaultAiFileIO[0].OpenProc = function(aiFileIO, path, mode)
+    local aiFile = ffi.new("struct aiFile[1]")
+    local userdata = ffi.new("char[1]", fileindex)
+
+    aiFile[0].ReadProc = readProc
+    aiFile[0].WriteProc = writeProc
+    aiFile[0].TellProc = tellProc
+    aiFile[0].FileSizeProc = fileSizeProc
+    aiFile[0].SeekProc = seekProc
+    aiFile[0].FlushProc = flushProc
+    aiFile[0].UserData = userdata
+
+    local openmode = ffi.string(mode)
+    openmode =
+        openmode == "rb" and "r" or
+        openmode == "wb" and "w" or
+        openmode == "ab" and "a" or
+        openmode
+
+    local file, err = love.filesystem.newFile(ffi.string(path), openmode)
+    assert(file, err)
+
+    files[userdata[0]] = file
+    fileindex = fileindex + 1
+    return aiFile
+end
+
+defaultAiFileIO[0].CloseProc = function(aiFileIO, aiFile)
+    files[aiFile.UserData[0]]:close()
+    files[aiFile.UserData[0]] = nil
+end
+
+
+
+
+-- Helpers
 local function checkSuccess(aiReturn)
     assert(aiReturn ~= Assimp.aiReturn_OUTOFMEMORY, "Out of memory while loading model")
     return aiReturn == Assimp.aiReturn_SUCCESS
@@ -79,7 +156,7 @@ end
 
 
 
-local function importer(data, triangulate, flipUVs, calculateTangents)
+local function importer(path, triangulate, flipUVs, calculateTangents)
     local materials = {}
     local nodes = {}
     local bones = {}
@@ -114,12 +191,12 @@ local function importer(data, triangulate, flipUVs, calculateTangents)
     ---@diagnostic enable: param-type-mismatch
 
 
-    Assimp.aiAttachLogStream(aiLogStream)
-    local aiScene = Assimp.aiImportFileFromMemory(data, #data, flags, nil)
-
+    -- Import scene
+    local aiScene = Assimp.aiImportFileEx(path, flags, defaultAiFileIO)
     if aiScene == nil then
         error(ffi.string(Assimp.aiGetErrorString()))
     end
+
 
     -- Load materials
     for i=1, aiScene.mNumMaterials do
@@ -143,7 +220,6 @@ local function importer(data, triangulate, flipUVs, calculateTangents)
             refraction         = getMaterialValue(aiMat, "$mat.emissiveIntensity", "float") or 0,
             emissive_intensity = getMaterialValue(aiMat, "$mat.refracti"         , "float") or 0,
         }
-
     end
 
     -- Load nodes
@@ -252,6 +328,7 @@ local function importer(data, triangulate, flipUVs, calculateTangents)
             nodes = {}
         }
 
+        -- Animation nodes (channels)
         for n=1, aiAnim.mNumChannels do
             local aiNodeAnim = aiAnim.mChannels[n-1]
             local animNode = {

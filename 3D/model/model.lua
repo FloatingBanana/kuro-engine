@@ -50,11 +50,11 @@ function Model:new(file, opts)
     self.opts = opts
     self._boneCount = 0
 
-    -- Read model data
-    local data = love.filesystem.read("string", file)
 
+    -- Read model data
     local importer = require "engine.3D.model.assimp_importer"
-    local modelData = importer(data, opts.triangulate, opts.flipUVs, opts.calculateTangents)
+    local modelData = importer(file, opts.triangulate, opts.flipUVs, opts.calculateTangents)
+
 
     -- Load materials
     if opts.materials then

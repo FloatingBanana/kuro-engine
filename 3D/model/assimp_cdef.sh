@@ -40,6 +40,7 @@ includefiles=(
 	"matrix4x4.h"
 	"quaternion.h"
 	"types.h"
+	"cfileio.h"
 	"importerdesc.h"
 	"aabb.h"
 	"texture.h"

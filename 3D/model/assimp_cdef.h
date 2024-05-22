@@ -79,6 +79,31 @@ struct aiMemoryInfo {
     unsigned int lights;
     unsigned int total;
 };
+struct aiFileIO;
+struct aiFile;
+typedef size_t (*aiFileWriteProc) (struct aiFile*, const char*, size_t, size_t);
+typedef size_t (*aiFileReadProc) (struct aiFile*, char*, size_t,size_t);
+typedef size_t (*aiFileTellProc) (struct aiFile*);
+typedef void (*aiFileFlushProc) (struct aiFile*);
+typedef enum aiReturn (*aiFileSeek) (struct aiFile*, size_t, enum aiOrigin);
+typedef struct aiFile* (*aiFileOpenProc) (struct aiFileIO*, const char*, const char*);
+typedef void (*aiFileCloseProc) (struct aiFileIO*, struct aiFile*);
+typedef char* aiUserData;
+struct aiFileIO
+{
+    aiFileOpenProc OpenProc;
+    aiFileCloseProc CloseProc;
+    aiUserData UserData;
+};
+struct aiFile {
+    aiFileReadProc ReadProc;
+    aiFileWriteProc WriteProc;
+    aiFileTellProc TellProc;
+    aiFileTellProc FileSizeProc;
+    aiFileSeek SeekProc;
+    aiFileFlushProc FlushProc;
+    aiUserData UserData;
+};
 enum aiImporterFlags {
     aiImporterFlags_SupportTextFlavour = 0x1,
     aiImporterFlags_SupportBinaryFlavour = 0x2,
