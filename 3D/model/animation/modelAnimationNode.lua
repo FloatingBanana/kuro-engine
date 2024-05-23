@@ -28,6 +28,7 @@ local function findInterpolationKeys(keyList, time)
             return prevKey.value, nextKey.value, (time - prevKey.time) / (nextKey.time - prevKey.time)
         end
     end
+    return keyList[1].value, keyList[1].value, 0
 end
 
 
