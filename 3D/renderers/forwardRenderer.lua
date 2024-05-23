@@ -1,10 +1,14 @@
-local BaseRederer  = require "engine.3D.renderers.baseRenderer"
-local ShaderEffect = require "engine.misc.shaderEffect"
-local Utils        = require "engine.misc.utils"
-local lg           = love.graphics
+local BaseRederer      = require "engine.3D.renderers.baseRenderer"
+local ShaderEffect     = require "engine.misc.shaderEffect"
+local DirectionalLight = require "engine.3D.lights.directionalLight"
+local SpotLight        = require "engine.3D.lights.spotLight"
+local PointLight       = require "engine.3D.lights.pointLight"
+local AmbientLight     = require "engine.3D.lights.ambientLight"
+local lg               = love.graphics
 
 
 local prePassShader = ShaderEffect("engine/shaders/3D/forwardRendering/prepass.glsl")
+local defaultShader = ShaderEffect("engine/shaders/3D/forwardRendering/forwardRendering.vert", "engine/shaders/3D/forwardRendering/forwardRendering.frag")
 
 
 --- @class ForwardRenderer: BaseRenderer
@@ -71,26 +75,39 @@ function ForwardRenderer:renderMeshes(camera)
 
     while self.meshParts:peek() do
         local config = self.meshParts:pop() --[[@as MeshPartConfig]]
-        local mat = config.meshPart.material --[[@as ForwardMaterial]]
 
         if config.ignoreLighting then
-            self:sendCommonRendererBuffers(mat.shader, camera)
-            self:sendCommonMeshBuffers(mat.shader, config)
+            self:sendCommonRendererBuffers(defaultShader.shader, camera)
+            self:sendCommonMeshBuffers(defaultShader.shader, config)
+
+            defaultShader:use()
             config.meshPart:draw()
         else
             for i, light in ipairs(self.lights) do
                 if not light.enabled then goto continue end
 
-                mat:setLightType(getmetatable(light))
-                light:applyLighting(mat.shader)
-                self:sendCommonRendererBuffers(mat.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
-                self:sendCommonMeshBuffers(mat.shader, config)
+                local lightTypeDef =
+                    light:is(AmbientLight)     and "LIGHT_TYPE_AMBIENT"     or
+                    light:is(DirectionalLight) and "LIGHT_TYPE_DIRECTIONAL" or
+                    light:is(SpotLight)        and "LIGHT_TYPE_SPOT"        or
+                    light:is(PointLight)       and "LIGHT_TYPE_POINT"       or nil
 
+
+                defaultShader:define(lightTypeDef)
+
+                light:applyLighting(defaultShader.shader)
+                self:sendCommonRendererBuffers(defaultShader.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                self:sendCommonMeshBuffers(defaultShader.shader, config)
+                
                 for j, effect in ipairs(self.ppeffects) do
-                    effect:onLightRender(light, mat.shader)
+                    effect:onLightRender(light, defaultShader.shader)
                 end
-
+                
+                defaultShader:use()
+                config.material:apply(defaultShader)
                 config.meshPart:draw()
+
+                defaultShader:undefine(lightTypeDef)
                 ::continue::
             end
         end

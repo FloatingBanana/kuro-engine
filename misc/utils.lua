@@ -17,8 +17,6 @@ local Utils = {
 ---@param frag string
 ---@return string
 function Utils.combineShaders(vert, frag)
-	assert(love.graphics.validateShader(false, vert, frag))
-
 	vert = love.filesystem.read(vert) or vert
 	frag = love.filesystem.read(frag) or frag
 
@@ -117,6 +115,7 @@ function Utils.isType(value, t)
 end
 
 
+-- TODO: add cstruct copy support
 local function copyTable(t, refs)
 	local result = {}
 	refs[t] = result
@@ -131,13 +130,13 @@ local function copyTable(t, refs)
 		result[nkey] = nvalue
 	end
 
-	return result
+	return setmetatable(result, getmetatable(t))
 end
 
 ---@param t table
 ---@return table
 function Utils.deepCopy(t)
-	return setmetatable(copyTable(t, {}), getmetatable(t))
+	return copyTable(t, {})
 end
 
 

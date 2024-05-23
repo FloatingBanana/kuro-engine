@@ -12,7 +12,8 @@ local lg               = love.graphics
 
 
 local volume = Model("engine/3D/renderers/lightvolume.fbx", {triangulate = true}).meshes.Sphere.parts[1]
-local lightShaderEffect = ShaderEffect("engine/shaders/3D/deferred/lightPass.glsl")
+local lightShader = ShaderEffect("engine/shaders/3D/deferred/lightPass.glsl")
+local gBufferShader = ShaderEffect("engine/shaders/3D/deferred/gbuffer.glsl")
 
 
 --- @alias GBuffer {position: love.Canvas, normal: love.Canvas, albedoSpec: love.Canvas}
@@ -51,8 +52,11 @@ function DeferredRenderer:renderMeshes(camera)
     lg.setMeshCullMode("back")
 
     for i, config in ipairs(self.meshParts) do
-        self:sendCommonRendererBuffers(config.material.shader, camera)
-        self:sendCommonMeshBuffers(config.material.shader, config)
+        self:sendCommonRendererBuffers(gBufferShader.shader, camera)
+        self:sendCommonMeshBuffers(gBufferShader.shader, config)
+
+        gBufferShader:use()
+        config.material:apply(gBufferShader)
         config.meshPart:draw()
     end
 
@@ -84,30 +88,29 @@ function DeferredRenderer:renderMeshes(camera)
             light:is(PointLight)       and "LIGHT_TYPE_POINT"       or nil
 
 
-        lightShaderEffect:define(lightTypeDef)
-        lightShaderEffect:updateShader()
-        self:sendCommonRendererBuffers(lightShaderEffect.shader, camera)
+        lightShader:define(lightTypeDef)
+        self:sendCommonRendererBuffers(lightShader.shader, camera)
 
         light:generateShadowMap(self.meshParts)
-        light:applyLighting(lightShaderEffect.shader)
+        light:applyLighting(lightShader.shader)
 
         for j, effect in ipairs(self.ppeffects) do
-            effect:onLightRender(light, lightShaderEffect.shader)
+            effect:onLightRender(light, lightShader.shader)
         end
 
-        lightShaderEffect:use()
+        lightShader:use()
 
         if light:is(PointLight) then ---@cast light PointLight
             local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * camera.viewProjectionMatrix
-            lightShaderEffect:sendUniform("u_volumeTransform", transform)
-            lg.draw(volume.buffer)
+
+            lightShader:sendUniform("u_volumeTransform", transform)
+            volume:draw()
         else
-            lightShaderEffect:sendUniform("u_volumeTransform", Matrix.CreateOrthographicOffCenter(0, WIDTH, HEIGHT, 0, 0, 1))
+            lightShader:sendUniform("u_volumeTransform", Matrix.CreateOrthographicOffCenter(0, WIDTH, HEIGHT, 0, 0, 1))
             lg.draw(self.dummySquare)
         end
 
-        lightShaderEffect:undefine(lightTypeDef)
-
+        lightShader:undefine(lightTypeDef)
         ::continue::
     end
 

@@ -13,10 +13,8 @@ local Utils = require "engine.misc.utils"
 local Material = Object:extend("BaseMaterial")
 
 
-function Material:new(model, shader, attributes)
-    rawset(self, "__attrs", attributes)
-    self.model = model
-    self.shader = shader
+function Material:new(attributes)
+    self.__attrs = attributes
 end
 
 
@@ -32,7 +30,7 @@ end
 
 --- @private
 function Material:__newindex(key, value)
-    if rawget(self, "__attrs") and self.__attrs[key] then
+    if self.__attrs and self.__attrs[key] then
         local attr = self.__attrs[key]
 
         if rawequal(value, nil) then
@@ -41,33 +39,24 @@ function Material:__newindex(key, value)
         end
 
         attr.value = value
-        return
+    else
+        rawset(self, key, value)
     end
-
-    rawset(self, key, value)
 end
 
 
 ---@returned BaseMaterial
-function Material:duplicate()
+function Material:clone()
     return Material(self.model, self.shader, Utils.deepCopy(self.__attrs))
 end
 
 
-function Material:apply()
+function Material:apply(shader)
     for name, attr in pairs(rawget(self, "__attrs")) do
         if attr.value then
-            if Utils.getType(attr.value) == "matrix" then
-                Utils.trySendUniform(self.shader, attr.uniform, "column", attr.value:toFlatTable())
-            elseif attr.toFlatTable then
-                Utils.trySendUniform(self.shader, attr.uniform, attr.value:toFlatTable())
-            else
-                Utils.trySendUniform(self.shader, attr.uniform, attr.value)
-            end
+            shader:trySendUniform(attr.uniform, attr.value)
         end
     end
-
-    love.graphics.setShader(self.shader)
 end
 
 
