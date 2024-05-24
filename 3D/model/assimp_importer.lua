@@ -1,12 +1,13 @@
 local Matrix     = require "engine.math.matrix"
 local Stack      = require "engine.collections.stack"
 local Vector3    = require "engine.math.vector3"
+local Vector2    = require("engine.math.vector2")
 local Quaternion = require "engine.math.quaternion"
 local bit        = require("bit")
 local ffi        = require("ffi")
 
 
-local ENABLE_LOGGING = true
+local ENABLE_LOGGING = false
 
 
 -- Load definitions
@@ -42,7 +43,6 @@ end
 -- Custom file IO callbacks
 local files = {} ---@type table<string, love.File>
 local fileindex = 1
-local defaultAiFileIO = ffi.new("struct aiFileIO[1]")
 
 local readProc = ffi.cast("aiFileReadProc", function(aiFile, data, size, count)
     local content, contSize = files[aiFile.UserData[0]]:read("data", tonumber(size*count))
@@ -79,39 +79,38 @@ local seekProc = ffi.cast("aiFileSeek", function(aiFile, offset, origin)
 end)
 
 
+local defaultAiFileIO = ffi.new("struct aiFileIO[1]", {{
+    OpenProc = function(aiFileIO, path, mode)
+        local aiFile = ffi.new("struct aiFile[1]")
 
-defaultAiFileIO[0].OpenProc = function(aiFileIO, path, mode)
-    local aiFile = ffi.new("struct aiFile[1]")
-    local userdata = ffi.new("char[1]", fileindex)
+        aiFile[0].ReadProc = readProc
+        aiFile[0].WriteProc = writeProc
+        aiFile[0].TellProc = tellProc
+        aiFile[0].FileSizeProc = fileSizeProc
+        aiFile[0].SeekProc = seekProc
+        aiFile[0].FlushProc = flushProc
+        aiFile[0].UserData = ffi.new("char[1]", fileindex)
 
-    aiFile[0].ReadProc = readProc
-    aiFile[0].WriteProc = writeProc
-    aiFile[0].TellProc = tellProc
-    aiFile[0].FileSizeProc = fileSizeProc
-    aiFile[0].SeekProc = seekProc
-    aiFile[0].FlushProc = flushProc
-    aiFile[0].UserData = userdata
+        local openmode = ffi.string(mode)
+        openmode =
+            openmode == "rb" and "r" or
+            openmode == "wb" and "w" or
+            openmode == "ab" and "a" or
+            openmode
 
-    local openmode = ffi.string(mode)
-    openmode =
-        openmode == "rb" and "r" or
-        openmode == "wb" and "w" or
-        openmode == "ab" and "a" or
-        openmode
+        local file, err = love.filesystem.newFile(ffi.string(path), openmode)
+        assert(file, err)
 
-    local file, err = love.filesystem.newFile(ffi.string(path), openmode)
-    assert(file, err)
+        files[fileindex] = file
+        fileindex = fileindex + 1
+        return aiFile
+    end,
 
-    files[userdata[0]] = file
-    fileindex = fileindex + 1
-    return aiFile
-end
-
-defaultAiFileIO[0].CloseProc = function(aiFileIO, aiFile)
-    files[aiFile.UserData[0]]:close()
-    files[aiFile.UserData[0]] = nil
-end
-
+    CloseProc = function(aiFileIO, aiFile)
+        files[aiFile.UserData[0]]:close()
+        files[aiFile.UserData[0]] = nil
+    end
+}})
 
 
 
@@ -134,8 +133,16 @@ local function readMatrix4x4(mat)
     )
 end
 
-local function readVector3(vec)
-    return Vector3(vec.x, vec.y, vec.z)
+local function readVector3(aiVec)
+    return Vector3(aiVec.x, aiVec.y, aiVec.z)
+end
+
+local function readVector2(aiVec)
+    return Vector2(aiVec.x, aiVec.y)
+end
+
+local function readColor3(aiColor)
+    return {aiColor.r, aiColor.g, aiColor.b}
 end
 
 local function getMaterialTexture(aiMat, aiTextureType)
@@ -156,12 +163,17 @@ end
 
 
 
-local function importer(path, triangulate, flipUVs, calculateTangents)
-    local materials = {}
-    local nodes = {}
-    local bones = {}
-    local animations = {}
+local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optimizeGraph)
     local boneId = 0
+    local scene = {
+        materials = {},
+        nodes = {},
+        bones = {},
+        animations = {},
+        meshParts = {},
+        lights = {},
+        cameras = {}
+    }
 
 
     if ENABLE_LOGGING then
@@ -179,14 +191,19 @@ local function importer(path, triangulate, flipUVs, calculateTangents)
         Assimp.aiProcess_JoinIdenticalVertices,
         Assimp.aiProcess_LimitBoneWeights,
         Assimp.aiProcess_ImproveCacheLocality,
-        Assimp.aiProcess_RemoveRedundantMaterials,
         Assimp.aiProcess_PopulateArmatureData,
         Assimp.aiProcess_FindDegenerates,
         Assimp.aiProcess_FindInvalidData,
+        Assimp.aiProcess_GenSmoothNormals,
+        Assimp.aiProcess_CalcTangentSpace,
+        Assimp.aiProcess_GenUVCoords,
+        Assimp.aiProcess_TransformUVCoords,
+        Assimp.aiProcess_SplitLargeMeshes,
 
-        triangulate       and Assimp.aiProcess_Triangulate      or 0x0,
-        flipUVs           and Assimp.aiProcess_FlipUVs          or 0x0,
-        calculateTangents and Assimp.aiProcess_CalcTangentSpace or 0x0
+        removeUnusedMaterials and Assimp.aiProcess_RemoveRedundantMaterials or 0x0,
+        optimizeGraph         and Assimp.aiProcess_OptimizeGraph            or 0x0,
+        triangulate           and Assimp.aiProcess_Triangulate              or 0x0,
+        flipUVs               and Assimp.aiProcess_FlipUVs                  or 0x0
     )
     ---@diagnostic enable: param-type-mismatch
 
@@ -203,7 +220,7 @@ local function importer(path, triangulate, flipUVs, calculateTangents)
         local aiMat = aiScene.mMaterials[i-1]
         local name = getMaterialValue(aiMat, "?mat.name", "string") or ""
 
-        materials[name] = {
+        scene.materials[name] = {
             name         = name,
             tex_diffuse  = getMaterialTexture(aiMat, Assimp.aiTextureType_DIFFUSE),
             tex_specular = getMaterialTexture(aiMat, Assimp.aiTextureType_SPECULAR),
@@ -222,6 +239,126 @@ local function importer(path, triangulate, flipUVs, calculateTangents)
         }
     end
 
+
+
+    -- Load cameras
+    for c=1, aiScene.mNumCameras do
+        local aiCamera = aiScene.mCameras[c-1]
+        local name = readString(aiCamera.mName)
+
+        scene.cameras[name] = {
+            name       = name,
+            position   = readVector3(aiCamera.mPosition),
+            up         = readVector3(aiCamera.mUp),
+            target     = readVector3(aiCamera.mLookAt),
+            fov        = aiCamera.mHorizontalFOV,
+            near       = aiCamera.mClipPlaneNear,
+            far        = aiCamera.mClipPlaneFar,
+            aspect     = aiCamera.mAspect,
+            orthoWidth = aiCamera.mOrthographicWidth,
+        }
+    end
+
+
+    -- Load lights
+    for l=1, aiScene.mNumLights do
+        local aiLight = aiScene.mLights[l-1]
+        local name = readString(aiLight.mName)
+        local lightType =
+            aiLight.mType == Assimp.aiLightSource_UNDEFINED   and "undefined"   or
+            aiLight.mType == Assimp.aiLightSource_DIRECTIONAL and "directional" or
+            aiLight.mType == Assimp.aiLightSource_SPOT        and "spot"        or
+            aiLight.mType == Assimp.aiLightSource_POINT       and "point"       or
+            aiLight.mType == Assimp.aiLightSource_AMBIENT     and "ambient"     or
+            aiLight.mType == Assimp.aiLightSource_AREA        and "area"        or nil
+
+        scene.lights[name] = {
+            name       = name,
+            type       = lightType,
+            position   = readVector3(aiLight.mPosition),
+            direction  = readVector3(aiLight.mDirection),
+            up         = readVector3(aiLight.mUp),
+
+            ambient    = readColor3(aiLight.mColorAmbient),
+            diffuse    = readColor3(aiLight.mColorDiffuse),
+            specular   = readColor3(aiLight.mColorSpecular),
+
+            constant   = aiLight.mAttenuationConstant,
+            linear     = aiLight.mAttenuationLinear,
+            quadratic  = aiLight.mAttenuationQuadratic,
+
+            innerCone  = aiLight.mAngleInnerCone,
+            outerCone  = aiLight.mAngleOuterCone,
+
+            size       = readVector2(aiLight.mSize)
+        }
+    end
+
+
+
+    -- Get mesh parts and bones
+    for m=1, aiScene.mNumMeshes do
+        local aiMesh = aiScene.mMeshes[m-1]
+        local part = {
+            name = readString(aiMesh.mName),
+            material = getMaterialValue(aiScene.mMaterials[aiMesh.mMaterialIndex], "?mat.name", "string"),
+            verts = {},
+            indices = {}
+        }
+
+        -- Vertices
+        for v=1, aiMesh.mNumVertices do
+            local vi = v-1
+            part.verts[v] = {
+                position  = readVector3(aiMesh.mVertices[vi]),
+                normal    = aiMesh.mNormals    ~= nil and readVector3(aiMesh.mNormals[vi])    or Vector3(),
+                tangent   = aiMesh.mTangents   ~= nil and readVector3(aiMesh.mTangents[vi])   or Vector3(),
+                bitangent = aiMesh.mBitangents ~= nil and readVector3(aiMesh.mBitangents[vi]) or Vector3(),
+                uv        = readVector2(aiMesh.mTextureCoords[0][vi]),
+                boneIds   = {-1,-1,-1,-1},
+                weights   = {0,0,0,0}
+            }
+        end
+
+        -- Indices
+        for f=1, aiMesh.mNumFaces do
+            local aiFace = aiMesh.mFaces[f-1]
+
+            for i=1, aiFace.mNumIndices do
+                part.indices[#part.indices+1] = aiFace.mIndices[i-1]+1
+            end
+        end
+
+        -- Bones
+        for b=1, aiMesh.mNumBones do
+            local aiBone = aiMesh.mBones[b-1]
+            local boneName = readString(aiBone.mName)
+            local bone = scene.bones[boneName]
+
+            if not bone then
+                bone = {id = boneId, offset = readMatrix4x4(aiBone.mOffsetMatrix)}
+                boneId = boneId + 1
+                scene.bones[boneName] = bone
+            end
+
+            for w=1, aiBone.mNumWeights do
+                local aiWeight = aiBone.mWeights[w-1]
+                local vert = part.verts[aiWeight.mVertexId+1]
+
+                for i=1, 4 do
+                    if vert.boneIds[i] == -1 then
+                        vert.boneIds[i] = bone.id
+                        vert.weights[i] = aiWeight.mWeight
+                        break
+                    end
+                end
+            end
+        end
+
+        scene.meshParts[part.name] = part
+    end
+
+
     -- Load nodes
     local nodeStack = Stack()
     nodeStack:push(aiScene.mRootNode)
@@ -230,83 +367,27 @@ local function importer(path, triangulate, flipUVs, calculateTangents)
         local aiNode = nodeStack:pop()
         local node = {
             name = readString(aiNode.mName),
-            meshparts = nil,
+            meshParts = nil,
             children = {},
             transform = readMatrix4x4(aiNode.mTransformation),
         }
 
+        -- Load mesh part names attached to this node
         if aiNode.mNumMeshes > 0 then
             local parts = {}
-            node.meshparts = parts
+            node.meshParts = parts
 
-            -- Get mesh parts and bones
             for m=1, aiNode.mNumMeshes do
                 local aiMesh = aiScene.mMeshes[aiNode.mMeshes[m-1]]
-                local part = {
-                    name = readString(aiMesh.mName),
-                    material = getMaterialValue(aiScene.mMaterials[aiMesh.mMaterialIndex], "?mat.name", "string"),
-                    verts = {},
-                    indices = {}
-                }
-
-                -- Vertices
-                for v=1, aiMesh.mNumVertices do
-                    local vi = v-1
-                    part.verts[v] = {
-                        position  = readVector3(aiMesh.mVertices[vi]),
-                        normal    = aiMesh.mNormals    ~= nil and readVector3(aiMesh.mNormals[vi])    or Vector3(),
-                        tangent   = aiMesh.mTangents   ~= nil and readVector3(aiMesh.mTangents[vi])   or Vector3(),
-                        bitangent = aiMesh.mBitangents ~= nil and readVector3(aiMesh.mBitangents[vi]) or Vector3(),
-                        uv        = aiMesh.mNumUVComponents[0] > 0 and readVector3(aiMesh.mTextureCoords[0][vi]) or Vector3(),
-                        boneIds   = {-1,-1,-1,-1},
-                        weights   = {0,0,0,0}
-                    }
-                end
-
-                -- Indices
-                for f=1, aiMesh.mNumFaces do
-                    local aiFace = aiMesh.mFaces[f-1]
-
-                    for i=1, aiFace.mNumIndices do
-                        part.indices[#part.indices+1] = aiFace.mIndices[i-1]+1
-                    end
-                end
-
-                -- Bones
-                for b=1, aiMesh.mNumBones do
-                    local aiBone = aiMesh.mBones[b-1]
-                    local boneName = readString(aiBone.mName)
-                    local bone = bones[boneName]
-
-                    if not bone then
-                        bone = {id = boneId, offset = readMatrix4x4(aiBone.mOffsetMatrix)}
-                        boneId = boneId + 1
-                        bones[boneName] = bone
-                    end
-
-                    for w=1, aiBone.mNumWeights do
-                        local aiWeight = aiBone.mWeights[w-1]
-                        local vert = part.verts[aiWeight.mVertexId+1]
-
-                        for i=1, 4 do
-                            if vert.boneIds[i] == -1 then
-                                vert.boneIds[i] = bone.id
-                                vert.weights[i] = aiWeight.mWeight
-                                break
-                            end
-                        end
-                    end
-                end
-
-                parts[part.name] = part
+                parts[m] = readString(aiMesh.mName)
             end
         end
 
         -- Set root node to the default "RootNode" field
         if aiNode == aiScene.mRootNode then
-            nodes.RootNode = node
+            scene.nodes.RootNode = node
         else
-            nodes[node.name] = node
+            scene.nodes[node.name] = node
         end
 
         -- Load children
@@ -317,6 +398,7 @@ local function importer(path, triangulate, flipUVs, calculateTangents)
             table.insert(node.children, readString(aiChildNode.mName))
         end
     end
+
 
     -- Load animations
     for a=1, aiScene.mNumAnimations do
@@ -356,25 +438,20 @@ local function importer(path, triangulate, flipUVs, calculateTangents)
             animation.nodes[animNode.name] = animNode
 
             -- Read missing bones
-            if not bones[animNode.name] then
-                bones[animNode.name] = {id = boneId, offset = Matrix.Identity()}
+            if not scene.bones[animNode.name] then
+                scene.bones[animNode.name] = {id = boneId, offset = Matrix.Identity()}
                 boneId = boneId + 1
             end
         end
 
-        animations[animation.name] = animation
+        scene.animations[animation.name] = animation
     end
 
     Assimp.aiReleaseImport(aiScene)
     Assimp.aiDetachAllLogStreams()
 
 
-    return {
-        nodes = nodes,
-        materials = materials,
-        bones = bones,
-        animations = animations,
-    }
+    return scene
 end
 
 return importer

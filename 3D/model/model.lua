@@ -22,19 +22,19 @@ local textureTypes = {"diffuse", "normals"}
 local linearTexTypes = {normals = true}
 
 
---- @alias ModelLoadingOptions {materials: table<string, BaseMaterial>, triangulate: boolean, flipUVs: boolean, calculateTangents: boolean}
+--- @alias ModelLoadingOptions {materials: table<string, BaseMaterial>, triangulate: boolean, flipUVs: boolean, removeUnusedMaterials: boolean, optimizeGraph: boolean}
 --- @alias BoneInfo {id: integer, offset: Matrix}
 
 --- @class Model: Object
 ---
 --- @field nodes table<string, ModelNode>
 --- @field meshes table<string, ModelMesh>
+--- @field meshParts table<string, MeshPart>
 --- @field materials table<string, BaseMaterial>
 --- @field animations table<string, ModelAnimation>
 --- @field boneInfos table<string, BoneInfo>
 --- @field textures table<string, love.Texture>
 --- @field opts ModelLoadingOptions
---- @field private _boneCount integer
 ---
 --- @overload fun(file: string, opts: ModelLoadingOptions): Model
 local Model = Object:extend("Model")
@@ -43,17 +43,17 @@ local Model = Object:extend("Model")
 function Model:new(file, opts)
     self.nodes = {}
     self.meshes = {}
+    self.meshParts = {}
     self.materials = {}
     self.animations = {}
     self.boneInfos = {}
     self.textures = {}
     self.opts = opts
-    self._boneCount = 0
 
 
     -- Read model data
     local importer = require "engine.3D.model.assimp_importer"
-    local modelData = importer(file, opts.triangulate, opts.flipUVs, opts.calculateTangents)
+    local modelData = importer(file, opts.triangulate, opts.flipUVs, opts.removeUnusedMaterials, opts.optimizeGraph)
 
 
     -- Load materials
@@ -78,7 +78,13 @@ function Model:new(file, opts)
         end
     end
 
+    -- Bones
     self.boneInfos = modelData.bones
+
+    -- Get mesh parts
+    for name, partData in pairs(modelData.meshParts) do
+        self.meshParts[name] = Meshpart(partData, self)
+    end
 
     -- Start loading from root node
     local root = modelData.nodes.RootNode
@@ -111,12 +117,11 @@ end
 function Model:__loadNode(nodeData, modelData)
     local node = nil
 
-    if nodeData.meshparts then
+    if nodeData.meshParts then
         local parts = {}
 
-        -- Get mesh parts and bones
-        for name, partData in pairs(nodeData.meshparts) do
-            parts[#parts+1] = Meshpart(partData, self)
+        for i, partname in ipairs(nodeData.meshParts) do
+            parts[#parts+1] = self.meshParts[partname]
         end
 
         -- Create mesh
