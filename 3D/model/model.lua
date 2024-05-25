@@ -69,6 +69,8 @@ function Model:new(file, opts)
 
                 if texpath and not self.textures[texpath] then
                     local fullpath = file:match("^.*/")..texpath
+                    fullpath = fullpath:gsub("%%20", " ")
+
                     self.textures[texpath] = love.graphics.newImage(fullpath, {linear = linearTexTypes[textype]})
                 end
             end
