@@ -61,7 +61,7 @@ function Meshpart:__loadVertices(meshPartData)
         local index = i-1
 
         pointer[index].position  = vert.position
-        pointer[index].uv        = Vector2(vert.uv.x, vert.uv.y)
+        pointer[index].uv        = vert.uv
         pointer[index].normal    = vert.normal
         pointer[index].tangent   = vert.tangent
         pointer[index].boneIds   = vert.boneIds
