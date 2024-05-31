@@ -2,6 +2,9 @@ require "love.image"
 require "love.audio"
 require "love.event"
 
+local id = ...
+print("Content loading thread started. ID: "..id)
+
 local requestChannel = love.thread.getChannel("contentRequest")
 local loadData = require "src.engine.resourceHandling._loadContentData"
 
@@ -22,6 +25,8 @@ while requestChannel:performAtomic(setRequestAtomic) do
 
     request.channel:push(data)
     love.event.push("promiseRequestLoaded", request) ---@diagnostic disable-line param-type-mismatch
+    
+    print("Thread "..id..": finished loading promise: "..request.filepath)
 end
 
-print("Content loading thread finnished")
+print("Content loading thread finnished. ID: "..id)

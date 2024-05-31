@@ -1,9 +1,15 @@
 local Object = require "engine.3rdparty.classic.classic"
 local Event  = require "engine.misc.event"
-
 local loadData = require "src.engine.resourceHandling._loadContentData"
+
 local requestChannel = love.thread.getChannel("contentRequest")
+
 local allPromises = setmetatable({}, {__mode = 'v'})
+local threads = {}
+
+for i=1, love.system.getProcessorCount() do
+    threads[i] = love.thread.newThread("engine/resourceHandling/_contentLoadingThread.lua")
+end
 
 
 ---@alias ContentPromiseRequest {filepath: string, hint: ContentTypeHint, channel: love.Channel, args: table}
@@ -49,6 +55,8 @@ end
 function ContentPromise:loadAsync()
     if not self.isLoading and not self.content then
         requestChannel:push(self._request)
+        ContentPromise.UpdateThreads()
+
         self.isLoading = true
     end
     return self
@@ -73,7 +81,6 @@ function ContentPromise:update()
 
         if self.isLoading then
             self:_finishLoading(content)
-            print("finished loading promise: "..self._request.filepath)
         else
             print("promise content discarted: "..self._request.filepath)
             self.isLoading = false
@@ -91,6 +98,31 @@ function ContentPromise:unload()
     return self
 end
 
+
+
+
+
+
+function ContentPromise.UpdateThreads()
+    for i, thread in ipairs(threads) do
+        if not thread:isRunning() and requestChannel:getCount() > 0 then
+            thread:start(i)
+        end
+    end
+end
+
+
+function ContentPromise.Quit()
+    requestChannel:clear()
+
+    for _, promise in pairs(allPromises) do
+        promise._request.channel:clear()
+    end
+
+    for i, thread in ipairs(threads) do
+        thread:wait()
+    end
+end
 
 
 ---@diagnostic disable-next-line undefined-field

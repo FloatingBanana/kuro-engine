@@ -2,16 +2,6 @@ local Object = require "engine.3rdparty.classic.classic"
 local ContentPromise = require "engine.resourceHandling.contentPromise"
 
 
-local requestChannel = love.thread.getChannel("request")
-local threads = {}
-
-for i=1, love.system.getProcessorCount() do
-    threads[i] = love.thread.newThread("engine/resourceHandling/_contentLoadingThread.lua")
-end
-
-
-
-
 ---@alias ContentTypeHint "image"|"imagedata"|"source"
 
 ---@class ContentLoader: Object
@@ -93,27 +83,5 @@ function ContentLoader:merge(loader)
 end
 
 
-
-function ContentLoader.UpdateThreads()
-    for i, thread in ipairs(threads) do
-        if not thread:isRunning() and requestChannel:getCount() > 0 then
-            thread:start()
-            print("thread started")
-        end
-
-        local err = thread:getError()
-        if err then
-            error("Content loading error: "..err)
-        end
-    end
-end
-
-
-
-function ContentLoader.Close()
-    for i, thread in ipairs(threads) do
-        thread:wait()
-    end
-end
 
 return ContentLoader
