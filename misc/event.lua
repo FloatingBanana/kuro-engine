@@ -6,7 +6,8 @@ local Lume = require "engine.3rdparty.lume"
 
 --- @class Event: Object
 --- 
---- @field private callbacks EventCallback[]
+--- @field private callbacks table<function, EventCallback>
+--- @overload fun(): Event
 local Event = Object:extend("Event")
 
 
@@ -16,9 +17,19 @@ end
 
 
 ---@param fn EventCallback
+---@param once boolean?
 ---@return Event
-function Event:addCallback(fn)
-    table.insert(self.callbacks, fn)
+function Event:addCallback(fn, once)
+    local callback = fn
+
+    if once then
+        callback = function(...)
+            fn(...)
+            self:removeCallback(fn)
+        end
+    end
+
+    self.callbacks[fn] = callback
     return self
 end
 
@@ -26,7 +37,7 @@ end
 ---@param fn EventCallback
 ---@return Event
 function Event:removeCallback(fn)
-    table.remove(self.callbacks, Lume.find(self.callbacks, fn))
+    self.callbacks[fn] = nil
     return self
 end
 
@@ -34,8 +45,8 @@ end
 ---@param ... unknown
 ---@return Event
 function Event:trigger(...)
-    for i, fn in Lume.ripairs(self.callbacks) do
-        fn(self, ...)
+    for _, callback in pairs(self.callbacks) do
+        callback(self, ...)
     end
     return self
 end
