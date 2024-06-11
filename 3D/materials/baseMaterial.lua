@@ -5,11 +5,9 @@ local Utils = require "engine.misc.utils"
 
 --- @class BaseMaterial: Object
 ---
---- @field model Model
---- @field shader love.Shader
 --- @field private __attrs MaterialDefinition
 ---
---- @overload fun(model: Model, shader: love.Shader, attributes: MaterialDefinition)
+--- @overload fun(attributes: MaterialDefinition)
 local Material = Object:extend("BaseMaterial")
 
 
@@ -47,7 +45,7 @@ end
 
 ---@returned BaseMaterial
 function Material:clone()
-    return Material(self.model, self.shader, Utils.deepCopy(self.__attrs))
+    return Material(Utils.deepCopy(self.__attrs))
 end
 
 
