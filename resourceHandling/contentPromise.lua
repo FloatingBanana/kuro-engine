@@ -7,19 +7,26 @@ local requestChannel = love.thread.getChannel("contentRequest")
 local allPromises = setmetatable({}, {__mode = 'v'})
 local threads = {}
 
-for i=1, love.system.getProcessorCount() do
+for i=1, math.min(love.system.getProcessorCount(), 4) do
     threads[i] = love.thread.newThread("engine/resourceHandling/_contentLoadingThread.lua")
 end
 
 
----@alias ContentPromiseRequest {filepath: string, hint: ContentTypeHint, channel: love.Channel, args: table}
+local function defaultErrorHandler(promise, message)
+    error("Failed to load content: "..message)
+end
+
+
+---@alias ContentPromiseRequest {filepath: string, hint: ContentTypeHint, args: table}
+---@alias ContentPromiseResponse {success: boolean, value: any}
+---@alias ContentPromiseErrorHandler fun(promise: ContentPromise, message: string)
 
 ---@class ContentPromise: Object
 ---
 ---@field public content any
 ---@field public isLoading boolean
 ---@field public onCompleteEvent Event
----@field private _channel love.Channel
+---@field private _errorHandler ContentPromiseErrorHandler
 ---@field private _request ContentPromiseRequest
 ---
 ---@overload fun(file: string, hint: ContentTypeHint, ...): ContentPromise
@@ -30,8 +37,8 @@ function ContentPromise:new(file, hint, ...)
     self.isLoading = false
     self.onCompleteEvent = Event()
 
-    self._channel = love.thread.newChannel()
-    self._request = {filepath = file, hint = hint, channel = self._channel, args = {...}}
+    self._errorHandler = defaultErrorHandler
+    self._request = {filepath = file, hint = hint, args = {...}}
 
     allPromises[file] = self
 end
@@ -39,14 +46,22 @@ end
 
 
 ---@private
----@param content any
-function ContentPromise:_finishLoading(content)
-    if self._request.hint == "image" then
-        self.content = love.graphics.newImage(content, self._request.args[1])
+---@param response ContentPromiseResponse
+function ContentPromise:_finishLoading(response)
+    if not self.isLoading then
+        print("promise content discarted: "..self._request.filepath)
+
+    elseif response.success then
+        if self._request.hint == "image" then
+            self.content = love.graphics.newImage(response.value, self._request.args[1])
+        end
+
+        self.onCompleteEvent:trigger(self)
+    else
+        self._errorHandler(self, response.value)
     end
 
     self.isLoading = false
-    self.onCompleteEvent:trigger(self)
 end
 
 
@@ -67,24 +82,8 @@ end
 ---@return self
 function ContentPromise:load()
     if not self.content then
+        self.isLoading = true
         self:_finishLoading(loadData(self._request))
-    end
-    return self
-end
-
-
-
----@return self
-function ContentPromise:update()
-    if self._channel:getCount() > 0 then
-        local content = self._channel:pop()
-
-        if self.isLoading then
-            self:_finishLoading(content)
-        else
-            print("promise content discarted: "..self._request.filepath)
-            self.isLoading = false
-        end
     end
     return self
 end
@@ -95,6 +94,15 @@ end
 function ContentPromise:unload()
     self.content = nil
     self.isLoading = false
+    return self
+end
+
+
+
+---@param func ContentPromiseErrorHandler
+---@return self
+function ContentPromise:setErrorHandler(func)
+    self._errorHandler = func
     return self
 end
 
@@ -115,10 +123,6 @@ end
 function ContentPromise.Quit()
     requestChannel:clear()
 
-    for _, promise in pairs(allPromises) do
-        promise._request.channel:clear()
-    end
-
     for i, thread in ipairs(threads) do
         thread:wait()
     end
@@ -126,11 +130,11 @@ end
 
 
 ---@diagnostic disable-next-line undefined-field
-function love.handlers.promiseRequestLoaded(request)
+function love.handlers.promiseRequestLoaded(request, response)
     local promise = allPromises[request.filepath]
     assert(promise)
 
-    promise:update()
+    promise:_finishLoading(response)
 end
 
 

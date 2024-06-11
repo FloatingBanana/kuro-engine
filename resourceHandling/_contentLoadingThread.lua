@@ -1,6 +1,7 @@
 require "love.image"
 require "love.audio"
 require "love.event"
+require "love.timer"
 
 local id = ...
 print("Content loading thread started. ID: "..id)
@@ -8,25 +9,21 @@ print("Content loading thread started. ID: "..id)
 local requestChannel = love.thread.getChannel("contentRequest")
 local loadData = require "src.engine.resourceHandling._loadContentData"
 
----@type ContentPromiseRequest
-local request = nil
+local THREAD_LIFETIME = 3
+local initTime = love.timer.getTime()
 
-local function setRequestAtomic()
-    if requestChannel:getCount() > 0 then
-        request = requestChannel:pop()
-        return true
+
+while (love.timer.getTime() - initTime) < THREAD_LIFETIME do
+    request = requestChannel:pop() --[[@as ContentPromiseRequest]]
+
+    if request then
+        local response = loadData(request)
+        initTime = love.timer.getTime()
+
+        love.event.push("promiseRequestLoaded", request, response) ---@diagnostic disable-line param-type-mismatch
+
+        print("Thread "..id..": finished loading promise: "..request.filepath)
     end
-    return false
-end
-
-
-while requestChannel:performAtomic(setRequestAtomic) do
-    local data = loadData(request)
-
-    request.channel:push(data)
-    love.event.push("promiseRequestLoaded", request) ---@diagnostic disable-line param-type-mismatch
-    
-    print("Thread "..id..": finished loading promise: "..request.filepath)
 end
 
 print("Content loading thread finnished. ID: "..id)
