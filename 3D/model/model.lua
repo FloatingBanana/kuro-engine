@@ -1,6 +1,8 @@
-local Mesh           = require "engine.3D.model.modelMesh"
 local Meshpart       = require "engine.3D.model.meshpart"
 local ModelNode      = require "engine.3D.model.modelNode"
+local MeshNode       = require "engine.3D.model.modelMesh"
+local CameraNode     = require "engine.3D.model.modelCamera"
+local LightNode      = require "engine.3D.model.modelLight"
 local ModelAnimation = require "engine.3D.model.animation.modelAnimation"
 local Object         = require "engine.3rdparty.classic.classic"
 local utils          = require "engine.misc.utils"
@@ -44,6 +46,8 @@ function Model:new(file, opts)
     self.nodes = {}
     self.meshes = {}
     self.meshParts = {}
+    self.cameras = {}
+    self.lights = {}
     self.materials = {}
     self.animations = {}
     self.boneInfos = {}
@@ -118,6 +122,8 @@ end
 --- @param modelData table
 function Model:__loadNode(nodeData, modelData)
     local node = nil
+    local nodeName = nodeData.name
+    local nodeTransform = nodeData.transform
 
     if nodeData.meshParts then
         local parts = {}
@@ -126,15 +132,25 @@ function Model:__loadNode(nodeData, modelData)
             parts[#parts+1] = self.meshParts[partname]
         end
 
-        -- Create mesh
-        node = Mesh(self, nodeData.name, nodeData.transform, parts)
-        self.meshes[nodeData.name] = node
+        -- Mesh node
+        node = MeshNode(self, nodeName, nodeTransform, parts)
+        self.meshes[nodeName] = node
+
+    elseif modelData.cameras[nodeName] then
+        -- Camera node
+        node = CameraNode(self, nodeName, nodeTransform, modelData.cameras[nodeName])
+        self.cameras[nodeName] = node
+
+    elseif modelData.lights[nodeName] then
+        -- Light node
+        node = LightNode(self, nodeName, nodeTransform, modelData.lights[nodeName])
+        self.lights[nodeName] = node
     else
-        -- empty node
-        node = ModelNode(self, nodeData.name, nodeData.transform)
+        -- Empty node
+        node = ModelNode(self, nodeName, nodeTransform)
     end
 
-    self.nodes[nodeData.name] = node
+    self.nodes[nodeName] = node
 
     -- Load children
     for i, childname in ipairs(nodeData.children) do
