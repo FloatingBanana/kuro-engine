@@ -145,8 +145,13 @@ local function readColor3(aiColor)
     return {aiColor.r, aiColor.g, aiColor.b}
 end
 
-local function getMaterialTexture(aiMat, aiTextureType)
-    return checkSuccess(Assimp.aiGetMaterialTexture(aiMat, aiTextureType, 0, aiStringPtr, nil, nil, nil, nil, nil, nil)) and readString(aiStringPtr[0]) or nil
+local function getMaterialTexture(aiMat, basePath, aiTextureType)
+    local relativePath = checkSuccess(Assimp.aiGetMaterialTexture(aiMat, aiTextureType, 0, aiStringPtr, nil, nil, nil, nil, nil, nil)) and readString(aiStringPtr[0]) or nil
+
+    if relativePath then
+        return basePath:match("^.*/")..relativePath:gsub("%%20", " ")
+    end
+    return nil
 end
 
 local function getMaterialValue(aiMat, property, type)
@@ -222,14 +227,14 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
 
         scene.materials[name] = {
             name         = name,
-            tex_diffuse  = getMaterialTexture(aiMat, Assimp.aiTextureType_DIFFUSE),
-            tex_specular = getMaterialTexture(aiMat, Assimp.aiTextureType_SPECULAR),
-            tex_emissive = getMaterialTexture(aiMat, Assimp.aiTextureType_EMISSIVE),
-            tex_normals  = getMaterialTexture(aiMat, Assimp.aiTextureType_NORMALS),
+            tex_diffuse  = getMaterialTexture(aiMat, path, Assimp.aiTextureType_DIFFUSE),
+            tex_specular = getMaterialTexture(aiMat, path, Assimp.aiTextureType_SPECULAR),
+            tex_emissive = getMaterialTexture(aiMat, path, Assimp.aiTextureType_EMISSIVE),
+            tex_normals  = getMaterialTexture(aiMat, path, Assimp.aiTextureType_NORMALS),
 
-            tex_basecolor = getMaterialTexture(aiMat, Assimp.aiTextureType_BASE_COLOR),
-            tex_metalness = getMaterialTexture(aiMat, Assimp.aiTextureType_METALNESS),
-            tex_roughness = getMaterialTexture(aiMat, Assimp.aiTextureType_DIFFUSE_ROUGHNESS),
+            tex_basecolor = getMaterialTexture(aiMat, path, Assimp.aiTextureType_BASE_COLOR),
+            tex_metalness = getMaterialTexture(aiMat, path, Assimp.aiTextureType_METALNESS),
+            tex_roughness = getMaterialTexture(aiMat, path, Assimp.aiTextureType_DIFFUSE_ROUGHNESS),
 
             shininess          = getMaterialValue(aiMat, "$mat.shininess"        , "float") or 0,
             opacity            = getMaterialValue(aiMat, "$mat.opacity"          , "float") or 1,
