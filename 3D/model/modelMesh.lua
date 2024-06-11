@@ -3,15 +3,14 @@ local ModelNode = require "engine.3D.model.modelNode"
 --- @class ModelMesh: ModelNode
 ---
 --- @field parts MeshPart[]
---- @field transformation Matrix
 --- @field materials BaseMaterial[]
 ---
---- @overload fun(model: Model, name: string, localMatrix: Matrix, meshparts: MeshPart[], parent: ModelNode?): ModelMesh
+--- @overload fun(model: Model, name: string, localMatrix: Matrix, meshparts: MeshPart[]): ModelMesh
 local Mesh = ModelNode:extend("ModelMesh")
 
 
-function Mesh:new(model, name, localMatrix, meshparts, parent)
-    ModelNode.new(self, model, name, localMatrix, parent)
+function Mesh:new(model, name, localMatrix, meshparts)
+    ModelNode.new(self, model, name, localMatrix)
 
     self.parts = meshparts
     self.materials = {}
