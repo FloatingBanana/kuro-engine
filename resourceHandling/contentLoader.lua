@@ -36,7 +36,7 @@ end
 
 
 ---@param filename string
----@param settings table
+---@param settings table?
 ---@return ContentPromise
 function ContentLoader:getImage(filename, settings)
     return self:getContent(filename, "image", settings)
@@ -62,6 +62,26 @@ end
 
 
 ---@return self
+function ContentLoader:loadAll()
+    for _, promise in pairs(self.promises) do
+        promise:load()
+    end
+    return self
+end
+
+
+
+---@return self
+function ContentLoader:loadAllAsync()
+    for _, promise in pairs(self.promises) do
+        promise:loadAsync()
+    end
+    return self
+end
+
+
+
+---@return self
 function ContentLoader:unloadAll()
     for filename, promise in pairs(self.promises) do
         promise:unload()
@@ -77,7 +97,6 @@ end
 function ContentLoader:merge(loader)
     for filename, promise in pairs(loader.promises) do
         self.promises[filename] = promise
-        loader.promises[filename] = nil
     end
     return self
 end
