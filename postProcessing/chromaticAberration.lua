@@ -1,19 +1,5 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
 
-local aberrationShader = [[
-    uniform vec2 u_offset;
-    
-    vec4 effect(vec4 color, sampler2D texture, vec2 texcoords, vec2 screencoords) {
-        return vec4(
-            Texel(texture, texcoords + vec2( 1, 0) * u_offset).r,
-            Texel(texture, texcoords + vec2(-1, 0) * u_offset).g,
-            Texel(texture, texcoords + vec2( 0, 1) * u_offset).b,
-            Texel(texture, texcoords).a
-        );
-    }
-]]
-
-
 --- @class ChromaticAberration: BasePostProcessingEffect
 ---
 --- @field private effectCanvas love.Canvas
@@ -27,7 +13,7 @@ local ChromaticAberration = BaseEffect:extend("ChromaticAberration")
 
 function ChromaticAberration:new(screenSize, offset)
     self.effectCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height)
-    self.shader = love.graphics.newShader(aberrationShader)
+    self.shader = love.graphics.newShader("engine/shaders/postprocessing/chromaticAberration.frag")
     self.offset = offset
     self.screenSize = screenSize
 

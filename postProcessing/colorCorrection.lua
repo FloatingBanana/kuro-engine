@@ -1,45 +1,6 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
 local Utils = require "engine.misc.utils"
 
-local hdrShader = [[
-    #pragma language glsl3
-    #pragma include "engine/shaders/incl_utils.glsl"
-
-    #define CLAMP(v) clamp(v, 0, 1)
-
-    uniform vec3  u_filter;
-    uniform float u_contrast;
-    uniform float u_brightness;
-    uniform float u_exposure;
-    uniform float u_saturation;
-
-    vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
-        vec3 pixel = texture(tex, texcoords).rgb;
-
-        // Color filter
-        pixel *= u_filter;
-
-        // Contrast
-        pixel = CLAMP(((pixel - 0.5) * u_contrast) + 0.5);
-
-        // Brightness
-        pixel = CLAMP(pixel + u_brightness);
-
-        // Exposure
-        pixel = CLAMP(pixel * u_exposure);
-
-        // Saturation
-        vec3 grayscale = vec3(Luminance(pixel));
-        pixel = CLAMP(mix(grayscale, pixel, u_saturation));
-
-        // Gamma correction
-        // pixel = pow(pixel, vec3(1.0/gamma));
-
-        return vec4(pixel, 1.0);
-    }
-]]
-
-
 --- @class ColorCorrection: BasePostProcessingEffect
 ---
 --- @field private canvas love.Canvas
@@ -56,7 +17,7 @@ local ColorCorrection = BaseEffect:extend("ColorCorrection")
 
 function ColorCorrection:new(screenSize, contrast, brightness, exposure, saturation, colorFilter)
     self.canvas = love.graphics.newCanvas(screenSize.width, screenSize.height)
-    self.shader = Utils.newPreProcessedShader(hdrShader)
+    self.shader = Utils.newPreProcessedShader("engine/shaders/postprocessing/colorCorrection.frag")
 
     self.contrast = contrast
     self.brightness = brightness
