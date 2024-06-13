@@ -236,7 +236,7 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             tex_metalness = getMaterialTexture(aiMat, path, Assimp.aiTextureType_METALNESS),
             tex_roughness = getMaterialTexture(aiMat, path, Assimp.aiTextureType_DIFFUSE_ROUGHNESS),
 
-            shininess          = getMaterialValue(aiMat, "$mat.shininess"        , "float") or 0,
+            shininess          = getMaterialValue(aiMat, "$mat.shininess"        , "float") or 1,
             opacity            = getMaterialValue(aiMat, "$mat.opacity"          , "float") or 1,
             reflectivity       = getMaterialValue(aiMat, "$mat.reflectivity"     , "float") or 0,
             refraction         = getMaterialValue(aiMat, "$mat.emissiveIntensity", "float") or 0,

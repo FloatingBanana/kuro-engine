@@ -54,7 +54,7 @@ void effect() {
     vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0));
 
     oNormal         = vec4(EncodeNormal(normal), 1.0, 1.0);
-    oAlbedoSpecular = vec4(texture(u_diffuseTexture, v_texCoords).rgb, u_shininess);
+    oAlbedoSpecular = vec4(texture(u_diffuseTexture, v_texCoords).rgb, u_shininess / 255.0);
     oVelocity       = vec4(EncodeVelocity(clipPos - prevClipPos), 1, 1);
 }
 #endif

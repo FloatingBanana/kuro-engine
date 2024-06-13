@@ -31,7 +31,7 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
     vec3 fragPos   = ReconstructPosition(uv, uDepthBuffer, uInvViewProjMatrix);
     vec3 normal    = DecodeNormal(texture(uGNormal, uv).xy);
     vec3 albedo    = albedoSpecular.rgb;
-    float specular = albedoSpecular.a * 32.0;
+    float specular = albedoSpecular.a * 255.0;
 
     vec4 lightSpaceFragPos = u_lightMatrix * vec4(fragPos, 1.0);
     vec3 viewDir = normalize(uViewPosition - fragPos);
