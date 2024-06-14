@@ -17,7 +17,7 @@ local PhongMaterial = Material:extend("PhongMaterial")
 
 function PhongMaterial:new(model, matData)
     local attributes = {
-        shininess      = {uniform = "u_shininess",      value = 32 --[[mat:shininess()]]},
+        shininess      = {uniform = "u_shininess",      value = 128 --[[matData.shininess]]},
         diffuseTexture = {uniform = "u_diffuseTexture", value = Material.DefaultColorTex},
         normalMap      = {uniform = "u_normalMap",      value = Material.DefaultNormalTex},
     }

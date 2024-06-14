@@ -25,12 +25,19 @@ vec4 position(mat4 transformProjection, vec4 position) {
     // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
     screen.y *= (uIsCanvasActive ? -1 : 1);
 
-    // Assigning outputs
-    v_tbnMatrix = GetTBNMatrix(uWorldMatrix, mat3(skinMat) * VertexNormal, mat3(skinMat) * VertexTangent);
-    v_fragPos = worldPos.xyz;
-    v_screenPos = screen;
-    v_texCoords = VertexTexCoords;
-    v_lightSpaceFragPos = u_lightMatrix * vec4(worldPos.xyz, 1.0);
+#   ifdef FORWARD_PREPASS
+        screen.z += 0.00001;
+#   else
+        // Assigning outputs
+        v_tbnMatrix = GetTBNMatrix(uWorldMatrix, mat3(skinMat) * VertexNormal, mat3(skinMat) * VertexTangent);
+        v_texCoords = VertexTexCoords;
+
+#       ifndef DEFERRED
+           v_fragPos = worldPos.xyz;
+           v_screenPos = screen;
+           v_lightSpaceFragPos = u_lightMatrix * vec4(worldPos.xyz, 1.0);
+#       endif
+#   endif
 
     return screen;
 }

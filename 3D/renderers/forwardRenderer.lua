@@ -2,8 +2,9 @@ local BaseRederer      = require "engine.3D.renderers.baseRenderer"
 local ShaderEffect     = require "engine.misc.shaderEffect"
 local lg               = love.graphics
 
-local prePassShader = ShaderEffect("engine/shaders/3D/forwardRendering/prepass.glsl")
-local defaultShader = ShaderEffect("engine/shaders/3D/forwardRendering/forwardRendering.vert", "engine/shaders/3D/forwardRendering/forwardRendering.frag")
+
+local prePassShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", {"FORWARD_PREPASS"})
+local defaultShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/forwardRendering/forwardRendering.frag")
 
 
 --- @class ForwardRenderer: BaseRenderer

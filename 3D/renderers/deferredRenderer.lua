@@ -10,7 +10,7 @@ local lg               = love.graphics
 
 local volume = Model("engine/3D/renderers/lightvolume.fbx", {triangulate = true, optimizeGraph = true, removeUnusedMaterials = true}).meshes.Sphere.parts[1]
 local lightShader = ShaderEffect("engine/shaders/3D/deferred/lightPass.glsl")
-local gBufferShader = ShaderEffect("engine/shaders/3D/deferred/gbuffer.glsl")
+local gBufferShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/deferred/gbuffer.glsl", {"DEFERRED"})
 
 
 --- @alias GBuffer {position: love.Canvas, normal: love.Canvas, albedoSpec: love.Canvas}
@@ -41,7 +41,7 @@ function DeferredRenderer:renderMeshes(camera)
     -- G-Buffer --
     --------------
 
-    lg.setCanvas({self.gbuffer.normal, self.gbuffer.albedoSpec, self.velocityBuffer, depthstencil = self.depthCanvas})
+    lg.setCanvas({self.gbuffer.normal, self.gbuffer.albedoSpec, depthstencil = self.depthCanvas})
     lg.clear()
 
     lg.setDepthMode("lequal", true)
