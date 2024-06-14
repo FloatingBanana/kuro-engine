@@ -1,10 +1,11 @@
 local Matrix     = require "engine.math.matrix"
 local Stack      = require "engine.collections.stack"
 local Vector3    = require "engine.math.vector3"
-local Vector2    = require("engine.math.vector2")
+local Vector2    = require "engine.math.vector2"
 local Quaternion = require "engine.math.quaternion"
-local bit        = require("bit")
-local ffi        = require("ffi")
+local bit        = require "bit"
+local ffi        = require "ffi"
+local newtable   = require "table.new"
 
 
 local ENABLE_LOGGING = false
@@ -169,18 +170,6 @@ end
 
 
 local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optimizeGraph)
-    local boneId = 0
-    local scene = {
-        materials = {},
-        nodes = {},
-        bones = {},
-        animations = {},
-        meshParts = {},
-        lights = {},
-        cameras = {}
-    }
-
-
     if ENABLE_LOGGING then
         Assimp.aiEnableVerboseLogging(true)
         Assimp.aiAttachLogStream(aiLogStream)
@@ -218,6 +207,18 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
     if aiScene == nil then
         error(ffi.string(Assimp.aiGetErrorString()))
     end
+
+
+    local boneId = 0
+    local scene = {
+        materials  = newtable(0, aiScene.mNumMaterials),
+        nodes      = {},
+        bones      = {},
+        animations = newtable(0, aiScene.mNumAnimations),
+        meshParts  = newtable(0, aiScene.mNumMeshes),
+        lights     = newtable(0, aiScene.mNumLights),
+        cameras    = newtable(0, aiScene.mNumCameras)
+    }
 
 
     -- Load materials
@@ -305,10 +306,10 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
     for m=1, aiScene.mNumMeshes do
         local aiMesh = aiScene.mMeshes[m-1]
         local part = {
-            name = readString(aiMesh.mName),
+            name     = readString(aiMesh.mName),
             material = getMaterialValue(aiScene.mMaterials[aiMesh.mMaterialIndex], "?mat.name", "string"),
-            verts = {},
-            indices = {}
+            verts    = newtable(aiMesh.mNumVertices, 0),
+            indices  = newtable(aiMesh.mNumVertices, 0)
         }
 
         -- Vertices
@@ -371,9 +372,9 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
     while nodeStack:peek() do
         local aiNode = nodeStack:pop()
         local node = {
-            name = readString(aiNode.mName),
+            name      = readString(aiNode.mName),
             meshParts = nil,
-            children = {},
+            children  = {},
             transform = readMatrix4x4(aiNode.mTransformation),
         }
 
@@ -409,20 +410,20 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
     for a=1, aiScene.mNumAnimations do
         local aiAnim = aiScene.mAnimations[a-1]
         local animation = {
-            name = readString(aiAnim.mName),
+            name     = readString(aiAnim.mName),
             duration = aiAnim.mDuration,
-            fps = aiAnim.mTicksPerSecond,
-            nodes = {}
+            fps      = aiAnim.mTicksPerSecond,
+            nodes    = newtable(0, aiAnim.mNumChannels)
         }
 
         -- Animation nodes (channels)
         for n=1, aiAnim.mNumChannels do
             local aiNodeAnim = aiAnim.mChannels[n-1]
             local animNode = {
-                name = readString(aiNodeAnim.mNodeName),
-                positionKeys = {},
-                scaleKeys    = {},
-                rotationKeys = {},
+                name         = readString(aiNodeAnim.mNodeName),
+                positionKeys = newtable(aiNodeAnim.mNumPositionKeys, 0),
+                scaleKeys    = newtable(aiNodeAnim.mNumScalingKeys,  0),
+                rotationKeys = newtable(aiNodeAnim.mNumRotationKeys, 0),
             }
 
             for k=1, aiNodeAnim.mNumPositionKeys do
