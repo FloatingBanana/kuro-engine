@@ -1,7 +1,4 @@
-local DirectionalLight = require "engine.3D.lights.directionalLight"
-local SpotLight        = require "engine.3D.lights.spotLight"
 local PointLight       = require "engine.3D.lights.pointLight"
-local AmbientLight     = require "engine.3D.lights.ambientLight"
 local Model            = require "engine.3D.model.model"
 local BaseRederer      = require "engine.3D.renderers.baseRenderer"
 local Matrix           = require "engine.math.matrix"
@@ -81,14 +78,8 @@ function DeferredRenderer:renderMeshes(camera)
     for i, light in ipairs(self.lights) do
         if not light.enabled then goto continue end
 
-        local lightTypeDef =
-            light:is(AmbientLight)     and "LIGHT_TYPE_AMBIENT"     or
-            light:is(DirectionalLight) and "LIGHT_TYPE_DIRECTIONAL" or
-            light:is(SpotLight)        and "LIGHT_TYPE_SPOT"        or
-            light:is(PointLight)       and "LIGHT_TYPE_POINT"       or nil
+        lightShader:define("CURRENT_LIGHT_TYPE", light:getLightTypeDefinition())
 
-
-        lightShader:define(lightTypeDef)
         self:sendCommonRendererBuffers(lightShader.shader, camera)
 
         light:generateShadowMap(self.meshParts)
@@ -110,7 +101,6 @@ function DeferredRenderer:renderMeshes(camera)
             lg.draw(self.dummySquare)
         end
 
-        lightShader:undefine(lightTypeDef)
         ::continue::
     end
 

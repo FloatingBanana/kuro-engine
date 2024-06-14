@@ -12,12 +12,12 @@ local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/sha
 --- @field projMatrix Matrix
 --- @field viewProjMatrix Matrix
 ---
---- @overload fun(position: Vector3, diffuse: table, specular: table): DirectionalLight
+--- @overload fun(position: Vector3, color: table, specular: table): DirectionalLight
 local Dirlight = BaseLight:extend("DirectionalLight")
 
 
-function Dirlight:new(position, diffuse, specular)
-    BaseLight.new(self, position, diffuse, specular, depthShader)
+function Dirlight:new(position, color, specular)
+    BaseLight.new(self, position, color, specular, depthShader)
 
     self.shadowmap = love.graphics.newCanvas(2048, 2048, {format = "depth16", readable = true})
     self.shadowmap:setFilter("linear", "linear")
@@ -62,8 +62,13 @@ function Dirlight:applyLighting(lightingShader)
 
     lightingShader:send("light.direction", self.position.normalized:toFlatTable())
 
-    lightingShader:send("light.diffuse", self.diffuse)
+    lightingShader:send("light.color", self.color)
     lightingShader:send("light.specular", self.specular)
+end
+
+
+function Dirlight:getLightTypeDefinition()
+    return "LIGHT_TYPE_DIRECTIONAL"
 end
 
 

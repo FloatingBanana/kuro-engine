@@ -1,11 +1,6 @@
 local BaseRederer      = require "engine.3D.renderers.baseRenderer"
 local ShaderEffect     = require "engine.misc.shaderEffect"
-local DirectionalLight = require "engine.3D.lights.directionalLight"
-local SpotLight        = require "engine.3D.lights.spotLight"
-local PointLight       = require "engine.3D.lights.pointLight"
-local AmbientLight     = require "engine.3D.lights.ambientLight"
 local lg               = love.graphics
-
 
 local prePassShader = ShaderEffect("engine/shaders/3D/forwardRendering/prepass.glsl")
 local defaultShader = ShaderEffect("engine/shaders/3D/forwardRendering/forwardRendering.vert", "engine/shaders/3D/forwardRendering/forwardRendering.frag")
@@ -80,20 +75,18 @@ function ForwardRenderer:renderMeshes(camera)
             self:sendCommonRendererBuffers(defaultShader.shader, camera)
             self:sendCommonMeshBuffers(defaultShader.shader, config)
 
+            defaultShader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
             defaultShader:use()
+            self:sendCommonRendererBuffers(defaultShader.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+            self:sendCommonMeshBuffers(defaultShader.shader, config)
+
+            config.material:apply(defaultShader)
             config.meshPart:draw()
         else
             for i, light in ipairs(self.lights) do
                 if not light.enabled then goto continue end
 
-                local lightTypeDef =
-                    light:is(AmbientLight)     and "LIGHT_TYPE_AMBIENT"     or
-                    light:is(DirectionalLight) and "LIGHT_TYPE_DIRECTIONAL" or
-                    light:is(SpotLight)        and "LIGHT_TYPE_SPOT"        or
-                    light:is(PointLight)       and "LIGHT_TYPE_POINT"       or nil
-
-
-                defaultShader:define(lightTypeDef)
+                defaultShader:define("CURRENT_LIGHT_TYPE", light:getLightTypeDefinition())
 
                 light:applyLighting(defaultShader.shader)
                 self:sendCommonRendererBuffers(defaultShader.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
@@ -107,7 +100,6 @@ function ForwardRenderer:renderMeshes(camera)
                 config.material:apply(defaultShader)
                 config.meshPart:draw()
 
-                defaultShader:undefine(lightTypeDef)
                 ::continue::
             end
         end
