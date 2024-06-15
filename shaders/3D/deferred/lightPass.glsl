@@ -53,7 +53,7 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
         result = CaculatePhongLighting(light, normalize(light.position - fragPos), normal, viewDir, albedo, specular);
-        result *= CalculateSpotLight(light, fragPos);
+        result *= CalculatePointLight(light, fragPos);
         result *= 1.0 - ShadowCalculation(light.position, light.farPlane, u_pointLightShadowMap, uViewPosition, fragPos);
 #   endif
 

@@ -42,7 +42,7 @@ vec4 effect(EFFECTARGS) {
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
         result = CaculatePhongLighting(light, normalize(light.position - v_fragPos), normal, viewDir, diffuseColor, u_shininess);
-        result *= CalculateSpotLight(light, v_fragPos);
+        result *= CalculatePointLight(light, v_fragPos);
         result *= 1.0 - ShadowCalculation(light.position, light.farPlane, u_pointLightShadowMap, uViewPosition, v_fragPos);
 #   endif
 
