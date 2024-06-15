@@ -1,6 +1,8 @@
 local ParserHelper = require "engine.text.parserHelper"
 local Lume = require "engine.3rdparty.lume"
 
+-- Extremely naive path validation regex
+local pathRegex = "^[%w_%-%(%) \\/%.]*$"
 
 ---@param shaderStr string
 ---@param defaultDefines table?
@@ -10,8 +12,13 @@ local function preprocessShader(shaderStr, defaultDefines, isIncludedFile)
 	local parser = ParserHelper("", true)
 	local lineNumber = 0
 	local mainBlock = {}
-	local shader = love.filesystem.read(shaderStr) or shaderStr
+	local shader = shaderStr
+	local headerCode = love.filesystem.read("engine/shaders/default.glsl")
 	local insertLine = function(...) Lume.push(mainBlock, ...) end
+
+	if shaderStr:match(pathRegex) then
+		shader = assert(love.filesystem.read(shaderStr))
+	end
 
 
 	-- Add default defines
@@ -38,7 +45,7 @@ local function preprocessShader(shaderStr, defaultDefines, isIncludedFile)
 		-- Load default header
 		insertLine(
 			"#line 0",
-			preprocessShader("engine/shaders/default.glsl", {}, true)
+			headerCode
 		)
 	end
 
@@ -91,7 +98,29 @@ local function preprocessShader(shaderStr, defaultDefines, isIncludedFile)
 		)
 	end
 
-	return table.concat(mainBlock, "\n")
+	local code = table.concat(mainBlock, "\n")
+
+
+	-- Error validation
+	local testCode = code
+	if isIncludedFile then
+		local c = {
+			"#pragma language glsl3",
+			headerCode,
+			code,
+			"vec4 effect(EFFECTARGS){return vec4(1);}"
+		}
+
+		testCode = table.concat(c, "\n")
+	end
+
+	local ok, err = love.graphics.validateShader(false, testCode)
+	if not ok then
+		local shaderName = shaderStr:gsub("\n.*", "...")
+		error(("Failed to validate shader '%s': %s"):format(shaderName, err))
+	end
+
+	return code
 end
 
 
