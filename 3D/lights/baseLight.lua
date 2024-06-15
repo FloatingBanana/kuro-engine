@@ -4,7 +4,7 @@ local Object = require "engine.3rdparty.classic.classic"
 ---
 --- @field position Vector3
 --- @field ambient table
---- @field diffuse table
+--- @field color table
 --- @field specular table
 --- @field near number
 --- @field far number
@@ -12,14 +12,14 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @field depthShader love.Shader
 --- @field shadowmap love.Texture
 ---
---- @overload fun(position: Vector3, diffuse: table, specular: table, depthShader: love.Shader): BaseLight
+--- @overload fun(position: Vector3, color: table, specular: table, depthShader: love.Shader): BaseLight
 local BaseLight = Object:extend("BaseLight")
 
 
-function BaseLight:new(position, diffuse, specular, depthShader)
+function BaseLight:new(position, color, specular, depthShader)
     self.position = position
 
-    self.diffuse = diffuse
+    self.color = color
     self.specular = specular
 
     self.depthShader = depthShader
@@ -57,6 +57,12 @@ end
 
 --- @param lightingShader love.Shader
 function BaseLight:applyLighting(lightingShader)
+    error("Not implemented")
+end
+
+
+---@return string
+function BaseLight:getLightTypeDefinition()
     error("Not implemented")
 end
 

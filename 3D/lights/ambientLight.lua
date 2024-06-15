@@ -20,7 +20,12 @@ end
 
 
 function AmbientLight:applyLighting(lightingShader)
-    lightingShader:send("light.ambient", self.color)
+    lightingShader:send("light.color", self.color)
+end
+
+
+function AmbientLight:getLightTypeDefinition()
+    return "LIGHT_TYPE_AMBIENT"
 end
 
 

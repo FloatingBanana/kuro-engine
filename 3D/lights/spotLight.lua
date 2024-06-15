@@ -14,12 +14,12 @@ local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/sha
 --- @field viewMatrix Matrix
 --- @field projMatrix Matrix
 --- @field viewProjMatrix Matrix
---- @overload fun(position: Vector3, direction: Vector3, innerAngle: number, outerAngle: number, diffuse: table, specular: table): SpotLight
+--- @overload fun(position: Vector3, direction: Vector3, innerAngle: number, outerAngle: number, color: table, specular: table): SpotLight
 local Spotlight = BaseLight:extend("SpotLight")
 
 
-function Spotlight:new(position, direction, innerAngle, outerAngle, diffuse, specular)
-    BaseLight.new(self, position, diffuse, specular, depthShader)
+function Spotlight:new(position, direction, innerAngle, outerAngle, color, specular)
+    BaseLight.new(self, position, color, specular, depthShader)
 
     self.direction = direction
     self.innerAngle = innerAngle
@@ -74,8 +74,13 @@ function Spotlight:applyLighting(lightingShader)
     lightingShader:send("light.cutOff",      math.cos(self.innerAngle))
     lightingShader:send("light.outerCutOff", math.cos(self.outerAngle))
 
-    lightingShader:send("light.diffuse",  self.diffuse)
+    lightingShader:send("light.color",  self.color)
     lightingShader:send("light.specular", self.specular)
+end
+
+
+function Spotlight:getLightTypeDefinition()
+    return "LIGHT_TYPE_SPOT"
 end
 
 

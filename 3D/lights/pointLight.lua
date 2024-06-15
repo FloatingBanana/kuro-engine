@@ -2,6 +2,7 @@ local Matrix = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
 local Utils = require "engine.misc.utils"
+local CubeMapUtils = require "engine.misc.cubemapUtils"
 
 local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/pointShadowMapRenderer.glsl")
 
@@ -20,12 +21,12 @@ local dirs = {
 --- @field constant number
 --- @field linear number
 --- @field quadratic number
---- @overload fun(position: Vector3, constant: number, linear: number, quadratic: number, diffuse: table, specular: table): PointLight
+--- @overload fun(position: Vector3, constant: number, linear: number, quadratic: number, color: table, specular: table): PointLight
 local PointLight = BaseLight:extend("PointLight")
 
 
-function PointLight:new(position, constant, linear, quadratic, diffuse, specular)
-    BaseLight.new(self, position, diffuse, specular, depthShader)
+function PointLight:new(position, constant, linear, quadratic, color, specular)
+    BaseLight.new(self, position, color, specular, depthShader)
 
     self.linear = linear
     self.constant = constant
@@ -79,7 +80,7 @@ function PointLight:applyLighting(lightingShader)
     lightingShader:send("light.quadratic", self.quadratic)
     lightingShader:send("light.farPlane", self.far)
 
-    lightingShader:send("light.diffuse", self.diffuse)
+    lightingShader:send("light.color", self.color)
     lightingShader:send("light.specular", self.specular)
 end
 
@@ -87,10 +88,15 @@ end
 local treshold = 256/5
 function PointLight:getLightRadius()
     local linear, constant, quadratic = self.linear, self.constant, self.quadratic
-    local color = self.diffuse + self.specular
+    local color = self.color + self.specular
     local max = math.max(math.max(color.r, color.g), color.b)
 
     return (-linear + math.sqrt(linear * linear - 4 * quadratic * (constant - treshold * max))) / (2 * quadratic)
+end
+
+
+function PointLight:getLightTypeDefinition()
+    return "LIGHT_TYPE_POINT"
 end
 
 
