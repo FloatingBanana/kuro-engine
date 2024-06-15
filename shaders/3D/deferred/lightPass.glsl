@@ -28,7 +28,7 @@ uniform mat4 u_lightMatrix;
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
     vec2 uv = screencoords / textureSize(uDepthBuffer, 0); // Handle various volume shapes
 
-	vec4 albedoSpecular = texture(uGAlbedoSpecular, uv);
+    vec4 albedoSpecular = texture(uGAlbedoSpecular, uv);
 	
     vec3 fragPos   = ReconstructPosition(uv, uDepthBuffer, uInvViewProjMatrix);
     vec3 normal    = DecodeNormal(texture(uGNormal, uv).xy);
@@ -43,27 +43,25 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL
         result = CaculatePhongLighting(light, light.direction, normal, viewDir, albedo, specular);
         result *= 1.0 - ShadowCalculation(u_lightShadowMap, lightSpaceFragPos);
-#   endif
 
-#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
+#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
         result = CaculatePhongLighting(light, normalize(light.position - fragPos), normal, viewDir, albedo, specular);
         result *= CalculateSpotLight(light, fragPos);
         result *= 1.0 - ShadowCalculation(u_lightShadowMap, lightSpaceFragPos);
-#   endif
 
-#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
+#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
         result = CaculatePhongLighting(light, normalize(light.position - fragPos), normal, viewDir, albedo, specular);
         result *= CalculatePointLight(light, fragPos);
         result *= 1.0 - ShadowCalculation(light.position, light.farPlane, u_pointLightShadowMap, uViewPosition, fragPos);
-#   endif
 
-#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
+#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
         result = light.color * albedo;
         result *= texture(u_ssaoTex, texcoords).r;
-#   endif
 
-#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
+#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
         result = albedo;
+#   else
+#       error Invalid light type
 #   endif
 
 

@@ -4,9 +4,6 @@
 #pragma include "engine/shaders/3D/misc/incl_phongLighting.glsl"
 #pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
 
-#ifndef CURRENT_LIGHT_TYPE
-#   define CURRENT_LIGHT_TYPE LIGHT_TYPE_UNLIT
-#endif
 
 in vec2 v_texCoords;
 in vec3 v_fragPos;
@@ -32,29 +29,27 @@ vec4 effect(EFFECTARGS) {
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL
         result = CaculatePhongLighting(light, light.direction, normal, viewDir, diffuseColor, u_shininess);
         result *= 1.0 - ShadowCalculation(u_lightShadowMap, v_lightSpaceFragPos);
-#   endif
 
-#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
+#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
         result = CaculatePhongLighting(light, normalize(light.position - v_fragPos), normal, viewDir, diffuseColor, u_shininess);
         result *= CalculateSpotLight(light, v_fragPos);
         result *= 1.0 - ShadowCalculation(u_lightShadowMap, v_lightSpaceFragPos);
-#   endif
 
-#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
+#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
         result = CaculatePhongLighting(light, normalize(light.position - v_fragPos), normal, viewDir, diffuseColor, u_shininess);
         result *= CalculatePointLight(light, v_fragPos);
         result *= 1.0 - ShadowCalculation(light.position, light.farPlane, u_pointLightShadowMap, uViewPosition, v_fragPos);
-#   endif
 
-#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
+#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
         vec2 samplePos = (v_screenPos.xy / v_screenPos.w) * 0.5 + 0.5;
 
         result = light.color * diffuseColor;
         result *= texture(u_ssaoTex, samplePos).r;
-#   endif
 
-#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
+#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
         result = diffuseColor;
+#   else
+#       error Invalid light type
 #   endif
 
     return vec4(result, 1.0);
