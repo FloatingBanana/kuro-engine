@@ -101,6 +101,17 @@ float LuminanceGamma(vec3 color) {
     return sqrt(dot(color, lumFactor));
 }
 
+// https://blog.demofox.org/2022/01/01/interleaved-gradient-noise-a-different-kind-of-low-discrepancy-sequence/
+float NoiseIGN(vec2 pos) {
+    const vec3 magic = vec3(52.9829189, 0.06711056, 0.00583715);
+    return mod(magic.x * dot(pos, magic.yz), 1.0);
+}
+
+// https://github.com/PanosK92/SpartanEngine/blob/master/data/shaders/common.hlsl#L462
+float Random(vec2 uv) {
+    return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 
 bool Check01Range(float v) {
     return v >= 0.0 && v <= 1.0;
