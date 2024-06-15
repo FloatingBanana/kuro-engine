@@ -327,11 +327,13 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
         end
 
         -- Indices
+        local ii = 1
         for f=1, aiMesh.mNumFaces do
             local aiFace = aiMesh.mFaces[f-1]
 
             for i=1, aiFace.mNumIndices do
-                part.indices[#part.indices+1] = aiFace.mIndices[i-1]+1
+                part.indices[ii] = aiFace.mIndices[i-1]+1
+                ii = ii+1
             end
         end
 
