@@ -1,3 +1,5 @@
+#pragma language glsl3
+
 vec3 ProjectUV(vec3 position, mat4 proj) {
     vec4 clipPos = proj * vec4(position, 1.0);
     vec3 screen = (clipPos.xyz / clipPos.w) * vec3(0.5, -0.5, 0.5) + 0.5;
