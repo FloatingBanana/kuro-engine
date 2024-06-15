@@ -1,3 +1,4 @@
+#pragma language glsl3
 #define POINT_SHADOW_BIAS 0.05
 #define POINT_SAMPLES 20
 

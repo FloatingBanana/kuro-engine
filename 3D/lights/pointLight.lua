@@ -2,7 +2,6 @@ local Matrix = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
 local Utils = require "engine.misc.utils"
-local CubeMapUtils = require "engine.misc.cubemapUtils"
 
 local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/pointShadowMapRenderer.glsl")
 
