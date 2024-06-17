@@ -73,12 +73,10 @@ function ForwardRenderer:renderMeshes(camera)
         local config = self.meshParts:pop() --[[@as MeshPartConfig]]
 
         if config.ignoreLighting then
-            self:sendCommonRendererBuffers(defaultShader.shader, camera)
-            self:sendCommonMeshBuffers(defaultShader.shader, config)
-
             defaultShader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
+
             defaultShader:use()
-            self:sendCommonRendererBuffers(defaultShader.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+            self:sendCommonRendererBuffers(defaultShader.shader, camera)
             self:sendCommonMeshBuffers(defaultShader.shader, config)
 
             config.material:apply(defaultShader)
@@ -89,15 +87,15 @@ function ForwardRenderer:renderMeshes(camera)
 
                 defaultShader:define("CURRENT_LIGHT_TYPE", light:getLightTypeDefinition())
 
+                defaultShader:use()
                 light:applyLighting(defaultShader.shader)
                 self:sendCommonRendererBuffers(defaultShader.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
                 self:sendCommonMeshBuffers(defaultShader.shader, config)
-                
+
                 for j, effect in ipairs(self.ppeffects) do
                     effect:onLightRender(light, defaultShader.shader)
                 end
-                
-                defaultShader:use()
+
                 config.material:apply(defaultShader)
                 config.meshPart:draw()
 
