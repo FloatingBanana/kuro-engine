@@ -1,5 +1,6 @@
 #define PI 3.141592653589793
-#define TAU PI/2.0
+#define TAU PI*2.0
+#define HALF_PI PI/2.0
 #define RAD_STEP PI/180.0
 
 #define MAX_BONE_COUNT 50
