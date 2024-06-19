@@ -3,7 +3,7 @@ local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
 local Utils = require "engine.misc.utils"
 
-local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/shadowMapRenderer.glsl")
+local canvasTable = {}
 
 
 --- @class DirectionalLight: BaseLight
@@ -21,7 +21,7 @@ local Dirlight = BaseLight:extend("DirectionalLight")
 
 
 function Dirlight:new(position, color, specular)
-    BaseLight.new(self, BaseLight.LIGHT_TYPE_DIRECTIONAL, depthShader)
+    BaseLight.new(self, BaseLight.LIGHT_TYPE_DIRECTIONAL, true)
 
     self.position = position
     self.color = color
@@ -34,27 +34,31 @@ function Dirlight:new(position, color, specular)
 end
 
 
----@param meshes table<integer, MeshPartConfig>
-function Dirlight:drawShadows(shader, meshes)
+---@param shader ShaderEffect
+---@param meshparts MeshPartConfig[]
+function Dirlight:drawShadows(shader, meshparts)
     local viewMatrix = Matrix.CreateLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
     local projMatrix = Matrix.CreateOrthographicOffCenter(-10, 10, 10, -10, self.nearPlane, self.farPlane)
+
     self.viewProjMatrix = viewMatrix * projMatrix
+    canvasTable.depthstencil = self.shadowmap
 
-    love.graphics.setCanvas {depthstencil = self.shadowmap}
+    love.graphics.setCanvas(canvasTable)
     love.graphics.clear()
-    shader:send("lightDir", self.position.normalized:toFlatTable())
-    shader:send("u_viewProj", "column", self.viewProjMatrix:toFlatTable())
 
-    for i, config in ipairs(meshes) do
+    shader:sendUniform("light.direction", self.position.normalized)
+    shader:sendUniform("u_viewProj", "column", self.viewProjMatrix)
+
+    for i, config in ipairs(meshparts) do
         if config.castShadows then
             if config.animator then
-                shader:send("u_boneMatrices", "column", config.animator.finalMatrices)
+                shader:sendUniform("u_boneMatrices", "column", config.animator.finalMatrices)
             end
 
-            shader:send("u_world", "column", config.worldMatrix:toFlatTable())
-            shader:send("u_invTranspWorld", "column", config.worldMatrix.inverse:transpose():to3x3():toFlatTable())
+            shader:sendUniform("u_world", "column", config.worldMatrix)
+            shader:sendUniform("u_invTranspWorld", "column", config.worldMatrix.inverse:transpose():to3x3())
 
-            love.graphics.draw(config.meshPart.buffer)
+            config.meshPart:draw()
         end
     end
 end
@@ -62,11 +66,12 @@ end
 
 --- @param shader ShaderEffect
 function Dirlight:sendLightData(shader)
-    shader:sendUniform("u_lightShadowMap", self.shadowmap)
-    shader:sendUniform("u_lightMatrix", "column", self.viewProjMatrix:toFlatTable())
+    if self.castShadows then
+        shader:sendUniform("u_lightShadowMap", self.shadowmap)
+        shader:sendUniform("u_lightMatrix", "column", self.viewProjMatrix)
+    end
 
-    shader:sendUniform("light.direction", self.position.normalized:toFlatTable())
-
+    shader:sendUniform("light.direction", self.position.normalized)
     shader:sendUniform("light.color", self.color)
     shader:sendUniform("light.specular", self.specular)
 end

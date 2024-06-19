@@ -3,8 +3,8 @@ local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
 local Utils = require "engine.misc.utils"
 
-local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/pointShadowMapRenderer.glsl")
 
+local canvasTable = {depthstencil = {}}
 local dirs = {
     {dir = Vector3( 1, 0, 0), up = Vector3(0,-1, 0)},
     {dir = Vector3(-1, 0, 0), up = Vector3(0,-1, 0)},
@@ -31,7 +31,7 @@ local PointLight = BaseLight:extend("PointLight")
 
 
 function PointLight:new(position, constant, linear, quadratic, color, specular)
-    BaseLight.new(self, BaseLight.LIGHT_TYPE_POINT, depthShader)
+    BaseLight.new(self, BaseLight.LIGHT_TYPE_POINT, true)
 
     self.position = position
     self.color = color
@@ -48,32 +48,36 @@ function PointLight:new(position, constant, linear, quadratic, color, specular)
 end
 
 
----@param meshes table<integer, MeshPartConfig>
-function PointLight:drawShadows(shader, meshes)
+---@param shader ShaderEffect
+---@param meshparts MeshPartConfig[]
+function PointLight:drawShadows(shader, meshparts)
     self.farPlane = self:getLightRadius()
 
     local proj = Matrix.CreatePerspectiveFOV(math.pi/2, 1, 0.1, self.farPlane)
 
-    shader:send("lightPos", self.position:toFlatTable())
-    shader:send("farPlane", self.farPlane)
+    shader:sendUniform("light.position", self.position)
+    shader:sendUniform("light.farPlane", self.farPlane)
 
     for i = 1, 6 do
         local view = Matrix.CreateLookAtDirection(self.position, dirs[i].dir, dirs[i].up)
         local viewProj = view * proj
+        canvasTable.depthstencil[1] = self.shadowmap
+        canvasTable.depthstencil.face = i
 
-        love.graphics.setCanvas {depthstencil = {self.shadowmap, face = i}}
+        love.graphics.setCanvas(canvasTable)
         love.graphics.clear()
-        shader:send("u_viewProj", "column", viewProj:toFlatTable())
 
-        for j, config in ipairs(meshes) do
+        shader:sendUniform("u_viewProj", "column", viewProj)
+
+        for j, config in ipairs(meshparts) do
             if config.castShadows then
-                shader:send("u_world", "column", config.worldMatrix:toFlatTable())
+                shader:sendUniform("u_world", "column", config.worldMatrix)
 
                 if config.animator then
-                    shader:send("u_boneMatrices", "column", config.animator.finalMatrices)
+                    shader:sendUniform("u_boneMatrices", "column", config.animator.finalMatrices)
                 end
 
-                love.graphics.draw(config.meshPart.buffer)
+                config.meshPart:draw()
             end
         end
     end
@@ -82,7 +86,9 @@ end
 
 --- @param shader ShaderEffect
 function PointLight:sendLightData(shader)
-    shader:sendUniform("u_pointLightShadowMap", self.shadowmap)
+    if self.castShadows then
+        shader:sendUniform("u_pointLightShadowMap", self.shadowmap)
+    end
 
     shader:sendUniform("light.position",  self.position)
     shader:sendUniform("light.color",     self.color)

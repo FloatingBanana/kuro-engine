@@ -1,6 +1,8 @@
-local Object  = require "engine.3rdparty.classic.classic"
-local Vector3 = require "engine.math.vector3"
-local Matrix  = require "engine.math.matrix"
+local Object        = require "engine.3rdparty.classic.classic"
+local ShaderEffect  = require "engine.misc.shaderEffect"
+
+local shadowMapRendererShader = ShaderEffect("engine/shaders/3D/shadowMap/shadowMapRenderer.glsl")
+
 
 ---@alias LightTypeDefinition
 ---|`BaseLight.LIGHT_TYPE_UNLIT`
@@ -9,14 +11,15 @@ local Matrix  = require "engine.math.matrix"
 ---|`BaseLight.LIGHT_TYPE_SPOT`
 ---|`BaseLight.LIGHT_TYPE_POINT`
 
+
+
 --- @class BaseLight: Object
 ---
 --- @field public shadowMap love.Texture
 --- @field public typeDefinition LightTypeDefinition
 --- @field public enabled boolean
---- @field private depthShader love.Shader
 ---
---- @overload fun(typeDefinition: LightTypeDefinition, depthShader: love.Shader): BaseLight
+--- @overload fun(typeDefinition: LightTypeDefinition, castShadows: boolean): BaseLight
 local BaseLight = Object:extend("BaseLight")
 
 BaseLight.LIGHT_TYPE_UNLIT       = 0
@@ -26,41 +29,49 @@ BaseLight.LIGHT_TYPE_SPOT        = 3
 BaseLight.LIGHT_TYPE_POINT       = 4
 
 
-function BaseLight:new(typeDefinition, depthShader)
+function BaseLight:new(typeDefinition, castShadows)
     self.typeDefinition = typeDefinition
-    self.shadowMap = nil
-
     self.enabled = true
-    self.depthShader = depthShader
+
+    self.castShadows = castShadows
+    self.shadowMap = nil
 end
 
 
 ---@param size integer
 ---@param type love.TextureType
 function BaseLight:createShadowMapTexture(size, type)
-    self.shadowmap = love.graphics.newCanvas(size, size, {type = type, format = "depth16", readable = true})
-    self.shadowmap:setFilter("linear", "linear")
-    self.shadowmap:setWrap("clamp")
-    self.shadowmap:setDepthSampleMode("less")
+    if self.castShadows then
+        self.shadowmap = love.graphics.newCanvas(size, size, {type = type, format = "depth16", readable = true})
+        self.shadowmap:setFilter("linear", "linear")
+        self.shadowmap:setWrap("clamp")
+        self.shadowmap:setDepthSampleMode("less")
+    end
 end
 
 
---- @param meshparts table
+---@param meshparts MeshPartConfig[]
 function BaseLight:generateShadowMap(meshparts)
+    if not self.castShadows then
+        return
+    end
+
     love.graphics.push("all")
 
     love.graphics.setDepthMode("lequal", true)
     love.graphics.setMeshCullMode("front")
     love.graphics.setBlendMode("replace")
-    love.graphics.setShader(self.depthShader)
 
-    self:drawShadows(self.depthShader, meshparts)
+    shadowMapRendererShader:define("CURRENT_LIGHT_TYPE", self.typeDefinition)
+    shadowMapRendererShader:use()
+
+    self:drawShadows(shadowMapRendererShader, meshparts)
 
     love.graphics.pop()
 end
 
 
----@param shader love.Shader
+---@param shader ShaderEffect
 ---@param meshparts MeshPartConfig[]
 function BaseLight:drawShadows(shader, meshparts)
     error("Not implemented")
