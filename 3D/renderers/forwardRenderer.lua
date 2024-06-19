@@ -85,10 +85,10 @@ function ForwardRenderer:renderMeshes(camera)
             for i, light in ipairs(self.lights) do
                 if not light.enabled then goto continue end
 
-                defaultShader:define("CURRENT_LIGHT_TYPE", light:getLightTypeDefinition())
+                defaultShader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
 
                 defaultShader:use()
-                light:applyLighting(defaultShader.shader)
+                light:sendLightData(defaultShader)
                 self:sendCommonRendererBuffers(defaultShader.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
                 self:sendCommonMeshBuffers(defaultShader.shader, config)
 

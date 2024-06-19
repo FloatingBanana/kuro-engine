@@ -17,35 +17,45 @@ local dirs = {
 
 --- @class PointLight: BaseLight
 ---
---- @field constant number
---- @field linear number
---- @field quadratic number
+--- @field public position Vector3
+--- @field public color number[]
+--- @field public specular number[]
+--- @field public constant number
+--- @field public linear number
+--- @field public quadratic number
+--- @field public nearPlane number
+--- @field public farPlane number
+---
 --- @overload fun(position: Vector3, constant: number, linear: number, quadratic: number, color: table, specular: table): PointLight
 local PointLight = BaseLight:extend("PointLight")
 
 
 function PointLight:new(position, constant, linear, quadratic, color, specular)
-    BaseLight.new(self, position, color, specular, depthShader)
+    BaseLight.new(self, BaseLight.LIGHT_TYPE_POINT, depthShader)
+
+    self.position = position
+    self.color = color
+    self.specular = specular
 
     self.linear = linear
     self.constant = constant
     self.quadratic = quadratic
 
-    self.near = 0.1
-    self.far = self:getLightRadius()
+    self.nearPlane = 0.1
+    self.farPlane = self:getLightRadius()
 
-    self.shadowmap = love.graphics.newCanvas(256, 256, {format = "depth16", type = "cube", readable = true})
-    self.shadowmap:setFilter("linear", "linear")
-    self.shadowmap:setDepthSampleMode("less")
+    self:createShadowMapTexture(256, "cube")
 end
 
 
 ---@param meshes table<integer, MeshPartConfig>
 function PointLight:drawShadows(shader, meshes)
-    local proj = Matrix.CreatePerspectiveFOV(math.rad(90), 1, self.near, self.far)
+    self.farPlane = self:getLightRadius()
+
+    local proj = Matrix.CreatePerspectiveFOV(math.pi/2, 1, 0.1, self.farPlane)
 
     shader:send("lightPos", self.position:toFlatTable())
-    shader:send("farPlane", self.far)
+    shader:send("farPlane", self.farPlane)
 
     for i = 1, 6 do
         local view = Matrix.CreateLookAtDirection(self.position, dirs[i].dir, dirs[i].up)
@@ -70,17 +80,18 @@ function PointLight:drawShadows(shader, meshes)
 end
 
 
-function PointLight:applyLighting(lightingShader)
-    lightingShader:send("u_pointLightShadowMap", self.shadowmap)
+--- @param shader ShaderEffect
+function PointLight:sendLightData(shader)
+    shader:sendUniform("u_pointLightShadowMap", self.shadowmap)
 
-    lightingShader:send("light.position", self.position:toFlatTable())
-    lightingShader:send("light.constant", self.constant)
-    lightingShader:send("light.linear", self.linear)
-    lightingShader:send("light.quadratic", self.quadratic)
-    lightingShader:send("light.farPlane", self.far)
+    shader:sendUniform("light.position",  self.position)
+    shader:sendUniform("light.color",     self.color)
+    shader:sendUniform("light.specular",  self.specular)
+    shader:sendUniform("light.constant",  self.constant)
+    shader:sendUniform("light.linear",    self.linear)
+    shader:sendUniform("light.quadratic", self.quadratic)
+    shader:sendUniform("light.farPlane",  self.farPlane)
 
-    lightingShader:send("light.color", self.color)
-    lightingShader:send("light.specular", self.specular)
 end
 
 
@@ -91,11 +102,6 @@ function PointLight:getLightRadius()
     local max = math.max(math.max(color.r, color.g), color.b)
 
     return (-linear + math.sqrt(linear * linear - 4 * quadratic * (constant - treshold * max))) / (2 * quadratic)
-end
-
-
-function PointLight:getLightTypeDefinition()
-    return "LIGHT_TYPE_POINT"
 end
 
 

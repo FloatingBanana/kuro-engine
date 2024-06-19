@@ -78,12 +78,12 @@ function DeferredRenderer:renderMeshes(camera)
     for i, light in ipairs(self.lights) do
         if not light.enabled then goto continue end
 
-        lightShader:define("CURRENT_LIGHT_TYPE", light:getLightTypeDefinition())
+        lightShader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
 
         self:sendCommonRendererBuffers(lightShader.shader, camera)
 
         light:generateShadowMap(self.meshParts)
-        light:applyLighting(lightShader.shader)
+        light:sendLightData(lightShader)
 
         for j, effect in ipairs(self.ppeffects) do
             effect:onLightRender(light, lightShader.shader)

@@ -8,42 +8,40 @@ local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/sha
 
 --- @class SpotLight: BaseLight
 ---
+--- @field position Vector3
 --- @field direction Vector3
+--- @field color number[]
+--- @field specular number[]
 --- @field innerAngle number
 --- @field outerAngle number
---- @field viewMatrix Matrix
---- @field projMatrix Matrix
---- @field viewProjMatrix Matrix
 --- @overload fun(position: Vector3, direction: Vector3, innerAngle: number, outerAngle: number, color: table, specular: table): SpotLight
 local Spotlight = BaseLight:extend("SpotLight")
 
 
 function Spotlight:new(position, direction, innerAngle, outerAngle, color, specular)
-    BaseLight.new(self, position, color, specular, depthShader)
+    BaseLight.new(self, BaseLight.LIGHT_TYPE_SPOT, depthShader)
 
+    self.position = position
     self.direction = direction
+
+    self.color = color
+    self.specular = specular
+
     self.innerAngle = innerAngle
     self.outerAngle = outerAngle
 
-    self.near = 1
-    self.far = 50
+    self.nearPlane = 0.1
+    self.farPlane = 20
 
-    self.shadowmap = love.graphics.newCanvas(1024, 1024, {format = "depth16", readable = true})
-    self.shadowmap:setFilter("linear", "linear")
-    self.shadowmap:setWrap("clamp")
-    self.shadowmap:setDepthSampleMode("less")
-
-    self.viewMatrix = Matrix.Identity()
-    self.projMatrix = Matrix.Identity()
-    self.viewProjMatrix = Matrix.Identity()
+    self:createShadowMapTexture(1024, "2d")
 end
 
 
 ---@param meshes table<integer, MeshPartConfig>
 function Spotlight:drawShadows(shader, meshes)
-    self.viewMatrix = Matrix.CreateLookAtDirection(self.position, self.direction, Vector3(0,1,0))
-    self.projMatrix = Matrix.CreatePerspectiveFOV(self.outerAngle * 2, -1, self.near, self.far)
-    self.viewProjMatrix = self.viewMatrix * self.projMatrix
+    local viewMatrix = Matrix.CreateLookAtDirection(self.position, self.direction, Vector3(0,1,0))
+    local projMatrix = Matrix.CreatePerspectiveFOV(self.outerAngle * 2, -1, self.nearPlane, self.farPlane)
+    self.viewProjMatrix = viewMatrix * projMatrix
 
     love.graphics.setCanvas {depthstencil = self.shadowmap}
     love.graphics.clear()
@@ -65,22 +63,18 @@ function Spotlight:drawShadows(shader, meshes)
 end
 
 
-function Spotlight:applyLighting(lightingShader)
-    lightingShader:send("u_lightShadowMap", self.shadowmap)
-    lightingShader:send("u_lightMatrix", "column", self.viewProjMatrix:toFlatTable())
+--- @param shader ShaderEffect
+function Spotlight:sendLightData(shader)
+    shader:sendUniform("u_lightShadowMap", self.shadowmap)
+    shader:sendUniform("u_lightMatrix", "column", self.viewProjMatrix)
 
-    lightingShader:send("light.position",    self.position:toFlatTable())
-    lightingShader:send("light.direction",   self.direction:toFlatTable())
-    lightingShader:send("light.cutOff",      math.cos(self.innerAngle))
-    lightingShader:send("light.outerCutOff", math.cos(self.outerAngle))
+    shader:sendUniform("light.position",    self.position)
+    shader:sendUniform("light.color",       self.color)
+    shader:sendUniform("light.specular",    self.specular)
 
-    lightingShader:send("light.color",  self.color)
-    lightingShader:send("light.specular", self.specular)
-end
-
-
-function Spotlight:getLightTypeDefinition()
-    return "LIGHT_TYPE_SPOT"
+    shader:sendUniform("light.direction",   self.direction)
+    shader:sendUniform("light.cutOff",      math.cos(self.innerAngle))
+    shader:sendUniform("light.outerCutOff", math.cos(self.outerAngle))
 end
 
 

@@ -8,33 +8,37 @@ local depthShader = Utils.newPreProcessedShader("engine/shaders/3D/shadowMap/sha
 
 --- @class DirectionalLight: BaseLight
 ---
---- @field viewMatrix Matrix
---- @field projMatrix Matrix
---- @field viewProjMatrix Matrix
+--- @field public position Vector3
+--- @field public color number[]
+--- @field public specular number[]
+--- @field public nearPlane number
+--- @field public farPlane number
+---
+--- @field private viewProjMatrix Matrix
 ---
 --- @overload fun(position: Vector3, color: table, specular: table): DirectionalLight
 local Dirlight = BaseLight:extend("DirectionalLight")
 
 
 function Dirlight:new(position, color, specular)
-    BaseLight.new(self, position, color, specular, depthShader)
+    BaseLight.new(self, BaseLight.LIGHT_TYPE_DIRECTIONAL, depthShader)
 
-    self.shadowmap = love.graphics.newCanvas(2048, 2048, {format = "depth16", readable = true})
-    self.shadowmap:setFilter("linear", "linear")
-    self.shadowmap:setWrap("clamp")
-    self.shadowmap:setDepthSampleMode("less")
-
-    self.viewMatrix = Matrix.Identity()
-    self.projMatrix = Matrix.Identity()
+    self.position = position
+    self.color = color
+    self.specular = specular
     self.viewProjMatrix = Matrix.Identity()
+    self.nearPlane = 0.1
+    self.farPlane = 50
+
+    self:createShadowMapTexture(2048, "2d")
 end
 
 
 ---@param meshes table<integer, MeshPartConfig>
 function Dirlight:drawShadows(shader, meshes)
-    self.viewMatrix = Matrix.CreateLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
-    self.projMatrix = Matrix.CreateOrthographicOffCenter(-10, 10, 10, -10, self.near, self.far)
-    self.viewProjMatrix = self.viewMatrix * self.projMatrix
+    local viewMatrix = Matrix.CreateLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
+    local projMatrix = Matrix.CreateOrthographicOffCenter(-10, 10, 10, -10, self.nearPlane, self.farPlane)
+    self.viewProjMatrix = viewMatrix * projMatrix
 
     love.graphics.setCanvas {depthstencil = self.shadowmap}
     love.graphics.clear()
@@ -56,19 +60,15 @@ function Dirlight:drawShadows(shader, meshes)
 end
 
 
-function Dirlight:applyLighting(lightingShader)
-    lightingShader:send("u_lightShadowMap", self.shadowmap)
-    lightingShader:send("u_lightMatrix", "column", self.viewProjMatrix:toFlatTable())
+--- @param shader ShaderEffect
+function Dirlight:sendLightData(shader)
+    shader:sendUniform("u_lightShadowMap", self.shadowmap)
+    shader:sendUniform("u_lightMatrix", "column", self.viewProjMatrix:toFlatTable())
 
-    lightingShader:send("light.direction", self.position.normalized:toFlatTable())
+    shader:sendUniform("light.direction", self.position.normalized:toFlatTable())
 
-    lightingShader:send("light.color", self.color)
-    lightingShader:send("light.specular", self.specular)
-end
-
-
-function Dirlight:getLightTypeDefinition()
-    return "LIGHT_TYPE_DIRECTIONAL"
+    shader:sendUniform("light.color", self.color)
+    shader:sendUniform("light.specular", self.specular)
 end
 
 
