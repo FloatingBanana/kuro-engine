@@ -61,7 +61,7 @@ function PointLight:drawShadows(shader, meshparts)
     for i = 1, 6 do
         local view = Matrix.CreateLookAtDirection(self.position, dirs[i].dir, dirs[i].up)
         local viewProj = view * proj
-        canvasTable.depthstencil[1] = self.shadowmap
+        canvasTable.depthstencil[1] = self.shadowMap
         canvasTable.depthstencil.face = i
 
         love.graphics.setCanvas(canvasTable)
@@ -87,7 +87,7 @@ end
 --- @param shader ShaderEffect
 function PointLight:sendLightData(shader)
     if self.castShadows then
-        shader:sendUniform("u_pointLightShadowMap", self.shadowmap)
+        shader:sendUniform("u_pointLightShadowMap", self.shadowMap)
     end
 
     shader:sendUniform("light.position",  self.position)

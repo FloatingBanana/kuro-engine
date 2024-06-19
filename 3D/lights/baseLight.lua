@@ -42,10 +42,10 @@ end
 ---@param type love.TextureType
 function BaseLight:createShadowMapTexture(size, type)
     if self.castShadows then
-        self.shadowmap = love.graphics.newCanvas(size, size, {type = type, format = "depth16", readable = true})
-        self.shadowmap:setFilter("linear", "linear")
-        self.shadowmap:setWrap("clamp")
-        self.shadowmap:setDepthSampleMode("less")
+        self.shadowMap = love.graphics.newCanvas(size, size, {type = type, format = "depth16", readable = true})
+        self.shadowMap:setFilter("linear", "linear")
+        self.shadowMap:setWrap("clamp")
+        self.shadowMap:setDepthSampleMode("less")
     end
 end
 

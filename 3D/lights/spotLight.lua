@@ -43,7 +43,7 @@ function Spotlight:drawShadows(shader, meshparts)
     local projMatrix = Matrix.CreatePerspectiveFOV(self.outerAngle * 2, -1, self.nearPlane, self.farPlane)
 
     self.viewProjMatrix = viewMatrix * projMatrix
-    canvasTable.depthstencil = self.shadowmap
+    canvasTable.depthstencil = self.shadowMap
 
     love.graphics.setCanvas(canvasTable)
     love.graphics.clear()
@@ -69,7 +69,7 @@ end
 --- @param shader ShaderEffect
 function Spotlight:sendLightData(shader)
     if self.castShadows then
-        shader:sendUniform("u_lightShadowMap", self.shadowmap)
+        shader:sendUniform("u_lightShadowMap", self.shadowMap)
         shader:sendUniform("u_lightMatrix", "column", self.viewProjMatrix)
     end
 
