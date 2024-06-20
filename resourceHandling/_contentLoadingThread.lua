@@ -14,7 +14,7 @@ local initTime = love.timer.getTime()
 
 
 while (love.timer.getTime() - initTime) < THREAD_LIFETIME do
-    request = requestChannel:pop() --[[@as ContentPromiseRequest]]
+    local request = requestChannel:pop() --[[@as ContentPromiseRequest]]
 
     if request then
         local response = loadData(request)
