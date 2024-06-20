@@ -20,12 +20,12 @@ local gBufferShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert",
 --- @field private dummySquare love.Mesh
 --- @field public gbuffer GBuffer
 ---
---- @overload fun(screensize: Vector2, posProcessingEffects: BasePostProcessingEffect[]): DeferredRenderer
+--- @overload fun(screensize: Vector2, camera: Camera3D, posProcessingEffects: BasePostProcessingEffect[]): DeferredRenderer
 local DeferredRenderer = BaseRederer:extend("DeferredRenderer")
 
 
-function DeferredRenderer:new(screensize, postProcessingEffects)
-    BaseRederer.new(self, screensize, postProcessingEffects)
+function DeferredRenderer:new(screensize, camera, postProcessingEffects)
+    BaseRederer.new(self, screensize, camera, postProcessingEffects)
 
     self.dummySquare = Utils.newSquareMesh(screensize)
 
@@ -36,7 +36,7 @@ function DeferredRenderer:new(screensize, postProcessingEffects)
 end
 
 
-function DeferredRenderer:renderMeshes(camera)
+function DeferredRenderer:renderMeshes()
     --------------
     -- G-Buffer --
     --------------
@@ -49,7 +49,7 @@ function DeferredRenderer:renderMeshes(camera)
     lg.setMeshCullMode("back")
 
     for i, config in ipairs(self.meshParts) do
-        self:sendCommonRendererBuffers(gBufferShader.shader, camera)
+        self:sendCommonRendererBuffers(gBufferShader.shader)
         self:sendCommonMeshBuffers(gBufferShader.shader, config)
 
         gBufferShader:use()
@@ -68,7 +68,7 @@ function DeferredRenderer:renderMeshes(camera)
     lg.setBlendMode("alpha", "alphamultiply")
 
     for i, effect in ipairs(self.ppeffects) do
-        effect:onPreRender(self, camera)
+        effect:onPreRender(self)
     end
 
     lg.setBlendMode("add", "alphamultiply")
@@ -80,7 +80,7 @@ function DeferredRenderer:renderMeshes(camera)
 
         lightShader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
 
-        self:sendCommonRendererBuffers(lightShader.shader, camera)
+        self:sendCommonRendererBuffers(lightShader.shader)
 
         light:generateShadowMap(self.meshParts)
         light:sendLightData(lightShader)
@@ -92,7 +92,7 @@ function DeferredRenderer:renderMeshes(camera)
         lightShader:use()
 
         if light:is(PointLight) then ---@cast light PointLight
-            local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * camera.viewProjectionMatrix
+            local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * self.camera.viewProjectionMatrix
 
             lightShader:sendUniform("u_volumeTransform", transform)
             volume:draw()
@@ -115,9 +115,8 @@ end
 
 
 ---@param shader love.Shader
----@param camera Camera3D
-function DeferredRenderer:sendCommonRendererBuffers(shader, camera)
-    BaseRederer.sendCommonRendererBuffers(self, shader, camera)
+function DeferredRenderer:sendCommonRendererBuffers(shader)
+    BaseRederer.sendCommonRendererBuffers(self, shader)
 
 	Utils.trySendUniform(shader, "uGNormal", self.gbuffer.normal)
 	Utils.trySendUniform(shader, "uGAlbedoSpecular", self.gbuffer.albedoSpec)

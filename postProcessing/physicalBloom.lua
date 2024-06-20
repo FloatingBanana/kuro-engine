@@ -46,7 +46,7 @@ function Bloom:new(screenSize)
 end
 
 
-function Bloom:onPostRender(renderer, canvas, camera)
+function Bloom:onPostRender(renderer, canvas)
     local mips = self.mipmaps
 
     lg.setShader(downsampleShader)

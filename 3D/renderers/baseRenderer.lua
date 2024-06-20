@@ -11,28 +11,30 @@ local configPool = Stack()
 
 --- @class BaseRenderer: Object
 ---
---- @field private screensize Vector2
+--- @field public resultCanvas love.Canvas
+--- @field public depthCanvas love.Canvas
+--- @field public velocityBuffer love.Canvas
+--- @field public camera Camera3D
 --- @field protected ppeffects BasePostProcessingEffect[]
---- @field resultCanvas love.Canvas
---- @field depthCanvas love.Canvas
---- @field velocityBuffer love.Canvas
 --- @field protected meshParts Stack
 --- @field protected lights BaseLight[]
+--- @field private screensize Vector2
 ---
---- @overload fun(screenSize: Vector2, postProcessingEffects: BasePostProcessingEffect[]): BaseRenderer
+--- @overload fun(screenSize: Vector2, camera: Camera3D, postProcessingEffects: BasePostProcessingEffect[]): BaseRenderer
 local Renderer = Object:extend("BaseRenderer")
 
 
-function Renderer:new(screensize, postProcessingEffects)
+function Renderer:new(screensize, camera, postProcessingEffects)
     self.screensize = screensize
+    self.camera = camera
     self.ppeffects = postProcessingEffects
+    self.meshParts = Stack()
+    self.lights = {}
 
     self.resultCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg11b10f"})
     self.depthCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "depth24stencil8", readable = true})
     self.velocityBuffer = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg8"})
 
-    self.meshParts = Stack()
-    self.lights = {}
 end
 
 ---@param meshPart MeshPart
@@ -79,12 +81,11 @@ function Renderer:renderMeshes()
 end
 
 
----@param camera Camera3D
-function Renderer:render(camera)
-    camera:updateMatrices()
+function Renderer:render()
+    self.camera:updateMatrices()
 
     love.graphics.push("all")
-    self:renderMeshes(camera)
+    self:renderMeshes()
     love.graphics.pop()
 
     assert(#self.meshParts == 0, "Failed to consume all queued meshes")
@@ -93,7 +94,7 @@ function Renderer:render(camera)
 
     local result = self.resultCanvas
     for i, effect in ipairs(self.ppeffects) do
-        result = effect:onPostRender(self, result, camera)
+        result = effect:onPostRender(self, result)
     end
 
     love.graphics.pop()
@@ -102,21 +103,20 @@ end
 
 
 ---@param shader love.Shader
----@param camera Camera3D
-function Renderer:sendCommonRendererBuffers(shader, camera)
-	Utils.trySendUniform(shader, "uViewMatrix", "column", camera.viewMatrix:toFlatTable())
-	Utils.trySendUniform(shader, "uProjMatrix", "column", camera.projectionMatrix:toFlatTable())
-    Utils.trySendUniform(shader, "uViewProjMatrix", "column", camera.viewProjectionMatrix:toFlatTable())
+function Renderer:sendCommonRendererBuffers(shader)
+	Utils.trySendUniform(shader, "uViewMatrix", "column", self.camera.viewMatrix:toFlatTable())
+	Utils.trySendUniform(shader, "uProjMatrix", "column", self.camera.projectionMatrix:toFlatTable())
+    Utils.trySendUniform(shader, "uViewProjMatrix", "column", self.camera.viewProjectionMatrix:toFlatTable())
 
-    Utils.trySendUniform(shader, "uInvViewMatrix", "column", camera.invViewMatrix:toFlatTable())
-	Utils.trySendUniform(shader, "uInvProjMatrix", "column", camera.invProjectionMatrix:toFlatTable())
-	Utils.trySendUniform(shader, "uInvViewProjMatrix", "column", camera.invViewProjectionMatrix:toFlatTable())
+    Utils.trySendUniform(shader, "uInvViewMatrix", "column", self.camera.invViewMatrix:toFlatTable())
+	Utils.trySendUniform(shader, "uInvProjMatrix", "column", self.camera.invProjectionMatrix:toFlatTable())
+	Utils.trySendUniform(shader, "uInvViewProjMatrix", "column", self.camera.invViewProjectionMatrix:toFlatTable())
 
-    Utils.trySendUniform(shader, "uNearPlane", camera.nearPlane)
-    Utils.trySendUniform(shader, "uFarPlane", camera.farPlane)
+    Utils.trySendUniform(shader, "uNearPlane", self.camera.nearPlane)
+    Utils.trySendUniform(shader, "uFarPlane", self.camera.farPlane)
 
-    Utils.trySendUniform(shader, "uViewPosition", camera.position:toFlatTable())
-	Utils.trySendUniform(shader, "uViewDirection", Vector3(0,0,1):transform(camera.rotation):toFlatTable())
+    Utils.trySendUniform(shader, "uViewPosition", self.camera.position:toFlatTable())
+	Utils.trySendUniform(shader, "uViewDirection", Vector3(0,0,1):transform(self.camera.rotation):toFlatTable())
 
 	Utils.trySendUniform(shader, "uTime", love.timer.getTime())
 	Utils.trySendUniform(shader, "uIsCanvasActive", love.graphics.getCanvas() ~= nil)

@@ -66,14 +66,13 @@ end
 
 
 --- @param renderer BaseRenderer
---- @param camera Camera3D
-function SSAO:onPreRender(renderer, camera)
+function SSAO:onPreRender(renderer)
     assert(self.algorithm ~= "deferred" or renderer:is(DeferredRenderer), "SSAO's 'deferred' algorithm can only be used in a deferred renderer")
 
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.setShader(self.shader)
 
-    renderer:sendCommonRendererBuffers(self.shader, camera)
+    renderer:sendCommonRendererBuffers(self.shader)
     love.graphics.draw(self.dummySquare)
 
     love.graphics.setShader(gaussianBlurShader)

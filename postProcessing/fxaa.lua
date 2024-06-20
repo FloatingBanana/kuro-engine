@@ -24,7 +24,7 @@ function FXAA:new(screenSize)
 end
 
 
-function FXAA:onPostRender(renderer, canvas, camera)
+function FXAA:onPostRender(renderer, canvas)
     love.graphics.setCanvas(self.fxaaCanvas)
     love.graphics.setShader(self.shader)
 

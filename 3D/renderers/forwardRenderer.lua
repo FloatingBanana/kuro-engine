@@ -9,17 +9,16 @@ local defaultShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert",
 
 --- @class ForwardRenderer: BaseRenderer
 ---
---- @overload fun(screenSize: Vector2, postProcessingEffects: BasePostProcessingEffect[]): ForwardRenderer
+--- @overload fun(screenSize: Vector2, camera: Camera3D, postProcessingEffects: BasePostProcessingEffect[]): ForwardRenderer
 local ForwardRenderer = BaseRederer:extend("ForwardRenderer")
 
 
-function ForwardRenderer:new(screensize, postProcessingEffects)
-    BaseRederer.new(self, screensize, postProcessingEffects)
+function ForwardRenderer:new(screensize, camera, postProcessingEffects)
+    BaseRederer.new(self, screensize, camera, postProcessingEffects)
 end
 
 
---- @param camera Camera3D
-function ForwardRenderer:renderMeshes(camera)
+function ForwardRenderer:renderMeshes()
     for i, light in ipairs(self.lights) do
         light:generateShadowMap(self.meshParts)
     end
@@ -41,7 +40,7 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setBlendMode("replace")
 
     prePassShader:use()
-    self:sendCommonRendererBuffers(prePassShader.shader, camera)
+    self:sendCommonRendererBuffers(prePassShader.shader)
 
     for i, config in ipairs(self.meshParts) do
         self:sendCommonMeshBuffers(prePassShader.shader, config)
@@ -56,7 +55,7 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setBlendMode("alpha", "alphamultiply")
 
     for i, effect in ipairs(self.ppeffects) do
-        effect:onPreRender(self, camera)
+        effect:onPreRender(self)
     end
 
     ---------------
@@ -76,7 +75,7 @@ function ForwardRenderer:renderMeshes(camera)
             defaultShader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
 
             defaultShader:use()
-            self:sendCommonRendererBuffers(defaultShader.shader, camera)
+            self:sendCommonRendererBuffers(defaultShader.shader)
             self:sendCommonMeshBuffers(defaultShader.shader, config)
 
             config.material:apply(defaultShader)
@@ -89,7 +88,7 @@ function ForwardRenderer:renderMeshes(camera)
 
                 defaultShader:use()
                 light:sendLightData(defaultShader)
-                self:sendCommonRendererBuffers(defaultShader.shader, camera) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                self:sendCommonRendererBuffers(defaultShader.shader) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
                 self:sendCommonMeshBuffers(defaultShader.shader, config)
 
                 for j, effect in ipairs(self.ppeffects) do

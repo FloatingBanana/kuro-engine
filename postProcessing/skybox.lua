@@ -67,11 +67,11 @@ function Skybox:new(file)
 end
 
 
-function Skybox:onPostRender(renderer, canvas, camera)
-    local view = camera.viewMatrix:clone()
+function Skybox:onPostRender(renderer, canvas)
+    local view = renderer.camera.viewMatrix:clone()
     view.m41, view.m42, view.m43 = 0, 0, 0
 
-    local viewProj = view * camera.projectionMatrix --[[@as Matrix]]
+    local viewProj = view * renderer.camera.projectionMatrix --[[@as Matrix]]
     skyboxShader:send("u_viewProj", "column", viewProj:toFlatTable())
     skyboxShader:send("u_prevViewProj", "column", self.prevViewProj:toFlatTable())
     skyboxShader:send("u_skyTex", self.texture)

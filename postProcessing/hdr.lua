@@ -31,7 +31,7 @@ function HDR:new(screenSize, exposure)
 end
 
 
-function HDR:onPostRender(renderer, canvas, camera)
+function HDR:onPostRender(renderer, canvas)
     love.graphics.setCanvas(self.hdrCanvas)
     love.graphics.setShader(self.shader)
 

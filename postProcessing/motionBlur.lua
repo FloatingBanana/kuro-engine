@@ -44,7 +44,7 @@ function MotionBlur:new(screenSize, amount)
 end
 
 
-function MotionBlur:onPostRender(renderer, canvas, camera)
+function MotionBlur:onPostRender(renderer, canvas)
     love.graphics.setCanvas(self.blurCanvas)
     love.graphics.setShader(motionBlurShader)
 
