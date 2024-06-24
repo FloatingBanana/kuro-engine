@@ -1,10 +1,13 @@
-local Lume    = require "engine.3rdparty.lume"
-local Vector3 = require "engine.math.vector3"
-local Matrix  = require "engine.math.matrix"
-local Stack   = require "engine.collections.stack"
-local Utils   = require "engine.misc.utils"
-local Object  = require "engine.3rdparty.classic.classic"
+local Lume         = require "engine.3rdparty.lume"
+local Vector3      = require "engine.math.vector3"
+local Matrix       = require "engine.math.matrix"
+local Stack        = require "engine.collections.stack"
+local Utils        = require "engine.misc.utils"
+local ShaderEffect = require "engine.misc.shaderEffect"
+local CubemapUtils = require "engine.misc.cubemapUtils"
+local Object       = require "engine.3rdparty.classic.classic"
 
+local skyboxShader = ShaderEffect("engine/shaders/3D/skybox.glsl")
 local configPool = Stack()
 
 --- @alias MeshPartConfig {meshPart: MeshPart, material: BaseMaterial, castShadows: boolean, ignoreLighting: boolean, worldMatrix: Matrix, animator: ModelAnimator?}
@@ -14,6 +17,7 @@ local configPool = Stack()
 --- @field public resultCanvas love.Canvas
 --- @field public depthCanvas love.Canvas
 --- @field public velocityBuffer love.Canvas
+--- @field public skyBoxTexture love.Texture
 --- @field public camera Camera3D
 --- @field protected ppeffects BasePostProcessingEffect[]
 --- @field protected meshParts Stack
@@ -81,15 +85,34 @@ function Renderer:renderMeshes()
 end
 
 
+---@private
+function Renderer:_renderSkyBox()
+    local view = self.camera.viewMatrix:clone()
+    view.m41, view.m42, view.m43 = 0, 0, 0
+
+    love.graphics.setCanvas({self.resultCanvas, depthstencil = self.depthCanvas})
+    love.graphics.setMeshCullMode("back")
+    love.graphics.setDepthMode("lequal", false)
+
+    skyboxShader:use()
+    skyboxShader:sendUniform("u_viewProj", "column", view * self.camera.projectionMatrix)
+    skyboxShader:sendUniform("u_skyTex", self.skyBoxTexture)
+
+    love.graphics.draw(CubemapUtils.cubeMesh)
+end
+
+
 function Renderer:render()
     self.camera:updateMatrices()
 
     love.graphics.push("all")
+
     self:renderMeshes()
-    love.graphics.pop()
+    self:_renderSkyBox()
 
     assert(#self.meshParts == 0, "Failed to consume all queued meshes")
 
+    love.graphics.pop()
     love.graphics.push("all")
 
     local result = self.resultCanvas
