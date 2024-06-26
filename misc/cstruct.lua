@@ -20,6 +20,7 @@ end
 --- @class CStruct
 ---
 --- @field typename ffi.ctype*: The name of this struct
+--- @field private _ctype ffi.ctype*: C type object for this struct
 --- @field private _flattable table: temporary storage for this object's data
 ---
 --- @operator call: CStruct
@@ -32,7 +33,7 @@ function structmt:__call(...)
     local instance = nil
 
     if hasJit then
-        instance = ffi.new(self.typename)
+        instance = self._ctype()
     else
         instance = setmetatable({}, self)
     end
@@ -88,13 +89,15 @@ end
 --- @param definition string: The struct's definition code
 --- @return CStruct: An object representing the struct
 local function DefineStruct(structname, definition)
-    local struct = setmetatable({typename = structname, _flattable = {}}, structmt)
+    local struct = setmetatable({typename = structname, _ctype = nil, _flattable = {}}, structmt)
 
     if hasJit then
         local code = ("typedef struct {%s} %s;"):format(definition, structname)
 
         ffi.cdef(code)
-        ffi.metatype(structname --[[@as ffi.ctype*]], struct)
+
+        struct._ctype = ffi.typeof(structname --[[@as ffi.cdecl*]])
+        ffi.metatype(struct._ctype, struct)
     end
 
     Kuro.structs[structname] = struct
