@@ -64,8 +64,20 @@ vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj, out vec3 po
 
 float LinearizeDepth(float depth, float near, float far) {
     depth = depth * 2.0 - 1.0;
-    return -((far * near) / (far + depth * (near-far)));
+    // return -((far * near) / (far + depth * (near-far)));
+    return (2.0 * near * far) / (far + near - depth * (far - near));
 }
+
+const vec2 invAtan = vec2(0.1591, 0.3183);
+vec2 EncodeSphericalMap(vec3 dir) {
+    return vec2(atan(dir.z, dir.x), asin(dir.y)) * invAtan + 0.5;
+}
+
+vec3 DecodeSphericalMap(vec2 uv) {
+    uv = (uv - 0.5) / invAtan;
+    return vec3(sin(uv.x), sin(uv.y), cos(uv.x));
+}
+
 
 // https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
 vec2 EncodeNormal(vec3 n) {
@@ -103,10 +115,16 @@ float LuminanceGamma(vec3 color) {
     return sqrt(dot(color, lumFactor));
 }
 
+// https://github.com/PanosK92/SpartanEngine/blob/master/data/shaders/common.hlsl#L529
+float ScreenFade(vec2 uv) {
+    vec2 fade = max(vec2(0.0), 12.0 * abs(uv - 0.5) - 5.0);
+    return clamp(1.0 - dot(fade, fade), 0.0, 1.0);
+}
+
 // https://blog.demofox.org/2022/01/01/interleaved-gradient-noise-a-different-kind-of-low-discrepancy-sequence/
+const vec3 ignmagic = vec3(52.9829189, 0.06711056, 0.00583715);
 float NoiseIGN(vec2 pos) {
-    const vec3 magic = vec3(52.9829189, 0.06711056, 0.00583715);
-    return mod(magic.x * dot(pos, magic.yz), 1.0);
+    return mod(ignmagic.x * dot(pos, ignmagic.yz), 1.0);
 }
 
 // https://github.com/PanosK92/SpartanEngine/blob/master/data/shaders/common.hlsl#L462
