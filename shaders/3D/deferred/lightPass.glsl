@@ -36,21 +36,23 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
     float specular = albedoSpecular.a * 255.0;
 
     vec4 lightSpaceFragPos = u_lightMatrix * vec4(fragPos, 1.0);
-    vec3 viewDir = normalize(uViewPosition - fragPos);
+    vec3 viewFragDirection = normalize(uViewPosition - fragPos);
+    vec3 lightFragDirection = normalize(light.position - fragPos);
+
     vec3 result = vec3(0.0);
 
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL
-        result = CaculatePhongLighting(light, light.direction, normal, viewDir, albedo, specular);
+        result = CaculatePhongLighting(light, light.direction, normal, viewFragDirection, albedo, specular);
         result *= 1.0 - ShadowCalculation(u_lightShadowMap, lightSpaceFragPos);
 
 #   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
-        result = CaculatePhongLighting(light, normalize(light.position - fragPos), normal, viewDir, albedo, specular);
+        result = CaculatePhongLighting(light, lightFragDirection, normal, viewFragDirection, albedo, specular);
         result *= CalculateSpotLight(light, fragPos);
         result *= 1.0 - ShadowCalculation(u_lightShadowMap, lightSpaceFragPos);
 
 #   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
-        result = CaculatePhongLighting(light, normalize(light.position - fragPos), normal, viewDir, albedo, specular);
+        result = CaculatePhongLighting(light, lightFragDirection, normal, viewFragDirection, albedo, specular);
         result *= CalculatePointLight(light, fragPos);
         result *= 1.0 - ShadowCalculation(light.position, light.farPlane, u_pointLightShadowMap, uViewPosition, fragPos);
 
