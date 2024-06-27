@@ -1,5 +1,6 @@
-local Object     = require "engine.3rdparty.classic.classic"
-local Utils      = require "engine.misc.utils"
+local Object  = require "engine.3rdparty.classic.classic"
+local Vector3 = require "engine.math.vector3"
+local Utils   = require "engine.misc.utils"
 
 local globalCache = {}
 
@@ -170,8 +171,76 @@ end
 
 
 
+---@return ShaderEffect
 function ShaderEffect:clone()
     return ShaderEffect(self._shadercode, Utils.shallowCopy(self._defines))
+end
+
+
+
+---@return self
+function ShaderEffect:sendCommonUniforms()
+    self:trySendUniform("uTime", love.timer.getTime())
+    self:trySendUniform("uDeltaTime", love.timer.getDelta())
+	self:trySendUniform("uIsCanvasActive", love.graphics.getCanvas() ~= nil)
+
+    return self
+end
+
+
+
+---@param camera Camera3D
+---@return self
+function ShaderEffect:sendCameraUniforms(camera)
+    self:trySendUniform("uViewMatrix", "column", camera.viewMatrix)
+	self:trySendUniform("uProjMatrix", "column", camera.projectionMatrix)
+    self:trySendUniform("uViewProjMatrix", "column", camera.viewProjectionMatrix)
+
+    self:trySendUniform("uInvViewMatrix", "column", camera.invViewMatrix)
+	self:trySendUniform("uInvProjMatrix", "column", camera.invProjectionMatrix)
+	self:trySendUniform("uInvViewProjMatrix", "column", camera.invViewProjectionMatrix)
+
+    self:trySendUniform("uNearPlane", camera.nearPlane)
+    self:trySendUniform("uFarPlane", camera.farPlane)
+
+    self:trySendUniform("uViewPosition", camera.position)
+	self:trySendUniform("uViewDirection", Vector3(0,0,1):transform(camera.rotation))
+
+    return self
+end
+
+
+
+---@param renderer BaseRenderer
+---@return self
+function ShaderEffect:sendRendererUniforms(renderer)
+    self:trySendUniform("uDepthBuffer", renderer.depthCanvas)
+	self:trySendUniform("uVelocityBuffer", renderer.velocityBuffer)
+	self:trySendUniform("uColorBuffer", renderer.resultCanvas)
+
+    if renderer.ClassName == "DeferredRenderer" then ---@cast renderer DeferredRenderer
+        self:trySendUniform("uGNormal", renderer.gbuffer.normal)
+	    self:trySendUniform("uGAlbedoSpecular", renderer.gbuffer.albedoSpec)
+    end
+
+    self:sendCameraUniforms(renderer.camera)
+
+    return self
+end
+
+
+
+---@param config MeshPartConfig
+---@return self
+function ShaderEffect:sendMeshConfigUniforms(config)
+    self:trySendUniform("uWorldMatrix", "column", config.worldMatrix)
+    self:trySendUniform("uInverseTransposedWorldMatrix", "column", config.worldMatrix.inverse:transpose())
+
+    if config.animator then
+        self:trySendUniform("uBoneMatrices", "column", config.animator.finalMatrices)
+    end
+
+    return self
 end
 
 

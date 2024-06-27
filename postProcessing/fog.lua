@@ -1,5 +1,5 @@
 local BaseEffect = require "engine.postProcessing.basePostProcessingEffect"
-local Utils = require "engine.misc.utils"
+local ShaderEffect = require "engine.misc.shaderEffect"
 
 -- https://vicrucann.github.io/tutorials/osg-shader-fog/
 
@@ -7,7 +7,7 @@ local Utils = require "engine.misc.utils"
 --- @class Fog: BasePostProcessingEffect
 ---
 --- @field private hdrCanvas love.Canvas
---- @field private shader love.Shader
+--- @field private shader ShaderEffect
 --- @field public min number
 --- @field public max number
 --- @field public color table
@@ -18,7 +18,7 @@ local Fog = BaseEffect:extend("Fog")
 
 function Fog:new(screenSize, min, max, color)
     self.fogCanvas = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rg11b10f"})
-    self.shader = Utils.newPreProcessedShader("engine/shaders/postprocessing/fog.frag")
+    self.shader = ShaderEffect("engine/shaders/postprocessing/fog.frag")
 
     self.min = min
     self.max = max
@@ -29,11 +29,13 @@ function Fog:new(screenSize, min, max, color)
 end
 
 
-function Fog:onPostRender(renderer, canvas, camera)
+function Fog:onPostRender(renderer, canvas)
     love.graphics.setCanvas(self.fogCanvas)
-    love.graphics.setShader(self.shader)
+    self.shader:use()
 
-    renderer:sendCommonRendererBuffers(self.shader)
+    self.shader:sendCommonUniforms()
+    self.shader:sendRendererUniforms(renderer)
+
     love.graphics.draw(canvas)
 
     love.graphics.setCanvas()
@@ -46,7 +48,7 @@ end
 --- @param min number
 --- @param max number
 function Fog:setTreshold(min, max)
-    self.shader:send("u_minMaxDistance", {min, max})
+    self.shader:sendUniform("u_minMaxDistance", {min, max})
     self.min = min
     self.max = max
 end
@@ -54,7 +56,7 @@ end
 
 --- @param color table
 function Fog:setColor(color)
-    self.shader:send("u_fogColor", color)
+    self.shader:sendUniform("u_fogColor", color)
     self.color = color
 end
 

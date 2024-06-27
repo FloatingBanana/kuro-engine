@@ -4,6 +4,7 @@ local AmbientLight     = require "engine.3D.lights.ambientLight"
 local DeferredRenderer = require "engine.3D.renderers.deferredRenderer"
 local BaseEffect       = require "engine.postProcessing.basePostProcessingEffect"
 local Utils            = require "engine.misc.utils"
+local ShaderEffect     = require "engine.misc.shaderEffect"
 local Lume             = require "engine.3rdparty.lume"
 
 
@@ -27,7 +28,7 @@ local defines = {
     deferred = "SAMPLE_DEPTH_DEFERRED"
 }
 
-local gaussianBlurShader = Utils.newPreProcessedShader("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
+local gaussianBlurShader = ShaderEffect("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
 
 
 --- @class SSAO: BasePostProcessingEffect
@@ -35,7 +36,7 @@ local gaussianBlurShader = Utils.newPreProcessedShader("engine/shaders/postproce
 --- @field private kernel Stack
 --- @field private ssaoCanvas love.Canvas
 --- @field private blurCanvas love.Canvas
---- @field private shader love.Shader
+--- @field private shader ShaderEffect
 --- @field private dummySquare love.Mesh
 --- @field private algorithm string
 --- @field public kernelSize integer
@@ -56,10 +57,10 @@ function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
     self.kernelSize = kernelSize
     self.kernelRadius = kernelRadius
 
-    self.shader = Utils.newPreProcessedShader("engine/shaders/postprocessing/ssao.frag", {defines[self.algorithm]})
+    self.shader = ShaderEffect("engine/shaders/postprocessing/ssao.frag", {defines[self.algorithm]})
 
-    self.shader:send("u_noiseScale", (ssaoSize / 4):toFlatTable())
-    self.shader:send("u_noiseTex", ssaoNoise)
+    self.shader:sendUniform("u_noiseScale", (ssaoSize / 4):toFlatTable())
+    self.shader:sendUniform("u_noiseTex", ssaoNoise)
     self:setKernelSize(kernelSize)
     self:setKernelRadius(kernelRadius)
 end
@@ -70,18 +71,17 @@ function SSAO:onPreRender(renderer)
     assert(self.algorithm ~= "deferred" or renderer:is(DeferredRenderer), "SSAO's 'deferred' algorithm can only be used in a deferred renderer")
 
     love.graphics.setCanvas(self.ssaoCanvas)
-    love.graphics.setShader(self.shader)
+    self.shader:use()
 
-    renderer:sendCommonRendererBuffers(self.shader)
+    self.shader:sendRendererUniforms(renderer)
     love.graphics.draw(self.dummySquare)
 
-    love.graphics.setShader(gaussianBlurShader)
-
-    gaussianBlurShader:send("direction", {1,0})
+    gaussianBlurShader:use()
+    gaussianBlurShader:sendUniform("direction", {1,0})
     love.graphics.setCanvas(self.blurCanvas)
     love.graphics.draw(self.ssaoCanvas)
 
-    gaussianBlurShader:send("direction", {0,1})
+    gaussianBlurShader:sendUniform("direction", {0,1})
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.draw(self.blurCanvas)
 
@@ -116,14 +116,14 @@ function SSAO:setKernelSize(size)
         self.kernel:push({sample:split()})
     end
 
-    self.shader:send("u_samples", unpack(self.kernel))
-    self.shader:send("u_kernelSize", size)
+    self.shader:sendUniform("u_samples", unpack(self.kernel))
+    self.shader:sendUniform("u_kernelSize", size)
 end
 
 
 --- @param radius number
 function SSAO:setKernelRadius(radius)
-    self.shader:send("u_kernelRadius", radius)
+    self.shader:sendUniform("u_kernelRadius", radius)
     self.kernelRadius = radius
 end
 

@@ -49,8 +49,9 @@ function DeferredRenderer:renderMeshes()
     lg.setMeshCullMode("back")
 
     for i, config in ipairs(self.meshParts) do
-        self:sendCommonRendererBuffers(gBufferShader.shader)
-        self:sendCommonMeshBuffers(gBufferShader.shader, config)
+        gBufferShader:sendCommonUniforms()
+        gBufferShader:sendRendererUniforms(self)
+        gBufferShader:sendMeshConfigUniforms(config)
 
         gBufferShader:use()
         config.material:apply(gBufferShader)
@@ -80,7 +81,8 @@ function DeferredRenderer:renderMeshes()
 
         lightShader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
 
-        self:sendCommonRendererBuffers(lightShader.shader)
+        lightShader:sendCommonUniforms()
+        lightShader:sendRendererUniforms(self)
 
         light:generateShadowMap(self.meshParts)
         light:sendLightData(lightShader)
@@ -111,15 +113,6 @@ function DeferredRenderer:renderMeshes()
     lg.setShader()
     lg.setMeshCullMode("none")
     lg.setBlendMode("alpha", "alphamultiply")
-end
-
-
----@param shader love.Shader
-function DeferredRenderer:sendCommonRendererBuffers(shader)
-    BaseRederer.sendCommonRendererBuffers(self, shader)
-
-	Utils.trySendUniform(shader, "uGNormal", self.gbuffer.normal)
-	Utils.trySendUniform(shader, "uGAlbedoSpecular", self.gbuffer.albedoSpec)
 end
 
 

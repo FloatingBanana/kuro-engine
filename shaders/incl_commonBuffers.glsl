@@ -1,4 +1,5 @@
 uniform mat4 uWorldMatrix;
+uniform mat4 uInverseTransposedWorldMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjMatrix;
 uniform mat4 uViewProjMatrix;

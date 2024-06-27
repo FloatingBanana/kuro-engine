@@ -124,41 +124,4 @@ function Renderer:render()
     love.graphics.draw(result)
 end
 
-
----@param shader love.Shader
-function Renderer:sendCommonRendererBuffers(shader)
-	Utils.trySendUniform(shader, "uViewMatrix", "column", self.camera.viewMatrix:toFlatTable())
-	Utils.trySendUniform(shader, "uProjMatrix", "column", self.camera.projectionMatrix:toFlatTable())
-    Utils.trySendUniform(shader, "uViewProjMatrix", "column", self.camera.viewProjectionMatrix:toFlatTable())
-
-    Utils.trySendUniform(shader, "uInvViewMatrix", "column", self.camera.invViewMatrix:toFlatTable())
-	Utils.trySendUniform(shader, "uInvProjMatrix", "column", self.camera.invProjectionMatrix:toFlatTable())
-	Utils.trySendUniform(shader, "uInvViewProjMatrix", "column", self.camera.invViewProjectionMatrix:toFlatTable())
-
-    Utils.trySendUniform(shader, "uNearPlane", self.camera.nearPlane)
-    Utils.trySendUniform(shader, "uFarPlane", self.camera.farPlane)
-
-    Utils.trySendUniform(shader, "uViewPosition", self.camera.position:toFlatTable())
-	Utils.trySendUniform(shader, "uViewDirection", Vector3(0,0,1):transform(self.camera.rotation):toFlatTable())
-
-	Utils.trySendUniform(shader, "uTime", love.timer.getTime())
-	Utils.trySendUniform(shader, "uIsCanvasActive", love.graphics.getCanvas() ~= nil)
-	Utils.trySendUniform(shader, "uDepthBuffer", self.depthCanvas)
-	Utils.trySendUniform(shader, "uVelocityBuffer", self.velocityBuffer)
-	Utils.trySendUniform(shader, "uColorBuffer", self.resultCanvas)
-end
-
-
----@param shader love.Shader
----@param config MeshPartConfig
-function Renderer:sendCommonMeshBuffers(shader, config)
-    Utils.trySendUniform(shader, "uWorldMatrix",   "column", config.worldMatrix:toFlatTable())
-    -- Utils.trySendUniform(shader, "uPrevTransform", "column", self.previousTransformations[meshId]:toFlatTable())
-
-    if config.animator then
-        Utils.trySendUniform(shader, "uBoneMatrices", "column", config.animator.finalMatrices)
-    end
-end
-
-
 return Renderer

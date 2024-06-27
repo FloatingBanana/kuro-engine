@@ -40,10 +40,12 @@ function ForwardRenderer:renderMeshes()
     lg.setBlendMode("replace")
 
     prePassShader:use()
-    self:sendCommonRendererBuffers(prePassShader.shader)
+    prePassShader:sendCommonUniforms()
+    prePassShader:sendRendererUniforms(self)
 
     for i, config in ipairs(self.meshParts) do
-        self:sendCommonMeshBuffers(prePassShader.shader, config)
+        prePassShader:sendMeshConfigUniforms(config)
+        config.material:apply(prePassShader)
         lg.draw(config.meshPart.buffer)
     end
 
@@ -66,7 +68,7 @@ function ForwardRenderer:renderMeshes()
     lg.clear(true, false, false)
     lg.setDepthMode("lequal", false)
     lg.setMeshCullMode("back")
-    lg.setBlendMode("add", "premultiplied")
+    lg.setBlendMode("add", "alphamultiply")
 
     while self.meshParts:peek() do
         local config = self.meshParts:pop() --[[@as MeshPartConfig]]
@@ -75,8 +77,9 @@ function ForwardRenderer:renderMeshes()
             defaultShader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
 
             defaultShader:use()
-            self:sendCommonRendererBuffers(defaultShader.shader)
-            self:sendCommonMeshBuffers(defaultShader.shader, config)
+            defaultShader:sendCommonUniforms()
+            defaultShader:sendRendererUniforms(self)
+            defaultShader:sendMeshConfigUniforms(config)
 
             config.material:apply(defaultShader)
             config.meshPart:draw()
@@ -88,12 +91,20 @@ function ForwardRenderer:renderMeshes()
 
                 defaultShader:use()
                 light:sendLightData(defaultShader)
-                self:sendCommonRendererBuffers(defaultShader.shader) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
-                self:sendCommonMeshBuffers(defaultShader.shader, config)
+
+                defaultShader:sendCommonUniforms()
+                defaultShader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                defaultShader:sendMeshConfigUniforms(config)
 
                 for j, effect in ipairs(self.ppeffects) do
                     effect:onLightRender(light, defaultShader.shader)
                 end
+
+                defaultShader:trySendUniform("u_irradianceMap", self.irradianceMap)
+                defaultShader:trySendUniform("u_prefilteredEnvironmentMap", self.preFilteredEnvironment)
+                defaultShader:trySendUniform("u_brdfLUT", self.brdfLUT)
+
+                defaultShader:trySendUniform("u_qpressed", love.keyboard.isDown("q"))
 
                 config.material:apply(defaultShader)
                 config.meshPart:draw()
