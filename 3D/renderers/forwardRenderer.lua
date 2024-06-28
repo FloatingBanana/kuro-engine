@@ -100,12 +100,6 @@ function ForwardRenderer:renderMeshes()
                     effect:onLightRender(light, defaultShader.shader)
                 end
 
-                defaultShader:trySendUniform("u_irradianceMap", self.irradianceMap)
-                defaultShader:trySendUniform("u_prefilteredEnvironmentMap", self.preFilteredEnvironment)
-                defaultShader:trySendUniform("u_brdfLUT", self.brdfLUT)
-
-                defaultShader:trySendUniform("u_qpressed", love.keyboard.isDown("q"))
-
                 config.material:apply(defaultShader)
                 config.meshPart:draw()
 
