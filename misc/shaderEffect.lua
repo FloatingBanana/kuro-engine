@@ -234,7 +234,10 @@ end
 ---@return self
 function ShaderEffect:sendMeshConfigUniforms(config)
     self:trySendUniform("uWorldMatrix", "column", config.worldMatrix)
-    self:trySendUniform("uInverseTransposedWorldMatrix", "column", config.worldMatrix.inverse:transpose())
+
+    if self:hasUniform("uInverseTransposedWorldMatrix") then
+        self:sendUniform("uInverseTransposedWorldMatrix", "column", config.worldMatrix.inverse:transpose():to3x3())
+    end
 
     if config.animator then
         self:trySendUniform("uBoneMatrices", "column", config.animator.finalMatrices)
