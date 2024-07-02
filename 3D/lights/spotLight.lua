@@ -42,7 +42,7 @@ function Spotlight:drawShadows(shader, meshparts)
     local viewMatrix = Matrix.CreateLookAtDirection(self.position, self.direction, Vector3(0,1,0))
     local projMatrix = Matrix.CreatePerspectiveFOV(self.outerAngle * 2, -1, self.nearPlane, self.farPlane)
 
-    self.viewProjMatrix = viewMatrix * projMatrix
+    self.viewProjMatrix = viewMatrix:multiply(projMatrix)
     canvasTable.depthstencil = self.shadowMap
 
     love.graphics.setCanvas(canvasTable)

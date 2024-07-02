@@ -52,15 +52,13 @@ end
 ---@param meshparts MeshPartConfig[]
 function PointLight:drawShadows(shader, meshparts)
     self.farPlane = self:getLightRadius()
-
-    local proj = Matrix.CreatePerspectiveFOV(math.pi/2, 1, 0.1, self.farPlane)
+    local proj = Matrix.CreatePerspectiveFOV(math.pi/2, 1, self.nearPlane, self.farPlane)
 
     shader:sendUniform("light.position", self.position)
     shader:sendUniform("light.farPlane", self.farPlane)
 
     for i = 1, 6 do
-        local view = Matrix.CreateLookAtDirection(self.position, dirs[i].dir, dirs[i].up)
-        local viewProj = view * proj
+        local viewProj = Matrix.CreateLookAtDirection(self.position, dirs[i].dir, dirs[i].up):multiply(proj)
         canvasTable.depthstencil[1] = self.shadowMap
         canvasTable.depthstencil.face = i
 

@@ -40,7 +40,7 @@ function Dirlight:drawShadows(shader, meshparts)
     local viewMatrix = Matrix.CreateLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
     local projMatrix = Matrix.CreateOrthographicOffCenter(-10, 10, 10, -10, self.nearPlane, self.farPlane)
 
-    self.viewProjMatrix = viewMatrix * projMatrix
+    self.viewProjMatrix = viewMatrix:multiply(projMatrix)
     canvasTable.depthstencil = self.shadowMap
 
     love.graphics.setCanvas(canvasTable)
