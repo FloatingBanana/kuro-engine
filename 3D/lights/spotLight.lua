@@ -48,18 +48,12 @@ function Spotlight:drawShadows(shader, meshparts)
     love.graphics.setCanvas(canvasTable)
     love.graphics.clear()
 
-    shader:sendUniform("u_viewProj", "column", self.viewProjMatrix)
+    shader:sendUniform("uViewProjMatrix", "column", self.viewProjMatrix)
     shader:sendUniform("light.position", self.direction)
 
     for i, config in ipairs(meshparts) do
         if config.castShadows then
-            if config.animator then
-                shader:sendUniform("u_boneMatrices", "column", config.animator.finalMatrices)
-            end
-
-            shader:sendUniform("u_world", "column", config.worldMatrix)
-            shader:sendUniform("u_invTranspWorld", "column", config.worldMatrix.inverse:transpose():to3x3())
-
+            shader:sendMeshConfigUniforms(config)
             config.meshPart:draw()
         end
     end

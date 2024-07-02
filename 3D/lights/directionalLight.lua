@@ -47,17 +47,11 @@ function Dirlight:drawShadows(shader, meshparts)
     love.graphics.clear()
 
     shader:sendUniform("light.direction", self.position.normalized)
-    shader:sendUniform("u_viewProj", "column", self.viewProjMatrix)
+    shader:sendUniform("uViewProjMatrix", "column", self.viewProjMatrix)
 
     for i, config in ipairs(meshparts) do
         if config.castShadows then
-            if config.animator then
-                shader:sendUniform("u_boneMatrices", "column", config.animator.finalMatrices)
-            end
-
-            shader:sendUniform("u_world", "column", config.worldMatrix)
-            shader:sendUniform("u_invTranspWorld", "column", config.worldMatrix.inverse:transpose():to3x3())
-
+            shader:sendMeshConfigUniforms(config)
             config.meshPart:draw()
         end
     end

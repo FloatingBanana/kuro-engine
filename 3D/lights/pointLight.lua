@@ -67,16 +67,11 @@ function PointLight:drawShadows(shader, meshparts)
         love.graphics.setCanvas(canvasTable)
         love.graphics.clear()
 
-        shader:sendUniform("u_viewProj", "column", viewProj)
+        shader:sendUniform("uViewProjMatrix", "column", viewProj)
 
         for j, config in ipairs(meshparts) do
             if config.castShadows then
-                shader:sendUniform("u_world", "column", config.worldMatrix)
-
-                if config.animator then
-                    shader:sendUniform("u_boneMatrices", "column", config.animator.finalMatrices)
-                end
-
+                shader:sendMeshConfigUniforms(config)
                 config.meshPart:draw()
             end
         end

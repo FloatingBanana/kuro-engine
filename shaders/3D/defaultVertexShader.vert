@@ -10,6 +10,7 @@ in vec4 VertexBoneIDs;
 in vec4 VertexWeights;
 
 out vec3 v_fragPos;
+out vec3 v_normal;
 out vec4 v_screenPos;
 out vec2 v_texCoords;
 out mat3 v_tbnMatrix;
@@ -27,6 +28,10 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
 #   ifdef FORWARD_PREPASS
         screen.z += 0.00001;
+
+#   elif defined(SHADOWMAP)
+        v_fragPos = worldPos.xyz;
+        v_normal  = uInverseTransposedWorldMatrix * mat3(skinMat) * VertexNormal;
 #   else
         // Assigning outputs
         v_tbnMatrix = GetTBNMatrix(uWorldMatrix, mat3(skinMat) * VertexNormal, mat3(skinMat) * VertexTangent);

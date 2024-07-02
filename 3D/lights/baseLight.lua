@@ -1,7 +1,7 @@
 local Object        = require "engine.3rdparty.classic.classic"
 local ShaderEffect  = require "engine.misc.shaderEffect"
 
-local shadowMapRendererShader = ShaderEffect("engine/shaders/3D/shadowMap/shadowMapRenderer.glsl")
+local shadowMapRendererShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/shadowMapRenderer.frag", {"SHADOWMAP"})
 
 
 ---@alias LightTypeDefinition
@@ -64,6 +64,7 @@ function BaseLight:generateShadowMap(meshparts)
 
     shadowMapRendererShader:define("CURRENT_LIGHT_TYPE", self.typeDefinition)
     shadowMapRendererShader:use()
+    shadowMapRendererShader:sendCommonUniforms()
 
     self:drawShadows(shadowMapRendererShader, meshparts)
 
