@@ -61,8 +61,8 @@ end
 --- @param shader ShaderEffect
 function Dirlight:sendLightData(shader)
     if self.castShadows then
-        shader:sendUniform("u_lightShadowMap", self.shadowMap)
-        shader:sendUniform("u_lightMatrix", "column", self.viewProjMatrix)
+        shader:sendUniform("light.shadowMap", self.shadowMap)
+        shader:sendUniform("light.lightMatrix", "column", self.viewProjMatrix)
     end
 
     shader:sendUniform("light.direction", self.position.normalized)

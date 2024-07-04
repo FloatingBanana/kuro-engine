@@ -21,7 +21,10 @@ struct LightData {
     float quadratic;
     float farPlane;
 
-    vec4 fragPos;
+    mat4 lightMatrix;
+
+    sampler2DShadow shadowMap;
+    samplerCubeShadow pointShadowMap;
 };
 
 

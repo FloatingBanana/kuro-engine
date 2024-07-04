@@ -16,29 +16,28 @@ uniform float u_shininess;
 uniform sampler2D u_diffuseTexture;
 uniform sampler2D u_normalMap;
 uniform sampler2D u_ssaoTex;
-uniform sampler2DShadow u_lightShadowMap;
-uniform samplerCubeShadow u_pointLightShadowMap;
 
 
 vec4 effect(EFFECTARGS) {
     vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0));
     vec3 viewDir = normalize(uViewPosition - v_fragPos);
     vec3 diffuseColor = texture(u_diffuseTexture, v_texCoords).rgb;
+    vec4 lightSpaceFragPos = light.lightMatrix * vec4(v_fragPos, 1.0);
     vec3 result = vec3(0.0);
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL
         result = CaculatePhongLighting(light, light.direction, normal, viewDir, diffuseColor, u_shininess);
-        result *= 1.0 - ShadowCalculation(u_lightShadowMap, v_lightSpaceFragPos);
+        result *= 1.0 - ShadowCalculation(light.shadowMap, lightSpaceFragPos);
 
 #   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
         result = CaculatePhongLighting(light, normalize(light.position - v_fragPos), normal, viewDir, diffuseColor, u_shininess);
         result *= CalculateSpotLight(light, v_fragPos);
-        result *= 1.0 - ShadowCalculation(u_lightShadowMap, v_lightSpaceFragPos);
+        result *= 1.0 - ShadowCalculation(light.shadowMap, lightSpaceFragPos);
 
 #   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
         result = CaculatePhongLighting(light, normalize(light.position - v_fragPos), normal, viewDir, diffuseColor, u_shininess);
         result *= CalculatePointLight(light, v_fragPos);
-        result *= 1.0 - ShadowCalculation(light.position, light.farPlane, u_pointLightShadowMap, uViewPosition, v_fragPos);
+        result *= 1.0 - ShadowCalculation(light.position, light.farPlane, light.pointShadowMap, uViewPosition, v_fragPos);
 
 #   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
         vec2 samplePos = (v_screenPos.xy / v_screenPos.w) * 0.5 + 0.5;

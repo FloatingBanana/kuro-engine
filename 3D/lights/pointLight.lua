@@ -80,7 +80,7 @@ end
 --- @param shader ShaderEffect
 function PointLight:sendLightData(shader)
     if self.castShadows then
-        shader:sendUniform("u_pointLightShadowMap", self.shadowMap)
+        shader:sendUniform("light.pointShadowMap", self.shadowMap)
     end
 
     shader:sendUniform("light.position",  self.position)
