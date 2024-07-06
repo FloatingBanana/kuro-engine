@@ -17,6 +17,7 @@ out mat3 v_tbnMatrix;
 out vec4 v_lightSpaceFragPos;
 
 uniform mat4 u_lightMatrix;
+uniform mat4 u_volumeTransform;
 
 vec4 position(mat4 transformProjection, vec4 position) {
     mat4 skinMat = GetSkinningMatrix(uBoneMatrices, VertexBoneIDs, VertexWeights);
@@ -28,10 +29,13 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
 #   ifdef FORWARD_PREPASS
         screen.z += 0.00001;
-
+    
 #   elif defined(SHADOWMAP)
         v_fragPos = worldPos.xyz;
         v_normal  = uInverseTransposedWorldMatrix * mat3(skinMat) * VertexNormal;
+
+#   elif defined(DEFERRED_LIGHTPASS)
+        screen = u_volumeTransform * position * vec4(1,-1,1,1);
 #   else
         // Assigning outputs
         v_tbnMatrix = GetTBNMatrix(uWorldMatrix, mat3(skinMat) * VertexNormal, mat3(skinMat) * VertexTangent);

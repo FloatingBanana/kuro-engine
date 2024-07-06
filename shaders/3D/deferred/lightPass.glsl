@@ -1,18 +1,5 @@
 #pragma language glsl3
 
-#ifdef VERTEX
-uniform mat4 u_volumeTransform;
-
-vec4 position(mat4 transformProjection, vec4 position) {
-    vec4 screenPos = u_volumeTransform * position;
-    screenPos.y *= -1.0;
-
-    return screenPos;
-}
-#endif
-
-#ifdef PIXEL
-
 #pragma include "engine/shaders/incl_commonBuffers.glsl"
 #pragma include "engine/shaders/incl_utils.glsl"
 #pragma include "engine/shaders/3D/misc/incl_lights.glsl"
@@ -66,5 +53,3 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 
     return vec4(result, 1.0);
 }
-
-#endif

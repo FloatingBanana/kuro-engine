@@ -9,7 +9,7 @@ local lg               = love.graphics
 
 
 local volume = Model("engine/3D/renderers/lightvolume.fbx", {triangulate = true, optimizeGraph = true, removeUnusedMaterials = true}).meshes.Sphere.parts[1]
-local lightShader = ShaderEffect("engine/shaders/3D/deferred/lightPass.glsl")
+local lightShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/deferred/lightPass.glsl", {"DEFERRED_LIGHTPASS"})
 local gBufferShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/deferred/gbuffer.glsl", {"DEFERRED"})
 
 
