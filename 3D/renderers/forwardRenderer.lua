@@ -23,7 +23,7 @@ function ForwardRenderer:renderMeshes()
         light:generateShadowMap(self.meshParts)
     end
 
-    lg.setCanvas({self.velocityBuffer, depthstencil = self.depthCanvas})
+    lg.setCanvas({depthstencil = self.depthCanvas})
     lg.clear()
 
     --------------------
