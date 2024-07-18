@@ -1,8 +1,6 @@
 local Lume         = require "engine.3rdparty.lume"
-local Vector3      = require "engine.math.vector3"
 local Matrix       = require "engine.math.matrix"
 local Stack        = require "engine.collections.stack"
-local Utils        = require "engine.misc.utils"
 local ShaderEffect = require "engine.misc.shaderEffect"
 local CubemapUtils = require "engine.misc.cubemapUtils"
 local Object       = require "engine.3rdparty.classic.classic"
@@ -19,19 +17,19 @@ local configPool = Stack()
 --- @field public velocityBuffer love.Canvas
 --- @field public skyBoxTexture love.Texture
 --- @field public camera Camera3D
---- @field protected ppeffects BasePostProcessingEffect[]
+--- @field public postProcessingEffects BasePostProcessingEffect[]
 --- @field protected meshParts Stack
 --- @field protected lights BaseLight[]
 --- @field private screensize Vector2
 ---
---- @overload fun(screenSize: Vector2, camera: Camera3D, postProcessingEffects: BasePostProcessingEffect[]): BaseRenderer
+--- @overload fun(screenSize: Vector2, camera: Camera3D): BaseRenderer
 local Renderer = Object:extend("BaseRenderer")
 
 
-function Renderer:new(screensize, camera, postProcessingEffects)
+function Renderer:new(screensize, camera)
     self.screensize = screensize
     self.camera = camera
-    self.ppeffects = postProcessingEffects
+    self.postProcessingEffects = {}
     self.meshParts = Stack()
     self.lights = {}
 
@@ -80,6 +78,18 @@ function Renderer:removeLight(light)
 end
 
 
+---@param ... BasePostProcessingEffect
+function Renderer:addPostProcessingEffects(...)
+    Lume.push(self.postProcessingEffects, ...)
+end
+
+
+---@param effect BasePostProcessingEffect
+function Renderer:removePostProcessingEffect(effect)
+    table.remove(self.postProcessingEffects, Lume.find(self.postProcessingEffects, effect))
+end
+
+
 function Renderer:renderMeshes()
     error("Not implemented")
 end
@@ -116,7 +126,7 @@ function Renderer:render()
     love.graphics.push("all")
 
     local result = self.resultCanvas
-    for i, effect in ipairs(self.ppeffects) do
+    for i, effect in ipairs(self.postProcessingEffects) do
         result = effect:onPostRender(self, result)
     end
 

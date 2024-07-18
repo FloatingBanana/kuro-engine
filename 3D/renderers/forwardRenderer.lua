@@ -9,12 +9,12 @@ local defaultShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert",
 
 --- @class ForwardRenderer: BaseRenderer
 ---
---- @overload fun(screenSize: Vector2, camera: Camera3D, postProcessingEffects: BasePostProcessingEffect[]): ForwardRenderer
+--- @overload fun(screenSize: Vector2, camera: Camera3D): ForwardRenderer
 local ForwardRenderer = BaseRederer:extend("ForwardRenderer")
 
 
-function ForwardRenderer:new(screensize, camera, postProcessingEffects)
-    BaseRederer.new(self, screensize, camera, postProcessingEffects)
+function ForwardRenderer:new(screensize, camera)
+    BaseRederer.new(self, screensize, camera)
 end
 
 
@@ -56,7 +56,7 @@ function ForwardRenderer:renderMeshes()
     lg.setMeshCullMode("none")
     lg.setBlendMode("alpha", "alphamultiply")
 
-    for i, effect in ipairs(self.ppeffects) do
+    for i, effect in ipairs(self.postProcessingEffects) do
         effect:onPreRender(self)
     end
 
@@ -96,7 +96,7 @@ function ForwardRenderer:renderMeshes()
                 defaultShader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
                 defaultShader:sendMeshConfigUniforms(config)
 
-                for j, effect in ipairs(self.ppeffects) do
+                for j, effect in ipairs(self.postProcessingEffects) do
                     effect:onLightRender(light, defaultShader.shader)
                 end
 

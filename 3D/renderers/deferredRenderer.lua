@@ -20,12 +20,12 @@ local gBufferShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert",
 --- @field private dummySquare love.Mesh
 --- @field public gbuffer GBuffer
 ---
---- @overload fun(screensize: Vector2, camera: Camera3D, posProcessingEffects: BasePostProcessingEffect[]): DeferredRenderer
+--- @overload fun(screensize: Vector2, camera: Camera3D): DeferredRenderer
 local DeferredRenderer = BaseRederer:extend("DeferredRenderer")
 
 
-function DeferredRenderer:new(screensize, camera, postProcessingEffects)
-    BaseRederer.new(self, screensize, camera, postProcessingEffects)
+function DeferredRenderer:new(screensize, camera)
+    BaseRederer.new(self, screensize, camera)
 
     self.dummySquare = Utils.newSquareMesh(screensize)
 
@@ -68,7 +68,7 @@ function DeferredRenderer:renderMeshes()
     lg.setMeshCullMode("front")
     lg.setBlendMode("alpha", "alphamultiply")
 
-    for i, effect in ipairs(self.ppeffects) do
+    for i, effect in ipairs(self.postProcessingEffects) do
         effect:onPreRender(self)
     end
 
@@ -87,7 +87,7 @@ function DeferredRenderer:renderMeshes()
         light:generateShadowMap(self.meshParts)
         light:sendLightData(lightShader)
 
-        for j, effect in ipairs(self.ppeffects) do
+        for j, effect in ipairs(self.postProcessingEffects) do
             effect:onLightRender(light, lightShader.shader)
         end
 
