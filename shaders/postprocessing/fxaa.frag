@@ -13,8 +13,6 @@
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
     vec2 pixelSize = 1.0 / textureSize(tex, 0);
 	vec3 colorCenter = texture(tex, texcoords).rgb;
-	
-	// Luma at the current fragment
 	float lumaCenter = LuminanceGamma(colorCenter);
 	
 	// Luma at the four direct neighbours of the current fragment.
@@ -30,7 +28,7 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 	
 	// If the luma variation is lower that a threshold (or if we are in a really dark area), we are not on an edge, don't perform any AA.
 	if(lumaRange < max(EDGE_THRESHOLD_MIN, lumaMax * EDGE_THRESHOLD_MAX)){
-		return vec4(colorCenter, 1);
+		return vec4(colorCenter, 1.0);
 	}
 	
 	float lumaDownLeft 	= LuminanceGamma(textureOffset(tex, texcoords, ivec2(-1,-1)).rgb);
@@ -47,8 +45,8 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 	float lumaUpCorners    = lumaUpRight   + lumaUpLeft;
 	
 	// Compute an estimation of the gradient along the horizontal and vertical axis.
-	float edgeHorizontal =	abs(-2.0 * lumaLeft + lumaLeftCorners)	+ abs(-2.0 * lumaCenter + lumaDownUp )   * 2.0	+ abs(-2.0 * lumaRight + lumaRightCorners);
-	float edgeVertical   =	abs(-2.0 * lumaUp + lumaUpCorners)		+ abs(-2.0 * lumaCenter + lumaLeftRight) * 2.0	+ abs(-2.0 * lumaDown + lumaDownCorners);
+	float edgeHorizontal = abs(-2.0 * lumaLeft + lumaLeftCorners) + abs(-2.0 * lumaCenter + lumaDownUp )   * 2.0 + abs(-2.0 * lumaRight + lumaRightCorners);
+	float edgeVertical   = abs(-2.0 * lumaUp + lumaUpCorners)     + abs(-2.0 * lumaCenter + lumaLeftRight) * 2.0 + abs(-2.0 * lumaDown + lumaDownCorners);
 	
 	bool isHorizontal = (edgeHorizontal >= edgeVertical);
 	float stepLength = isHorizontal ? pixelSize.y : pixelSize.x;
@@ -59,12 +57,12 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 	float gradient2 = luma2 - lumaCenter;
 	
 	bool is1Steepest = abs(gradient1) >= abs(gradient2);
-	float gradientScaled = 0.25*max(abs(gradient1),abs(gradient2));
+	float gradientScaled = 0.25 * max(abs(gradient1),abs(gradient2));
 	
 	// Average luma in the correct direction.
 	float lumaLocalAverage = 0.0;
 	if(is1Steepest){
-		stepLength = - stepLength;
+		stepLength = -stepLength;
 		lumaLocalAverage = 0.5 * (luma1 + lumaCenter);
 	}
 	else {
@@ -85,10 +83,8 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 	vec2 uv2 = currentUv + offset * QUALITY(0);
 	
 	// Read the lumas at both current extremities of the exploration segment, and compute the delta wrt to the local average luma.
-	float lumaEnd1 = LuminanceGamma(textureLod(tex, uv1, 0.0).rgb);
-	float lumaEnd2 = LuminanceGamma(textureLod(tex, uv2, 0.0).rgb);
-	lumaEnd1 -= lumaLocalAverage;
-	lumaEnd2 -= lumaLocalAverage;
+	float lumaEnd1 = LuminanceGamma(textureLod(tex, uv1, 0.0).rgb) - lumaLocalAverage;
+	float lumaEnd2 = LuminanceGamma(textureLod(tex, uv2, 0.0).rgb) - lumaLocalAverage;
 	
 	// If the luma deltas at the current extremities is larger than the local gradient, we have reached the side of the edge.
 	bool reached1 = abs(lumaEnd1) >= gradientScaled;
@@ -105,12 +101,10 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 	if(!reachedBoth){
 		for(int i = 2; i < ITERATIONS; i++){
 			if(!reached1){
-				lumaEnd1 = LuminanceGamma(textureLod(tex, uv1, 0.0).rgb);
-				lumaEnd1 = lumaEnd1 - lumaLocalAverage;
+				lumaEnd1 = LuminanceGamma(textureLod(tex, uv1, 0.0).rgb) - lumaLocalAverage;
 			}
 			if(!reached2){
-				lumaEnd2 = LuminanceGamma(textureLod(tex, uv2, 0.0).rgb);
-				lumaEnd2 = lumaEnd2 - lumaLocalAverage;
+				lumaEnd2 = LuminanceGamma(textureLod(tex, uv2, 0.0).rgb) - lumaLocalAverage;
 			}
 
 			reached1 = abs(lumaEnd1) >= gradientScaled;
@@ -152,21 +146,16 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 	// Full weighted average of the luma over the 3x3 neighborhood.
 	float lumaAverage = (1.0/12.0) * (2.0 * (lumaDownUp + lumaLeftRight) + lumaLeftCorners + lumaRightCorners);
 	// Ratio of the delta between the global average and the center luma, over the luma range in the 3x3 neighborhood.
-	float subPixelOffset1 = clamp(abs(lumaAverage - lumaCenter)/lumaRange,0.0,1.0);
+	float subPixelOffset1 = clamp(abs(lumaAverage - lumaCenter) / lumaRange, 0.0, 1.0);
 	float subPixelOffset2 = (-2.0 * subPixelOffset1 + 3.0) * subPixelOffset1 * subPixelOffset1;
 	// Compute a sub-pixel offset based on this delta.
 	float subPixelOffsetFinal = subPixelOffset2 * subPixelOffset2 * SUBPIXEL_QUALITY;
 	
 	finalOffset = max(finalOffset,subPixelOffsetFinal);
 
-	vec2 finalUv = texcoords;
-	if(isHorizontal){
-		finalUv.y += finalOffset * stepLength;
-	}
-	else {
-		finalUv.x += finalOffset * stepLength;
-	}
+	vec2 finalUVOffset = isHorizontal ? vec2(0.0, finalOffset) : vec2(finalOffset, 0.0);
+	finalUVOffset *= stepLength;
 
-	vec3 finalColor = texture(tex, finalUv).rgb;
+	vec3 finalColor = textureLod(tex, texcoords+finalUVOffset, 0.0).rgb;
 	return vec4(finalColor, 1.0);
 }
