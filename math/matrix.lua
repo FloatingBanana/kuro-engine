@@ -629,7 +629,7 @@ end
 --- Creates an orthographic projection matrix
 --- @param width number: Width of the view volume
 --- @param height number: Height of the view volume
---- @param near number: Near plane depht
+--- @param near number: Near plane depth
 --- @param far number: Far plane depth
 --- @return Matrix: Result
 function Matrix.CreateOrtographic(width, height, near, far)
@@ -650,7 +650,7 @@ end
 --- @param bottom number: Near plane's lower y value
 --- @param top number: Near plane's upper Y value
 --- @param near number: Near plane depth
---- @param far number: Far plane depht
+--- @param far number: Far plane depth
 --- @return Matrix: Result
 function Matrix.CreateOrthographicOffCenter(left, right, bottom, top, near, far)
     local mat = Matrix.Identity()
