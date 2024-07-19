@@ -113,8 +113,6 @@ end
 
 
 function Renderer:render()
-    self.camera:updateMatrices()
-
     love.graphics.push("all")
 
     self:renderMeshes()
