@@ -5,7 +5,6 @@
 #pragma include "engine/shaders/3D/misc/incl_lights.glsl"
 #pragma include "engine/shaders/3D/misc/incl_PBRLighting.glsl"
 #pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
-#pragma include "engine/shaders/3D/misc/incl_contactShadows.glsl"
 
 
 
@@ -25,7 +24,6 @@ vec3 shadeFragmentPBR(LightData light, sampler2D ssaoTex, vec3 fragPos, vec3 nor
         result = CalculateDirectPBRLighting(light, lightFragDirection, viewFragDirection, normal, albedo, roughness, metallic);
         result *= CalculateSpotLight(light, fragPos);
         result *= 1.0 - ShadowCalculation(light.shadowMap, lightSpaceFragPos);
-        // result = vec3(u_qpressed ? 1.0 : ContactShadows(uDepthBuffer, uViewMatrix, uProjMatrix, uNearPlane, uFarPlane, fragPos, lightFragDirection));
 #   endif
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
