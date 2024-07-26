@@ -7,7 +7,7 @@ local id = ...
 print("Content loading thread started. ID: "..id)
 
 local requestChannel = love.thread.getChannel("contentRequest")
-local loadData = require "src.engine.resourceHandling._loadContentData"
+local loadData = require "engine.resourceHandling._loadContentData"
 
 local THREAD_LIFETIME = 3
 local initTime = love.timer.getTime()

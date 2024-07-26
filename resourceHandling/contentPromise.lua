@@ -1,6 +1,6 @@
 local Object = require "engine.3rdparty.classic.classic"
 local Event  = require "engine.misc.event"
-local loadData = require "src.engine.resourceHandling._loadContentData"
+local loadData = require "engine.resourceHandling._loadContentData"
 
 local requestChannel = love.thread.getChannel("contentRequest")
 
