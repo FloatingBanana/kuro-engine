@@ -16,6 +16,8 @@ local configPool = Stack()
 --- @field public depthCanvas love.Canvas
 --- @field public velocityBuffer love.Canvas
 --- @field public skyBoxTexture love.Texture
+--- @field public irradianceMap love.Texture
+--- @field public preFilteredEnvironment love.Texture
 --- @field public camera Camera3D
 --- @field public postProcessingEffects BasePostProcessingEffect[]
 --- @field protected meshParts Stack
@@ -24,7 +26,7 @@ local configPool = Stack()
 ---
 --- @overload fun(screenSize: Vector2, camera: Camera3D): BaseRenderer
 local Renderer = Object:extend("BaseRenderer")
-
+Renderer.BRDF_LUT = CubemapUtils.getBRDF_LUT()
 
 function Renderer:new(screensize, camera)
     self.screensize = screensize
@@ -32,6 +34,10 @@ function Renderer:new(screensize, camera)
     self.postProcessingEffects = {}
     self.meshParts = Stack()
     self.lights = {}
+
+    self.skyBoxTexture = nil
+    self.irradianceMap = nil
+    self.preFilteredEnvironment = nil
 
     self.resultCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg11b10f"})
     self.depthCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "depth24stencil8", readable = true})

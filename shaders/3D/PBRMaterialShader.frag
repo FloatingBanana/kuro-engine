@@ -1,0 +1,152 @@
+#pragma language glsl3
+
+#pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/incl_commonBuffers.glsl"
+#pragma include "engine/shaders/3D/misc/incl_lights.glsl"
+#pragma include "engine/shaders/3D/misc/incl_PBRLighting.glsl"
+#pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
+#pragma include "engine/shaders/3D/misc/incl_contactShadows.glsl"
+
+
+
+vec3 shadeFragmentPBR(LightData light, sampler2D ssaoTex, vec3 fragPos, vec3 normal, vec3 albedo, float metallic, float roughness, float ao, samplerCube irradianceMap, samplerCube prefilteredEnvironmentMap) {
+	vec3 lightFragDirection = normalize(light.position - fragPos);
+    vec3 viewFragDirection = normalize(uViewPosition - fragPos);
+	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragPos, 1.0);
+	vec2 screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
+	vec3 result = vec3(0.0);
+
+#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL
+        result = CalculateDirectPBRLighting(light, light.direction, viewFragDirection, normal, albedo, roughness, metallic);
+        result *= 1.0 - ShadowCalculation(light.shadowMap, lightSpaceFragPos);
+#   endif
+
+#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
+        result = CalculateDirectPBRLighting(light, lightFragDirection, viewFragDirection, normal, albedo, roughness, metallic);
+        result *= CalculateSpotLight(light, fragPos);
+        result *= 1.0 - ShadowCalculation(light.shadowMap, lightSpaceFragPos);
+        // result = vec3(u_qpressed ? 1.0 : ContactShadows(uDepthBuffer, uViewMatrix, uProjMatrix, uNearPlane, uFarPlane, fragPos, lightFragDirection));
+#   endif
+
+#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
+        result = CalculateDirectPBRLighting(light, lightFragDirection, viewFragDirection, normal, albedo, roughness, metallic);
+        result *= CalculatePointLight(light, fragPos);
+        result *= 1.0 - ShadowCalculation(light.position, light.farPlane, light.pointShadowMap, uViewPosition, fragPos);
+#   endif
+
+#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
+        result = CalculateAmbientPBRLighting(light, irradianceMap, prefilteredEnvironmentMap, uBRTL_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
+        result *= texture(ssaoTex, screenUV).r;
+#   endif
+
+#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
+        result = albedo;
+#   endif
+
+
+	// result = result / (result + vec3(1.0));
+    // result = pow(result, vec3(1.0/2.2));
+
+	return result;
+}
+
+
+
+in vec2 v_texCoords;
+in vec3 v_fragPos;
+in vec4 v_screenPos;
+in mat3 v_tbnMatrix;
+
+
+
+#if CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED
+uniform sampler2D u_normalMap;
+uniform sampler2D u_albedoMap;
+uniform sampler2D u_metallic;
+uniform sampler2D u_roughness;
+uniform sampler2D u_ao;
+
+out vec4 oNormalMetallicRoughness;
+out vec4 oAlbedoAO;
+
+void effect() {
+	vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).xyz * 2.0 - 1.0));
+	vec3 albedo = texture(u_albedoMap, v_texCoords).rgb;
+    float metallic = texture(u_metallic, v_texCoords).r;
+    float roughness = texture(u_roughness, v_texCoords).b;
+    float ao = .5;
+
+	oNormalMetallicRoughness = vec4(EncodeNormal(normal), metallic, roughness);
+	oAlbedoAO = vec4(albedo, ao);
+}
+#endif
+
+
+
+#if CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED_LIGHTPASS
+uniform LightData light;
+uniform sampler2D u_GNormalMetallicRoughness;
+uniform sampler2D u_GAlbedoAO;
+
+uniform sampler2D u_ssaoTex;
+uniform samplerCube u_irradianceMap;
+uniform samplerCube u_prefilteredEnvironmentMap;
+
+out vec4 oFragColor;
+
+void effect() {
+	vec2 screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
+	vec4 normalMetallicRoughness = texture(u_GNormalMetallicRoughness, screenUV);
+	vec4 albedoAO = texture(u_GAlbedoAO, screenUV);
+
+	vec3 result = shadeFragmentPBR(
+		light,
+		u_ssaoTex,
+		ReconstructPosition(screenUV, uDepthBuffer, uInvViewProjMatrix),
+		DecodeNormal(normalMetallicRoughness.xy),
+		albedoAO.rgb,
+		normalMetallicRoughness.b,
+		normalMetallicRoughness.a,
+		albedoAO.a,
+		u_irradianceMap,
+		u_prefilteredEnvironmentMap
+	);
+
+	oFragColor = vec4(result, 1.0);
+}
+#endif
+
+
+
+#if CURRENT_RENDER_PASS == RENDER_PASS_FORWARD
+uniform LightData light;
+uniform sampler2D u_normalMap;
+uniform sampler2D u_albedoMap;
+uniform sampler2D u_metallic;
+uniform sampler2D u_roughness;
+uniform sampler2D u_ao;
+
+uniform sampler2D u_ssaoTex;
+uniform samplerCube u_irradianceMap;
+uniform samplerCube u_prefilteredEnvironmentMap;
+
+out vec4 oFragColor;
+
+void effect() {
+	vec3 result = shadeFragmentPBR(
+		light,
+		u_ssaoTex,
+		v_fragPos,
+		normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).xyz * 2.0 - 1.0)),
+		texture(u_albedoMap, v_texCoords).rgb,
+		texture(u_metallic, v_texCoords).r,
+		texture(u_roughness, v_texCoords).r,
+		0.5,
+		u_irradianceMap,
+		u_prefilteredEnvironmentMap
+	);
+
+
+	oFragColor = vec4(result, 1.0);
+}
+#endif

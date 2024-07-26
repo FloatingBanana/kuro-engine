@@ -90,6 +90,9 @@ function DeferredRenderer:renderMeshes()
         self.shader:sendCommonUniforms()
         self.shader:sendRendererUniforms(self)
 
+        self.shader:trySendUniform("u_irradianceMap", self.irradianceMap)
+        self.shader:trySendUniform("u_prefilteredEnvironmentMap", self.preFilteredEnvironment)
+
         for b, bufferPart in ipairs(self.gbuffer) do
             self.shader:trySendUniform(bufferPart.uniform, bufferPart.buffer)
         end
