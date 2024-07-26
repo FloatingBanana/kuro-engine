@@ -3,8 +3,7 @@ local ShaderEffect     = require "engine.misc.shaderEffect"
 local lg               = love.graphics
 
 
-local prePassShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", {"FORWARD_PREPASS"})
-local defaultShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/forwardRendering/forwardRendering.frag")
+local prePassShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", {CURRENT_RENDER_PASS = "RENDER_PASS_DEPTH_PREPASS"})
 
 
 --- @class ForwardRenderer: BaseRenderer
@@ -72,35 +71,37 @@ function ForwardRenderer:renderMeshes()
 
     while self.meshParts:peek() do
         local config = self.meshParts:pop() --[[@as MeshPartConfig]]
+        local shader = config.material.shader
+
+        shader:define("CURRENT_RENDER_PASS", "RENDER_PASS_FORWARD")
+        shader:use()
 
         if config.ignoreLighting then
-            defaultShader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
+            shader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
 
-            defaultShader:use()
-            defaultShader:sendCommonUniforms()
-            defaultShader:sendRendererUniforms(self)
-            defaultShader:sendMeshConfigUniforms(config)
+            shader:sendCommonUniforms()
+            shader:sendRendererUniforms(self)
+            shader:sendMeshConfigUniforms(config)
 
-            config.material:apply(defaultShader)
+            config.material:apply(shader)
             config.meshPart:draw()
         else
             for i, light in ipairs(self.lights) do
                 if not light.enabled then goto continue end
 
-                defaultShader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
+                shader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
 
-                defaultShader:use()
-                light:sendLightData(defaultShader)
+                light:sendLightData(shader)
 
-                defaultShader:sendCommonUniforms()
-                defaultShader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
-                defaultShader:sendMeshConfigUniforms(config)
+                shader:sendCommonUniforms()
+                shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                shader:sendMeshConfigUniforms(config)
 
                 for j, effect in ipairs(self.postProcessingEffects) do
-                    effect:onLightRender(light, defaultShader.shader)
+                    effect:onLightRender(light, shader.shader)
                 end
 
-                config.material:apply(defaultShader)
+                config.material:apply(shader)
                 config.meshPart:draw()
 
                 ::continue::

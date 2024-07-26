@@ -7,3 +7,9 @@
 #define VELOCITY_ENCODE_PRECISION 3.0
 
 #define EFFECTARGS vec4 _color, sampler2D _tex, vec2 _texcoords, vec2 _screencoords
+
+#define RENDER_PASS_FORWARD 0
+#define RENDER_PASS_DEFERRED 1
+#define RENDER_PASS_DEFERRED_LIGHTPASS 2
+#define RENDER_PASS_DEPTH_PREPASS 3
+#define RENDER_PASS_SHADOWMAPPING 4

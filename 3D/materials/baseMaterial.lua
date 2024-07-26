@@ -11,9 +11,11 @@ local Utils   = require "engine.misc.utils"
 --- @field DefaultOneTex love.Image
 --- @field DefaultZeroTex love.Image
 ---
+--- @field public shader ShaderEffect
+---
 --- @field private __attrs MaterialDefinition
 ---
---- @overload fun(attributes: MaterialDefinition)
+--- @overload fun(attributes: MaterialDefinition, shader: ShaderEffect): BaseMaterial
 local Material = Object:extend("BaseMaterial")
 
 
@@ -27,7 +29,8 @@ Material.DefaultColorTex:setWrap("repeat")
 Material.DefaultColorTex:setFilter("nearest", "nearest")
 
 
-function Material:new(attributes)
+function Material:new(attributes, shader)
+    self.shader = shader
     self.__attrs = attributes
 end
 
@@ -61,16 +64,25 @@ end
 
 ---@returned BaseMaterial
 function Material:clone()
-    return Material(Utils.deepCopy(self.__attrs))
+    return Material(Utils.deepCopy(self.__attrs), self.shader)
 end
 
 
+---@param shader ShaderEffect
+---@overload fun()
 function Material:apply(shader)
     for name, attr in pairs(rawget(self, "__attrs")) do
         if attr.value then
-            shader:trySendUniform(attr.uniform, attr.value)
+            (shader or self.shader):trySendUniform(attr.uniform, attr.value)
         end
     end
+end
+
+
+---@param screenSize Vector2
+---@return GBuffer, ShaderEffect
+function Material.GenerateGBuffer(screenSize)
+    error("Not implemented")
 end
 
 

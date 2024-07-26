@@ -22,28 +22,32 @@ vec4 position(mat4 transformProjection, vec4 position) {
     vec4 worldPos = uWorldMatrix * skinMat * position;
     vec4 screen = uViewProjMatrix * worldPos;
 
-#   ifdef FORWARD_PREPASS
+#   if CURRENT_RENDER_PASS == RENDER_PASS_DEPTH_PREPASS
         screen.y *= -1.0;
         screen.z += 0.00001;
     
-#   elif defined(SHADOWMAP)
+#   elif CURRENT_RENDER_PASS == RENDER_PASS_SHADOWMAPPING
         v_fragPos = worldPos.xyz;
         v_normal  = uInverseTransposedWorldMatrix * mat3(skinMat) * VertexNormal;
 
-#   elif defined(DEFERRED_LIGHTPASS)
+#   elif CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED_LIGHTPASS
         screen = u_volumeTransform * position * vec4(1,-1,1,1);
-#   else
-        // Assigning outputs
+
+#   elif CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED
         v_tbnMatrix = GetTBNMatrix(uWorldMatrix, mat3(skinMat) * VertexNormal, mat3(skinMat) * VertexTangent);
         v_texCoords = VertexTexCoords;
-
-#       ifndef DEFERRED
-           v_fragPos = worldPos.xyz;
-           v_screenPos = screen;
-#       endif
-
         // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
         screen.y *= (uIsCanvasActive ? -1.0 : 1.0);
+
+#   elif CURRENT_RENDER_PASS == RENDER_PASS_FORWARD
+        v_tbnMatrix = GetTBNMatrix(uWorldMatrix, mat3(skinMat) * VertexNormal, mat3(skinMat) * VertexTangent);
+        v_texCoords = VertexTexCoords;
+        v_fragPos = worldPos.xyz;
+        v_screenPos = screen;
+        // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
+        screen.y *= (uIsCanvasActive ? -1.0 : 1.0);
+#   else
+#       error Invalid render pass
 #   endif
 
     return screen;

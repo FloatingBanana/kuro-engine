@@ -1,7 +1,7 @@
 local Object        = require "engine.3rdparty.classic.classic"
 local ShaderEffect  = require "engine.misc.shaderEffect"
 
-local shadowMapRendererShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/shadowMapRenderer.frag", {"SHADOWMAP"})
+local shadowMapRendererShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/shadowMapRenderer.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_SHADOWMAPPING"})
 
 
 ---@alias LightTypeDefinition
