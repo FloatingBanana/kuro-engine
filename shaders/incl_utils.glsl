@@ -64,8 +64,7 @@ vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj, out vec3 po
 
 float LinearizeDepth(float depth, float near, float far) {
     depth = depth * 2.0 - 1.0;
-    // return -((far * near) / (far + depth * (near-far)));
-    return (2.0 * near * far) / (far + near - depth * (far - near));
+    return -((far * near) / (far + depth * (near-far)));
 }
 
 const vec2 invAtan = vec2(0.1591, 0.3183);
