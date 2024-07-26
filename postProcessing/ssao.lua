@@ -22,13 +22,10 @@ local ssaoNoise = love.graphics.newImage(ssaoNoiseData)
 ssaoNoise:setWrap("repeat")
 ssaoNoiseData:release()
 
-local defines = {
-    accurate = "SAMPLE_DEPTH_ACCURATE",
-    naive = "SAMPLE_DEPTH_NAIVE",
-    deferred = "SAMPLE_DEPTH_DEFERRED"
-}
-
 local gaussianBlurShader = ShaderEffect("engine/shaders/postprocessing/gaussianBlurOptimized.frag")
+
+local hdir = {1,0}
+local vdir = {0,1}
 
 
 --- @class SSAO: BasePostProcessingEffect
@@ -57,7 +54,7 @@ function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
     self.kernelSize = kernelSize
     self.kernelRadius = kernelRadius
 
-    self.shader = ShaderEffect("engine/shaders/postprocessing/ssao.frag", {defines[self.algorithm]})
+    self.shader = ShaderEffect("engine/shaders/postprocessing/ssao.frag")
 
     self.shader:sendUniform("u_noiseScale", (ssaoSize / 4):toFlatTable())
     self.shader:sendUniform("u_noiseTex", ssaoNoise)
@@ -68,21 +65,22 @@ end
 
 --- @param renderer BaseRenderer
 function SSAO:onPreRender(renderer)
-    assert(self.algorithm ~= "deferred" or renderer:is(DeferredRenderer), "SSAO's 'deferred' algorithm can only be used in a deferred renderer")
-
     love.graphics.setCanvas(self.ssaoCanvas)
+    love.graphics.clear()
     self.shader:use()
 
     self.shader:sendRendererUniforms(renderer)
     love.graphics.draw(self.dummySquare)
 
     gaussianBlurShader:use()
-    gaussianBlurShader:sendUniform("direction", {1,0})
+    gaussianBlurShader:sendUniform("direction", hdir)
     love.graphics.setCanvas(self.blurCanvas)
+    love.graphics.clear()
     love.graphics.draw(self.ssaoCanvas)
 
-    gaussianBlurShader:sendUniform("direction", {0,1})
+    gaussianBlurShader:sendUniform("direction", vdir)
     love.graphics.setCanvas(self.ssaoCanvas)
+    love.graphics.clear()
     love.graphics.draw(self.blurCanvas)
 
     love.graphics.setCanvas()

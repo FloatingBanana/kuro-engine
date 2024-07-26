@@ -11,22 +11,9 @@ uniform float u_kernelRadius;
 const float depthBias = 0.025;
 
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
-    vec3 randomVec = vec3(texture(u_noiseTex, texcoords * u_noiseScale).xy * 2.0 - 1.0, 0);
     vec3 fragPos;
-    vec3 normal;
-
-#   if defined(SAMPLE_DEPTH_ACCURATE)
-        // Better quality
-        normal = ReconstructNormal(uDepthBuffer, texcoords, uInvProjMatrix, fragPos);
-#   elif defined(SAMPLE_DEPTH_NAIVE)
-        // Better peformance
-        fragPos = ReconstructPosition(texcoords, uDepthBuffer, uInvProjMatrix);
-        normal = normalize(cross(dFdy(fragPos), dFdx(fragPos)));
-#   else
-        // For deferred rendering (best peformance and perfect accuracy)
-        fragPos = ReconstructPosition(texcoords, uDepthBuffer, uInvProjMatrix);
-        normal = mat3(uViewMatrix) * DecodeNormal(texture(uGNormal, texcoords).xy);
-#   endif
+    vec3 normal = ReconstructNormal(uDepthBuffer, texcoords, uInvProjMatrix, fragPos);
+    vec3 randomVec = vec3(texture(u_noiseTex, texcoords * u_noiseScale).xy * 2.0 - 1.0, 0.0);
 
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
     vec3 bitangent = cross(normal, tangent);
