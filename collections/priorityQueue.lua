@@ -74,7 +74,6 @@ end
 --- @return number: Item priority
 --- @return any: The highest priotity item
 function PriorityQueue:peek()
-    assert(self.pointer > -1, "Queue is empty")
     return self.priorities[0], self.items[0]
 end
 
@@ -97,6 +96,8 @@ end
 --- @return number: Item priority
 --- @return any: The popped item
 function PriorityQueue:pop()
+    assert(self.pointer > -1, "Queue is empty")
+
     local priority, item = self:peek()
     self:__swap(0, self.pointer)
 
