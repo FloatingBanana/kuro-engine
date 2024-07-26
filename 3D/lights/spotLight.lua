@@ -63,17 +63,17 @@ end
 --- @param shader ShaderEffect
 function Spotlight:sendLightData(shader)
     if self.castShadows then
-        shader:sendUniform("light.shadowMap", self.shadowMap)
-        shader:sendUniform("light.lightMatrix", "column", self.viewProjMatrix)
+        shader:trySendUniform("light.shadowMap", self.shadowMap)
+        shader:trySendUniform("light.lightMatrix", "column", self.viewProjMatrix)
     end
 
-    shader:sendUniform("light.position",    self.position)
-    shader:sendUniform("light.color",       self.color)
-    shader:sendUniform("light.specular",    self.specular)
+    shader:trySendUniform("light.position",    self.position)
+    shader:trySendUniform("light.color",       self.color)
+    shader:trySendUniform("light.specular",    self.specular)
 
-    shader:sendUniform("light.direction",   self.direction)
-    shader:sendUniform("light.cutOff",      math.cos(self.innerAngle))
-    shader:sendUniform("light.outerCutOff", math.cos(self.outerAngle))
+    shader:trySendUniform("light.direction",   self.direction)
+    shader:trySendUniform("light.cutOff",      math.cos(self.innerAngle))
+    shader:trySendUniform("light.outerCutOff", math.cos(self.outerAngle))
 end
 
 

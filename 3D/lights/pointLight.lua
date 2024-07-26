@@ -80,16 +80,16 @@ end
 --- @param shader ShaderEffect
 function PointLight:sendLightData(shader)
     if self.castShadows then
-        shader:sendUniform("light.pointShadowMap", self.shadowMap)
+        shader:trySendUniform("light.pointShadowMap", self.shadowMap)
     end
 
-    shader:sendUniform("light.position",  self.position)
-    shader:sendUniform("light.color",     self.color)
-    shader:sendUniform("light.specular",  self.specular)
-    shader:sendUniform("light.constant",  self.constant)
-    shader:sendUniform("light.linear",    self.linear)
-    shader:sendUniform("light.quadratic", self.quadratic)
-    shader:sendUniform("light.farPlane",  self.farPlane)
+    shader:trySendUniform("light.position",  self.position)
+    shader:trySendUniform("light.color",     self.color)
+    shader:trySendUniform("light.specular",  self.specular)
+    shader:trySendUniform("light.constant",  self.constant)
+    shader:trySendUniform("light.linear",    self.linear)
+    shader:trySendUniform("light.quadratic", self.quadratic)
+    shader:trySendUniform("light.farPlane",  self.farPlane)
 
 end
 
