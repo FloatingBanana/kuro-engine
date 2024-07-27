@@ -35,11 +35,8 @@ float CalculateSpotLight(LightData light, vec3 fragPos) {
     if (theta > light.outerCutOff) {
         float epsilon = light.cutOff - light.outerCutOff;
         float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
-        
-        float dist = length(light.position - fragPos);
-        float attenuation = 1.0 / (dist*dist);
 
-        return intensity * attenuation;
+        return intensity;
     }
     
     return 0.0;

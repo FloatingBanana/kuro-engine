@@ -26,6 +26,10 @@ function Spotlight:new(position, direction, innerAngle, outerAngle, color, specu
     self.color = color
     self.specular = specular
 
+    self.constant = 0
+    self.linear = 0
+    self.quadratic = 1
+
     self.innerAngle = innerAngle
     self.outerAngle = outerAngle
 
@@ -70,6 +74,10 @@ function Spotlight:sendLightData(shader)
     shader:trySendUniform("light.position",    self.position)
     shader:trySendUniform("light.color",       self.color)
     shader:trySendUniform("light.specular",    self.specular)
+
+    shader:trySendUniform("light.constant",  self.constant)
+    shader:trySendUniform("light.linear",    self.linear)
+    shader:trySendUniform("light.quadratic", self.quadratic)
 
     shader:trySendUniform("light.direction",   self.direction)
     shader:trySendUniform("light.cutOff",      math.cos(self.innerAngle))

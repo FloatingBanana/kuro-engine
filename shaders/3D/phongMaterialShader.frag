@@ -19,7 +19,7 @@ vec3 shadeFragmentPhong(LightData light, sampler2D ssaoTex, vec3 fragPos, vec3 n
 
 #   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
 		result = CaculatePhongLighting(light, lightFragDirection, normal, viewFragDirection, diffuseColor, shininess);
-		result *= CalculateSpotLight(light, fragPos);
+        result *= CalculateSpotLight(light, fragPos) * CalculatePointLight(light, fragPos);
 		result *= 1.0 - ShadowCalculation(light.shadowMap, lightSpaceFragPos);
 
 #   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT

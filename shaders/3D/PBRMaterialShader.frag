@@ -22,7 +22,7 @@ vec3 shadeFragmentPBR(LightData light, sampler2D ssaoTex, vec3 fragPos, vec3 nor
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
         result = CalculateDirectPBRLighting(light, lightFragDirection, viewFragDirection, normal, albedo, roughness, metallic);
-        result *= CalculateSpotLight(light, fragPos);
+        result *= CalculateSpotLight(light, fragPos) * CalculatePointLight(light, fragPos);
         result *= 1.0 - ShadowCalculation(light.shadowMap, lightSpaceFragPos);
 #   endif
 
