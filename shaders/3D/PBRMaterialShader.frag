@@ -8,11 +8,10 @@
 
 
 
-vec3 shadeFragmentPBR(LightData light, sampler2D ssaoTex, vec3 fragPos, vec3 normal, vec3 albedo, float metallic, float roughness, float ao, samplerCube irradianceMap, samplerCube prefilteredEnvironmentMap) {
+vec3 shadeFragmentPBR(LightData light, vec3 fragPos, vec3 normal, vec3 albedo, float metallic, float roughness, float ao, samplerCube irradianceMap, samplerCube prefilteredEnvironmentMap) {
 	vec3 lightFragDirection = normalize(light.position - fragPos);
     vec3 viewFragDirection = normalize(uViewPosition - fragPos);
 	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragPos, 1.0);
-	vec2 screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
 	vec3 result = vec3(0.0);
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL
@@ -34,7 +33,6 @@ vec3 shadeFragmentPBR(LightData light, sampler2D ssaoTex, vec3 fragPos, vec3 nor
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
         result = CalculateAmbientPBRLighting(light, irradianceMap, prefilteredEnvironmentMap, uBRTL_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
-        result *= texture(ssaoTex, screenUV).r;
 #   endif
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
@@ -72,7 +70,7 @@ void effect() {
 	vec3 albedo = texture(u_albedoMap, v_texCoords).rgb;
     float metallic = texture(u_metallic, v_texCoords).r;
     float roughness = texture(u_roughness, v_texCoords).b;
-    float ao = .5;
+    float ao = 1.0;
 
 	oNormalMetallicRoughness = vec4(EncodeNormal(normal), metallic, roughness);
 	oAlbedoAO = vec4(albedo, ao);
@@ -99,13 +97,12 @@ void effect() {
 
 	vec3 result = shadeFragmentPBR(
 		light,
-		u_ssaoTex,
 		ReconstructPosition(screenUV, uDepthBuffer, uInvViewProjMatrix),
 		DecodeNormal(normalMetallicRoughness.xy),
 		albedoAO.rgb,
 		normalMetallicRoughness.b,
 		normalMetallicRoughness.a,
-		albedoAO.a,
+		albedoAO.a * texture(u_ssaoTex, screenUV).r,
 		u_irradianceMap,
 		u_prefilteredEnvironmentMap
 	);
@@ -131,15 +128,16 @@ uniform samplerCube u_prefilteredEnvironmentMap;
 out vec4 oFragColor;
 
 void effect() {
+	vec2 screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
+
 	vec3 result = shadeFragmentPBR(
 		light,
-		u_ssaoTex,
 		v_fragPos,
 		normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).xyz * 2.0 - 1.0)),
 		texture(u_albedoMap, v_texCoords).rgb,
 		texture(u_metallic, v_texCoords).r,
 		texture(u_roughness, v_texCoords).r,
-		0.5,
+		texture(u_ssaoTex, screenUV).r,
 		u_irradianceMap,
 		u_prefilteredEnvironmentMap
 	);
