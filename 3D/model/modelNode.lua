@@ -12,7 +12,7 @@ local Object = require "engine.3rdparty.classic.classic"
 ---@overload fun(model: Model, name: string, localMatrix: Matrix): ModelNode
 local Node = Object:extend("ModelNode")
 
-function Node:new(model, name, localMatrix, parent)
+function Node:new(model, name, localMatrix)
     self.model = model
     self.name = name
     self.localMatrix = localMatrix

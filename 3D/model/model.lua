@@ -3,6 +3,8 @@ local ModelNode      = require "engine.3D.model.modelNode"
 local MeshNode       = require "engine.3D.model.modelMesh"
 local CameraNode     = require "engine.3D.model.modelCamera"
 local LightNode      = require "engine.3D.model.modelLight"
+local ArmatureNode   = require "engine.3D.model.modelArmature"
+local BoneNode       = require "engine.3D.model.modelBone"
 local ModelAnimation = require "engine.3D.model.animation.modelAnimation"
 local ContentLoader  = require "engine.resourceHandling.contentLoader"
 local Object         = require "engine.3rdparty.classic.classic"
@@ -18,7 +20,7 @@ local Object         = require "engine.3rdparty.classic.classic"
 --- @field meshParts table<string, MeshPart>
 --- @field materials table<string, BaseMaterial>
 --- @field animations table<string, ModelAnimation>
---- @field boneInfos table<string, BoneInfo>
+--- @field armatures table<string, ModelArmature>
 --- @field contentLoader ContentLoader
 --- @field opts ModelLoadingOptions
 ---
@@ -34,7 +36,7 @@ function Model:new(file, opts)
     self.lights = {}
     self.materials = {}
     self.animations = {}
-    self.boneInfos = {}
+    self.armatures = {}
     self.contentLoader = opts.contentLoader or ContentLoader()
     self.opts = opts
 
@@ -56,17 +58,13 @@ function Model:new(file, opts)
 
     self.contentLoader:loadAllAsync()
 
-    -- Bones
-    self.boneInfos = modelData.bones
-
     -- Get mesh parts
     for name, partData in pairs(modelData.meshParts) do
         self.meshParts[name] = Meshpart(partData, self)
     end
 
     -- Start loading from root node
-    local root = modelData.nodes.RootNode
-    self.rootNode = self:__loadNode(root, modelData)
+    self.rootNode = self:__loadNode(modelData.rootNode, modelData)
 
     -- Load animations
     for name, animData in pairs(modelData.animations) do
@@ -79,6 +77,7 @@ end
 --- @private
 --- @param nodeData table
 --- @param modelData table
+--- @return ModelNode
 function Model:__loadNode(nodeData, modelData)
     local node = nil
     local nodeName = nodeData.name
@@ -87,8 +86,8 @@ function Model:__loadNode(nodeData, modelData)
     if nodeData.meshParts then
         local parts = {}
 
-        for i, partname in ipairs(nodeData.meshParts) do
-            parts[#parts+1] = self.meshParts[partname]
+        for p, partname in ipairs(nodeData.meshParts) do
+            parts[p] = self.meshParts[partname]
         end
 
         -- Mesh node
@@ -104,6 +103,11 @@ function Model:__loadNode(nodeData, modelData)
         -- Light node
         node = LightNode(self, nodeName, nodeTransform, modelData.lights[nodeName])
         self.lights[nodeName] = node
+
+    elseif modelData.armatures[nodeName] then
+        -- Armature node
+        node = ArmatureNode(self, nodeName, nodeTransform)
+        self.armatures[nodeName] = node
     else
         -- Empty node
         node = ModelNode(self, nodeName, nodeTransform)
@@ -112,12 +116,39 @@ function Model:__loadNode(nodeData, modelData)
     self.nodes[nodeName] = node
 
     -- Load children
-    for i, childname in ipairs(nodeData.children) do
-        local child = self:__loadNode(modelData.nodes[childname], modelData)
-        node:addChild(child)
+    for c, childNode in ipairs(nodeData.children) do
+        local armatureData = modelData.armatures[nodeName]
+
+        if armatureData and armatureData[childNode.name] then
+            local bone = self:__loadBone(childNode, modelData, node)
+            node.rootBones[childNode.name] = bone
+        else
+            local child = self:__loadNode(childNode, modelData, nil)
+            node:addChild(child)
+        end
     end
 
     return node
+end
+
+
+---@private
+--- @param nodeData table
+--- @param modelData table
+--- @param armatureNode ModelArmature
+--- @return ModelBone
+function Model:__loadBone(nodeData, modelData, armatureNode)
+    local boneData = modelData.armatures[armatureNode.name][nodeData.name]
+    local bone = BoneNode(self, nodeData.name, nodeData.transform, boneData.offset, boneData.id)
+
+    armatureNode.bones[nodeData.name] = bone
+
+    for c, childNode in ipairs(nodeData.children) do
+        local child = self:__loadBone(childNode, modelData, armatureNode)
+        bone:addChild(child)
+    end
+
+    return bone
 end
 
 

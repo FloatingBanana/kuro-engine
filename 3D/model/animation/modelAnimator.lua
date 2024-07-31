@@ -12,11 +12,11 @@ local ffi    = require "ffi"
 --- @field public finalMatrices love.ByteData
 ---
 --- @field private animation ModelAnimation
---- @field private armature ModelNode
+--- @field private armature ModelArmature
 --- @field private armatureToModelMatrix Matrix
 --- @field private finalMatricesPtr ffi.cdata*
 ---
---- @overload fun(animation: ModelAnimation, armature: ModelNode, modelOriginalGlobalMatrix: Matrix): ModelAnimator
+--- @overload fun(animation: ModelAnimation, armature: ModelArmature, modelOriginalGlobalMatrix: Matrix): ModelAnimator
 local Animator = Object:extend("ModelAnimator")
 
 
@@ -44,8 +44,8 @@ function Animator:update(dt)
         self.time = (self.time + self.fps * dt) % self.duration
     end
 
-    for i, node in ipairs(self.armature.children) do
-        self.animation:updateBones(self.time, self.finalMatricesPtr, node, Matrix.Identity(), self.armatureToModelMatrix)
+    for name, bone in pairs(self.armature.rootBones) do
+        self.animation:updateBones(self.time, self.finalMatricesPtr, bone, Matrix.Identity(), self.armatureToModelMatrix)
     end
 end
 

@@ -209,15 +209,16 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
     end
 
 
-    local boneId = 0
+    local armatureBoneIDs = {}
     local scene = {
-        materials  = newtable(0, aiScene.mNumMaterials),
-        nodes      = {},
+        rootNode   = nil,
         bones      = {},
+        materials  = newtable(0, aiScene.mNumMaterials),
         animations = newtable(0, aiScene.mNumAnimations),
         meshParts  = newtable(0, aiScene.mNumMeshes),
         lights     = newtable(0, aiScene.mNumLights),
-        cameras    = newtable(0, aiScene.mNumCameras)
+        cameras    = newtable(0, aiScene.mNumCameras),
+        armatures  = newtable(0, aiScene.mNumSkeletons)
     }
 
 
@@ -341,14 +342,23 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
         for b=1, aiMesh.mNumBones do
             local aiBone = aiMesh.mBones[b-1]
             local boneName = readString(aiBone.mName)
-            local bone = scene.bones[boneName]
+            local armatureName = readString(aiBone.mArmature.mName)
+            local armature = scene.armatures[armatureName] or {}
+            local bone = armature[boneName]
+
+            scene.armatures[armatureName] = armature
 
             if not bone then
-                bone = {id = boneId, offset = readMatrix4x4(aiBone.mOffsetMatrix)}
-                boneId = boneId + 1
-                scene.bones[boneName] = bone
+                bone = {
+                    id = armatureBoneIDs[armatureName] or 0,
+                    offset = readMatrix4x4(aiBone.mOffsetMatrix),
+                }
+
+                armature[boneName] = bone
+                armatureBoneIDs[armatureName] = bone.id + 1
             end
 
+            -- Assign bone weights to vertices
             for w=1, aiBone.mNumWeights do
                 local aiWeight = aiBone.mWeights[w-1]
                 local vert = part.verts[aiWeight.mVertexId+1]
@@ -367,12 +377,8 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
     end
 
 
-    -- Load nodes
-    local nodeStack = Stack()
-    nodeStack:push(aiScene.mRootNode)
-
-    while nodeStack:peek() do
-        local aiNode = nodeStack:pop()
+    local loadNode
+    loadNode = function(aiNode)
         local node = {
             name      = readString(aiNode.mName),
             meshParts = nil,
@@ -382,30 +388,23 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
 
         -- Load mesh part names attached to this node
         if aiNode.mNumMeshes > 0 then
-            local parts = {}
-            node.meshParts = parts
+            node.meshParts = {}
 
             for m=1, aiNode.mNumMeshes do
                 local aiMesh = aiScene.mMeshes[aiNode.mMeshes[m-1]]
-                parts[m] = readString(aiMesh.mName)
+                node.meshParts[m] = readString(aiMesh.mName)
             end
-        end
-
-        -- Set root node to the default "RootNode" field
-        if aiNode == aiScene.mRootNode then
-            scene.nodes.RootNode = node
-        else
-            scene.nodes[node.name] = node
         end
 
         -- Load children
         for c=1, aiNode.mNumChildren do
-            local aiChildNode = aiNode.mChildren[c-1]
-
-            nodeStack:push(aiChildNode)
-            table.insert(node.children, readString(aiChildNode.mName))
+            table.insert(node.children, loadNode(aiNode.mChildren[c-1]))
         end
+
+        return node
     end
+
+    scene.rootNode = loadNode(aiScene.mRootNode)
 
 
     -- Load animations
@@ -444,12 +443,6 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             end
 
             animation.nodes[animNode.name] = animNode
-
-            -- Read missing bones
-            if not scene.bones[animNode.name] then
-                scene.bones[animNode.name] = {id = boneId, offset = Matrix.Identity()}
-                boneId = boneId + 1
-            end
         end
 
         scene.animations[animation.name] = animation

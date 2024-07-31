@@ -31,7 +31,7 @@ function Anim:new(model, animData)
 end
 
 
----@param armature ModelNode
+---@param armature ModelArmature
 ---@param modelOriginalGlobalMatrix Matrix
 ---@return ModelAnimator
 function Anim:getNewAnimator(armature, modelOriginalGlobalMatrix)
@@ -41,27 +41,26 @@ end
 
 --- @param time number
 --- @param matrixList ffi.cdata*
---- @param node ModelNode
+--- @param bone ModelBone
 --- @param parentTransform Matrix
 --- @param armatureToModelMatrix Matrix
-function Anim:updateBones(time, matrixList, node, parentTransform, armatureToModelMatrix)
-    local transform = node.localMatrix
-    local animNode = self.animNodes[node.name]
+function Anim:updateBones(time, matrixList, bone, parentTransform, armatureToModelMatrix)
+    local transform = bone.localMatrix
+    local animNode = self.animNodes[bone.name]
 
     if animNode then
         local position, rotation, scale = animNode:getInterpolated(time)
         transform = Matrix.CreateTransformationMatrix(rotation, scale, position)
     end
 
-    local bone = self.model.boneInfos[node.name]
     local globalTransform = transform * parentTransform
 
     if bone then
-        local index = bone.id
-        matrixList[index] = (bone.offset * globalTransform):multiply(armatureToModelMatrix)
+        matrixList[bone.id] = (bone.offset * globalTransform):multiply(armatureToModelMatrix)
     end
 
-    for i, child in ipairs(node.children) do
+    for i, child in ipairs(bone.children) do
+        ---@cast child ModelBone
         self:updateBones(time, matrixList, child, globalTransform, armatureToModelMatrix)
     end
 end
