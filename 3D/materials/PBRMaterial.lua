@@ -18,10 +18,9 @@ local PBRMaterial = Material:extend("PBRMaterial")
 
 function PBRMaterial:new(model, matData)
     local attributes = {
-        albedoMap    = {uniform = "u_albedoMap",    value = Material.DefaultColorTex},
-        metallicMap  = {uniform = "u_metallicMap",  value = Material.DefaultZeroTex},
-        roughnessMap = {uniform = "u_roughnessMap", value = Material.DefaultOneTex},
-        normalMap    = {uniform = "u_normalMap",    value = Material.DefaultNormalTex},
+        albedoMap            = {uniform = "u_albedoMap",            value = Material.DefaultColorTex},
+        metallicRoughnessMap = {uniform = "u_metallicRoughnessMap", value = Material.DefaultZeroTex},
+        normalMap            = {uniform = "u_normalMap",            value = Material.DefaultNormalTex},
     }
 
     Material.new(self, attributes, pbrShader)
@@ -33,11 +32,7 @@ function PBRMaterial:new(model, matData)
 
     model.contentLoader:getImage(matData.tex_metalness or "", {linear = true})
         :setErrorHandler(promiseErrorHandler)
-        .onCompleteEvent:addCallback(function(event, promise) self.metallicMap = promise.content end)
-
-    model.contentLoader:getImage(matData.tex_roughness or "", {linear = true})
-        :setErrorHandler(promiseErrorHandler)
-        .onCompleteEvent:addCallback(function(event, promise) self.roughnessMap = promise.content end)
+        .onCompleteEvent:addCallback(function(event, promise) self.metallicRoughnessMap = promise.content end)
 
     model.contentLoader:getImage(matData.tex_normals or "", {linear = true})
         :setErrorHandler(promiseErrorHandler)

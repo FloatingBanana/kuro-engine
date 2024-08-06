@@ -58,8 +58,7 @@ in mat3 v_tbnMatrix;
 #if CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED
 uniform sampler2D u_normalMap;
 uniform sampler2D u_albedoMap;
-uniform sampler2D u_metallic;
-uniform sampler2D u_roughness;
+uniform sampler2D u_metallicRoughness;
 uniform sampler2D u_ao;
 
 out vec4 oNormalMetallicRoughness;
@@ -68,11 +67,10 @@ out vec4 oAlbedoAO;
 void effect() {
 	vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).xyz * 2.0 - 1.0));
 	vec3 albedo = texture(u_albedoMap, v_texCoords).rgb;
-    float metallic = texture(u_metallic, v_texCoords).r;
-    float roughness = texture(u_roughness, v_texCoords).b;
+    vec4 metallicRoughness = texture(u_metallicRoughness, v_texCoords);
     float ao = 1.0;
 
-	oNormalMetallicRoughness = vec4(EncodeNormal(normal), metallic, roughness);
+	oNormalMetallicRoughness = vec4(EncodeNormal(normal), metallicRoughness.b, metallicRoughness.g);
 	oAlbedoAO = vec4(albedo, ao);
 }
 #endif
@@ -117,8 +115,7 @@ void effect() {
 uniform LightData light;
 uniform sampler2D u_normalMap;
 uniform sampler2D u_albedoMap;
-uniform sampler2D u_metallic;
-uniform sampler2D u_roughness;
+uniform sampler2D u_metallicRoughness;
 uniform sampler2D u_ao;
 
 uniform sampler2D u_ssaoTex;
@@ -129,14 +126,15 @@ out vec4 oFragColor;
 
 void effect() {
 	vec2 screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
+	vec4 metallicRoughness = texture(u_metallicRoughness, v_texCoords);
 
 	vec3 result = shadeFragmentPBR(
 		light,
 		v_fragPos,
 		normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).xyz * 2.0 - 1.0)),
 		texture(u_albedoMap, v_texCoords).rgb,
-		texture(u_metallic, v_texCoords).r,
-		texture(u_roughness, v_texCoords).r,
+		metallicRoughness.b,
+		metallicRoughness.g,
 		texture(u_ssaoTex, screenUV).r,
 		u_irradianceMap,
 		u_prefilteredEnvironmentMap
