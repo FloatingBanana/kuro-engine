@@ -21,6 +21,7 @@ function PBRMaterial:new(model, matData)
         albedoMap            = {uniform = "u_albedoMap",            value = Material.DefaultColorTex},
         metallicRoughnessMap = {uniform = "u_metallicRoughnessMap", value = Material.DefaultZeroTex},
         normalMap            = {uniform = "u_normalMap",            value = Material.DefaultNormalTex},
+        transparence = {uniform = "u_transparence", value = 0},
     }
 
     Material.new(self, attributes, pbrShader)
