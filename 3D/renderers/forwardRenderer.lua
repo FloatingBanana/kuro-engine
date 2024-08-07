@@ -38,13 +38,16 @@ function ForwardRenderer:renderMeshes()
     lg.setMeshCullMode("back")
     lg.setBlendMode("replace")
 
-    prePassShader:use()
-    prePassShader:sendCommonUniforms()
-    prePassShader:sendRendererUniforms(self)
-
     for i, config in ipairs(self.meshParts) do
-        prePassShader:sendMeshConfigUniforms(config)
-        config.material:apply(prePassShader)
+        config.material.shader:define("CURRENT_RENDER_PASS", "RENDER_PASS_DEPTH_PREPASS")
+        config.material.shader:undefine("CURRENT_LIGHT_TYPE")
+
+        config.material.shader:use()
+        config.material.shader:sendMeshConfigUniforms(config)
+        config.material.shader:sendCommonUniforms()
+        config.material.shader:sendRendererUniforms(self)
+
+        config.material:apply()
         lg.draw(config.meshPart.buffer)
     end
 
@@ -74,10 +77,10 @@ function ForwardRenderer:renderMeshes()
         local shader = config.material.shader
 
         shader:define("CURRENT_RENDER_PASS", "RENDER_PASS_FORWARD")
-        shader:use()
 
         if config.ignoreLighting then
             shader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
+            shader:use()
 
             shader:sendCommonUniforms()
             shader:sendRendererUniforms(self)
@@ -90,6 +93,7 @@ function ForwardRenderer:renderMeshes()
                 if not light.enabled then goto continue end
 
                 shader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
+                shader:use()
 
                 light:sendLightData(shader)
 

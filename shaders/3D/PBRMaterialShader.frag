@@ -2,6 +2,7 @@
 
 #pragma include "engine/shaders/incl_utils.glsl"
 #pragma include "engine/shaders/incl_commonBuffers.glsl"
+#pragma include "engine/shaders/include/incl_dither.glsl"
 #pragma include "engine/shaders/3D/misc/incl_lights.glsl"
 #pragma include "engine/shaders/3D/misc/incl_PBRLighting.glsl"
 #pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
@@ -54,6 +55,16 @@ in vec4 v_screenPos;
 in mat3 v_tbnMatrix;
 
 
+#if CURRENT_RENDER_PASS == RENDER_PASS_DEPTH_PREPASS
+uniform float u_transparence;
+
+void effect() {
+	if (Dither8(gl_FragCoord.xy, u_transparence))
+		discard;
+}
+#endif
+
+
 
 #if CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED
 uniform sampler2D u_normalMap;
@@ -61,11 +72,15 @@ uniform sampler2D u_albedoMap;
 uniform sampler2D u_metallic;
 uniform sampler2D u_roughness;
 uniform sampler2D u_ao;
+uniform float u_transparence;
 
 out vec4 oNormalMetallicRoughness;
 out vec4 oAlbedoAO;
 
 void effect() {
+	if (Dither8(gl_FragCoord.xy, u_transparence))
+		discard;
+
 	vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).xyz * 2.0 - 1.0));
 	vec3 albedo = texture(u_albedoMap, v_texCoords).rgb;
     float metallic = texture(u_metallic, v_texCoords).r;

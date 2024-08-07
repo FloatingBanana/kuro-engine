@@ -1,6 +1,7 @@
 #pragma language glsl3
 #pragma include "engine/shaders/incl_utils.glsl"
 #pragma include "engine/shaders/incl_commonBuffers.glsl"
+#pragma include "engine/shaders/include/incl_dither.glsl"
 #pragma include "engine/shaders/3D/misc/incl_lights.glsl"
 #pragma include "engine/shaders/3D/misc/incl_phongLighting.glsl"
 #pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
@@ -47,15 +48,29 @@ in vec4 v_screenPos;
 in mat3 v_tbnMatrix;
 
 
+#if CURRENT_RENDER_PASS == RENDER_PASS_DEPTH_PREPASS
+uniform float u_transparence;
+
+void effect() {
+	if (Dither8(gl_FragCoord.xy, u_transparence))
+		discard;
+}
+#endif
+
+
 #if CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED
 uniform float u_shininess;
 uniform sampler2D u_diffuseTexture;
 uniform sampler2D u_normalMap;
+uniform float u_transparence;
 
 out vec4 oNormal;
 out vec4 oAlbedoSpecular;
 
 void effect() {
+	if (Dither8(gl_FragCoord.xy, u_transparence))
+		discard;
+
 	vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0));
 
 	oNormal         = vec4(EncodeNormal(normal), 1.0, 1.0);
