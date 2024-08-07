@@ -136,13 +136,8 @@ function ShaderEffect:define(name, value)
         return
     end
 
-    local inUse = self:isInUse()
     self._defines[name] = value
     self._isDirty = true
-
-    if inUse then
-        self:use()
-    end
 end
 
 
@@ -153,13 +148,8 @@ function ShaderEffect:undefine(name)
         return
     end
 
-    local inUse = self:isInUse()
     self._defines[name] = nil
     self._isDirty = true
-
-    if inUse then
-        self:use()
-    end
 end
 
 
