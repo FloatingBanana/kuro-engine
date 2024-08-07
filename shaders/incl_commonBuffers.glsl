@@ -20,7 +20,7 @@ uniform vec3 uViewDirection;
 uniform sampler2D uDepthBuffer;
 uniform sampler2D uVelocityBuffer;
 uniform sampler2D uColorBuffer;
-uniform sampler2D uBRTL_LUT;
+uniform sampler2D uBRDF_LUT;
 
 uniform bool uIsCanvasActive;
 uniform float uTime;

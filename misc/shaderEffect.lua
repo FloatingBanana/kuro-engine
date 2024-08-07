@@ -222,7 +222,7 @@ function ShaderEffect:sendRendererUniforms(renderer)
     self:trySendUniform("uDepthBuffer", renderer.depthCanvas)
 	self:trySendUniform("uVelocityBuffer", renderer.velocityBuffer)
 	self:trySendUniform("uColorBuffer", renderer.resultCanvas)
-	self:trySendUniform("uBRTL_LUT", renderer.BRDF_LUT)
+	self:trySendUniform("uBRDF_LUT", renderer.BRDF_LUT)
 
     self:sendCameraUniforms(renderer.camera)
 

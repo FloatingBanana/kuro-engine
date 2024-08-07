@@ -32,7 +32,7 @@ vec3 shadeFragmentPBR(LightData light, vec3 fragPos, vec3 normal, vec3 albedo, f
 #   endif
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-        result = CalculateAmbientPBRLighting(light, irradianceMap, prefilteredEnvironmentMap, uBRTL_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
+        result = CalculateAmbientPBRLighting(light, irradianceMap, prefilteredEnvironmentMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
 #   endif
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
