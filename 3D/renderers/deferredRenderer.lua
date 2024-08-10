@@ -50,7 +50,7 @@ function DeferredRenderer:renderMeshes()
     self.shader:use()
 
     lg.setDepthMode("lequal", true)
-    lg.setBlendMode("replace")
+    lg.setBlendMode("replace", "premultiplied")
     lg.setMeshCullMode("back")
 
     for i, config in ipairs(self.meshParts) do
@@ -105,6 +105,8 @@ function DeferredRenderer:renderMeshes()
         end
 
         self.shader:use()
+
+        self.shader:trySendUniform("u_qpressed", love.keyboard.isDown("q"))
 
         if light:is(PointLight) then ---@cast light PointLight
             local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * self.camera.viewProjectionMatrix
