@@ -288,7 +288,7 @@ end
 
 ---@return love.Canvas
 function Cmap.getBRDF_LUT()
-    local lutTexture = love.graphics.newCanvas(512, 512, {format = "rg16f"})
+    local lutTexture = love.graphics.newCanvas(512, 512, {format = "rg16"})
     local dummySquare = Utils.newSquareMesh(Vector2(512))
 
     calculateBRDF_LUTShader:use()
