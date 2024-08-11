@@ -8,7 +8,7 @@ local Object       = require "engine.3rdparty.classic.classic"
 local skyboxShader = ShaderEffect("engine/shaders/3D/skybox.glsl")
 local configPool = Stack()
 
---- @alias MeshPartConfig {meshPart: MeshPart, material: BaseMaterial, castShadows: boolean, ignoreLighting: boolean, worldMatrix: Matrix, animator: ModelAnimator?}
+--- @alias MeshPartConfig {meshPart: MeshPart, material: BaseMaterial, castShadows: boolean, ignoreLighting: boolean, static: boolean, worldMatrix: Matrix, animator: ModelAnimator?}
 
 --- @class BaseRenderer: Object
 ---
@@ -54,6 +54,7 @@ function Renderer:pushMeshPart(meshPart)
     config.meshPart = meshPart
     config.castShadows = true
     config.ignoreLighting = false
+    config.static = false
     config.worldMatrix = Matrix.Identity()
     config.animator = nil
 

@@ -31,7 +31,7 @@ local PointLight = BaseLight:extend("PointLight")
 
 
 function PointLight:new(position, constant, linear, quadratic, color, specular)
-    BaseLight.new(self, BaseLight.LIGHT_TYPE_POINT, true)
+    BaseLight.new(self, BaseLight.LIGHT_TYPE_POINT)
 
     self.position = position
     self.color = color
@@ -43,8 +43,17 @@ function PointLight:new(position, constant, linear, quadratic, color, specular)
 
     self.nearPlane = 0.1
     self.farPlane = self:getLightRadius()
+end
 
-    self:createShadowMapTexture(256, "cube")
+
+---@param size integer
+---@param isStatic boolean
+---@return self
+function PointLight:setShadowMapping(size, isStatic)
+    BaseLight.setShadowMapping(self, size, isStatic)
+    self.shadowMap = BaseLight.CreateShadowMapTexture(size, "cube")
+
+    return self
 end
 
 
@@ -68,7 +77,7 @@ function PointLight:drawShadows(shader, meshparts)
         shader:sendUniform("uViewProjMatrix", "column", viewProj)
 
         for j, config in ipairs(meshparts) do
-            if config.castShadows then
+            if self:canMeshCastShadow(config) then
                 shader:sendMeshConfigUniforms(config)
                 config.meshPart:draw()
             end
@@ -79,7 +88,7 @@ end
 
 --- @param shader ShaderEffect
 function PointLight:sendLightData(shader)
-    if self.castShadows then
+    if self.shadowMap then
         shader:trySendUniform("light.pointShadowMap", self.shadowMap)
     end
 

@@ -9,13 +9,9 @@ local AmbientLight = BaseLight:extend("AmbientLight")
 
 
 function AmbientLight:new(color)
-    BaseLight.new(self, BaseLight.LIGHT_TYPE_AMBIENT, nil)
+    BaseLight.new(self, BaseLight.LIGHT_TYPE_AMBIENT)
 
     self.color = color
-end
-
-
-function AmbientLight:generateShadowMap(meshparts)
 end
 
 

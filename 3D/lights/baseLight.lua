@@ -18,8 +18,10 @@ local shadowMapRendererShader = ShaderEffect("engine/shaders/3D/defaultVertexSha
 --- @field public shadowMap love.Texture
 --- @field public typeDefinition LightTypeDefinition
 --- @field public enabled boolean
+--- @field public castShadows boolean
+--- @field public isStatic boolean
 ---
---- @overload fun(typeDefinition: LightTypeDefinition, castShadows: boolean): BaseLight
+--- @overload fun(typeDefinition: LightTypeDefinition): BaseLight
 local BaseLight = Object:extend("BaseLight")
 
 BaseLight.LIGHT_TYPE_UNLIT       = 0
@@ -29,24 +31,23 @@ BaseLight.LIGHT_TYPE_SPOT        = 3
 BaseLight.LIGHT_TYPE_POINT       = 4
 
 
-function BaseLight:new(typeDefinition, castShadows)
+function BaseLight:new(typeDefinition)
     self.typeDefinition = typeDefinition
     self.enabled = true
 
-    self.castShadows = castShadows
+    self.castShadows = false
+    self.isStatic = false
     self.shadowMap = nil
 end
 
 
 ---@param size integer
----@param type love.TextureType
-function BaseLight:createShadowMapTexture(size, type)
-    if self.castShadows then
-        self.shadowMap = love.graphics.newCanvas(size, size, {type = type, format = "depth16", readable = true})
-        self.shadowMap:setFilter("linear", "linear")
-        self.shadowMap:setWrap("clamp")
-        self.shadowMap:setDepthSampleMode("less")
-    end
+---@param isStatic boolean
+---@return self
+function BaseLight:setShadowMapping(size, isStatic)
+    self.castShadows = true
+    self.isStatic = isStatic
+    return self
 end
 
 
@@ -56,19 +57,29 @@ function BaseLight:generateShadowMap(meshparts)
         return
     end
 
+    self.castShadows = not self.isStatic
+
     love.graphics.push("all")
 
     love.graphics.setDepthMode("lequal", true)
     love.graphics.setMeshCullMode("front")
     love.graphics.setBlendMode("replace")
 
-    shadowMapRendererShader:define("CURRENT_LIGHT_TYPE", self.typeDefinition)
     shadowMapRendererShader:use()
     shadowMapRendererShader:sendCommonUniforms()
+    shadowMapRendererShader:sendUniform("u_lightType", self.typeDefinition)
 
     self:drawShadows(shadowMapRendererShader, meshparts)
 
     love.graphics.pop()
+end
+
+
+---@protected
+---@param config MeshPartConfig
+---@return boolean
+function BaseLight:canMeshCastShadow(config)
+    return config.castShadows and (not self.isStatic or config.static)
 end
 
 
@@ -82,6 +93,20 @@ end
 --- @param shader ShaderEffect
 function BaseLight:sendLightData(shader)
     error("Not implemented")
+end
+
+
+
+
+---@param size integer
+---@param type love.TextureType
+function BaseLight.CreateShadowMapTexture(size, type)
+    local shadowMap = love.graphics.newCanvas(size, size, {type = type, format = "depth16", readable = true})
+    shadowMap:setFilter("linear", "linear")
+    shadowMap:setWrap("clamp")
+    shadowMap:setDepthSampleMode("less")
+
+    return shadowMap
 end
 
 

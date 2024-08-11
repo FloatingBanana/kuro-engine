@@ -21,7 +21,7 @@ local Dirlight = BaseLight:extend("DirectionalLight")
 
 
 function Dirlight:new(position, color, specular)
-    BaseLight.new(self, BaseLight.LIGHT_TYPE_DIRECTIONAL, true)
+    BaseLight.new(self, BaseLight.LIGHT_TYPE_DIRECTIONAL)
 
     self.position = position
     self.color = color
@@ -29,8 +29,17 @@ function Dirlight:new(position, color, specular)
     self.viewProjMatrix = Matrix.Identity()
     self.nearPlane = 0.1
     self.farPlane = 50
+end
 
-    self:createShadowMapTexture(2048, "2d")
+
+---@param size integer
+---@param isStatic boolean
+---@return self
+function Dirlight:setShadowMapping(size, isStatic)
+    BaseLight.setShadowMapping(self, size, isStatic)
+    self.shadowMap = BaseLight.CreateShadowMapTexture(size, "2d")
+
+    return self
 end
 
 
@@ -50,7 +59,7 @@ function Dirlight:drawShadows(shader, meshparts)
     shader:sendUniform("uViewProjMatrix", "column", self.viewProjMatrix)
 
     for i, config in ipairs(meshparts) do
-        if config.castShadows then
+        if self:canMeshCastShadow(config) then
             shader:sendMeshConfigUniforms(config)
             config.meshPart:draw()
         end
@@ -60,7 +69,7 @@ end
 
 --- @param shader ShaderEffect
 function Dirlight:sendLightData(shader)
-    if self.castShadows then
+    if self.shadowMap then
         shader:trySendUniform("light.shadowMap", self.shadowMap)
         shader:trySendUniform("light.lightMatrix", "column", self.viewProjMatrix)
     end

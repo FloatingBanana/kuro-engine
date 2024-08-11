@@ -18,7 +18,7 @@ local Spotlight = BaseLight:extend("SpotLight")
 
 
 function Spotlight:new(position, direction, innerAngle, outerAngle, color, specular)
-    BaseLight.new(self, BaseLight.LIGHT_TYPE_SPOT, true)
+    BaseLight.new(self, BaseLight.LIGHT_TYPE_SPOT)
 
     self.position = position
     self.direction = direction
@@ -35,8 +35,17 @@ function Spotlight:new(position, direction, innerAngle, outerAngle, color, specu
 
     self.nearPlane = 0.1
     self.farPlane = 20
+end
 
-    self:createShadowMapTexture(1024, "2d")
+
+---@param size integer
+---@param isStatic boolean
+---@return self
+function Spotlight:setShadowMapping(size, isStatic)
+    BaseLight.setShadowMapping(self, size, isStatic)
+    self.shadowMap = BaseLight.CreateShadowMapTexture(size, "2d")
+
+    return self
 end
 
 
@@ -56,7 +65,7 @@ function Spotlight:drawShadows(shader, meshparts)
     shader:sendUniform("light.position", self.direction)
 
     for i, config in ipairs(meshparts) do
-        if config.castShadows then
+        if self:canMeshCastShadow(config) then
             shader:sendMeshConfigUniforms(config)
             config.meshPart:draw()
         end
@@ -66,7 +75,7 @@ end
 
 --- @param shader ShaderEffect
 function Spotlight:sendLightData(shader)
-    if self.castShadows then
+    if self.shadowMap then
         shader:trySendUniform("light.shadowMap", self.shadowMap)
         shader:trySendUniform("light.lightMatrix", "column", self.viewProjMatrix)
     end
