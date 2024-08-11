@@ -18,6 +18,8 @@ local Object         = require "engine.3rdparty.classic.classic"
 --- @field nodes table<string, ModelNode>
 --- @field meshes table<string, ModelMesh>
 --- @field meshParts table<string, MeshPart>
+--- @field lights table<string, ModelLight>
+--- @field cameras table<string, ModelCamera>
 --- @field materials table<string, BaseMaterial>
 --- @field animations table<string, ModelAnimation>
 --- @field armatures table<string, ModelArmature>
