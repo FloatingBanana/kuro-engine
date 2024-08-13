@@ -67,14 +67,14 @@ float LinearizeDepth(float depth, float near, float far) {
     return -((far * near) / (far + depth * (near-far)));
 }
 
-const vec2 invAtan = vec2(0.1591, 0.3183);
+const vec2 invAtan = 1.0 / vec2(TAU, PI);
 vec2 EncodeSphericalMap(vec3 dir) {
     return vec2(atan(dir.z, dir.x), asin(dir.y)) * invAtan + 0.5;
 }
 
 vec3 DecodeSphericalMap(vec2 uv) {
     uv = (uv - 0.5) / invAtan;
-    return vec3(sin(uv.x), sin(uv.y), cos(uv.x));
+    return vec3(cos(uv.x) * cos(uv.y), sin(uv.y), sin(uv.x) * cos(uv.y));
 }
 
 
