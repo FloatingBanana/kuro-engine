@@ -194,6 +194,17 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 }
 ]]
 
+local cubeMapToEquirectangularMapShader = ShaderEffect [[
+#pragma language glsl3
+#pragma include "engine/shaders/incl_utils.glsl"
+
+uniform samplerCube u_cubeMap;
+
+vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
+    return texture(u_cubeMap, DecodeSphericalMap(vec2(texcoords.x, 1.0 - texcoords.y)));
+}
+]]
+
 
 ---@param eqMap love.Texture
 ---@param format love.PixelFormat?
@@ -221,6 +232,26 @@ function Cmap.equirectangularMapToCubeMap(eqMap, format)
     return cubeCanvas
 end
 
+
+
+
+---@param cubeMap love.Texture
+---@param format love.PixelFormat?
+---@return love.Canvas
+function Cmap.cubeMapToEquirectangularMap(cubeMap, format)
+    local size = Vector2(cubeMap:getWidth() * 2, cubeMap:getHeight())
+    local eqMap = love.graphics.newCanvas(size.x, size.y, {format = format or cubeMap:getFormat()})
+    local square = Utils.newSquareMesh(size)
+
+    love.graphics.setCanvas(eqMap)
+    cubeMapToEquirectangularMapShader:use()
+    cubeMapToEquirectangularMapShader:sendUniform("u_cubeMap", cubeMap)
+    love.graphics.draw(square)
+    love.graphics.setCanvas()
+    love.graphics.setShader()
+
+    return eqMap
+end
 
 
 
