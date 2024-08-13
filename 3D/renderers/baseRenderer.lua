@@ -14,7 +14,6 @@ local configPool = Stack()
 ---
 --- @field public resultCanvas love.Canvas
 --- @field public depthCanvas love.Canvas
---- @field public velocityBuffer love.Canvas
 --- @field public skyBoxTexture love.Texture
 --- @field public irradianceMap love.Texture
 --- @field public preFilteredEnvironment love.Texture
@@ -41,8 +40,6 @@ function Renderer:new(screensize, camera)
 
     self.resultCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg11b10f"})
     self.depthCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "depth24stencil8", readable = true})
-    self.velocityBuffer = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg8"})
-
 end
 
 ---@param meshPart MeshPart
