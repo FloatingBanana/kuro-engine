@@ -1,6 +1,7 @@
 -- Borrowed from https://github.com/MonoGame/MonoGame/blob/develop/MonoGame.Framework/Quaternion.cs
 
 local CStruct = require "engine.misc.cstruct"
+local Vector3 = require "engine.math.vector3"
 local sin, cos, acos, sqrt = math.sin, math.cos, math.acos, math.sqrt
 
 -- See [engine/vector2.lua] for explanation
@@ -381,5 +382,16 @@ function Quaternion.CreateFromRotationMatrix(mat)
 
 	return quat
 end
+
+
+---Creates a quaternion from a direction an up vector
+---@param direction Vector3 Direction of the rotation
+---@param up Vector3 Up direction relative to the deisired rotation
+---@return Quaternion result
+function Quaternion.CreateFromDirection(direction, up)
+	local cross = Vector3.Cross(direction, up)
+	return Quaternion(cross.x, cross.y, cross.z, Vector3.Dot(direction, up))
+end
+
 
 return Quaternion
