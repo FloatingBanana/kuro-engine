@@ -116,6 +116,7 @@ function Renderer:_renderSkyBox()
 end
 
 
+---@return love.Canvas
 function Renderer:render()
     love.graphics.push("all")
 
@@ -136,7 +137,7 @@ function Renderer:render()
     end
 
     love.graphics.pop()
-    love.graphics.draw(result)
+    return result
 end
 
 return Renderer
