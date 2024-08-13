@@ -120,7 +120,10 @@ function Renderer:render()
     love.graphics.push("all")
 
     self:renderMeshes()
-    self:_renderSkyBox()
+
+    if self.skyBoxTexture then
+        self:_renderSkyBox()
+    end
 
     assert(#self.meshParts == 0, "Failed to consume all queued meshes")
 
