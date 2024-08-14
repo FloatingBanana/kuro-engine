@@ -13,10 +13,6 @@ end
 
 
 function ForwardRenderer:renderMeshes()
-    for i, light in ipairs(self.lights) do
-        light:generateShadowMap(self.meshParts)
-    end
-
     lg.setCanvas({depthstencil = self.depthCanvas})
     lg.clear()
 

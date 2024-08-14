@@ -59,8 +59,6 @@ function BaseLight:generateShadowMap(meshparts)
 
     self.castShadows = not self.isStatic
 
-    love.graphics.push("all")
-
     love.graphics.setDepthMode("lequal", true)
     love.graphics.setMeshCullMode("front")
     love.graphics.setBlendMode("replace")
@@ -70,8 +68,6 @@ function BaseLight:generateShadowMap(meshparts)
     shadowMapRendererShader:sendUniform("u_lightType", self.typeDefinition)
 
     self:drawShadows(shadowMapRendererShader, meshparts)
-
-    love.graphics.pop()
 end
 
 

@@ -120,6 +120,10 @@ end
 function Renderer:render()
     love.graphics.push("all")
 
+    for i, light in ipairs(self.lights) do
+        light:generateShadowMap(self.meshParts)
+    end
+
     self:renderMeshes()
 
     if self.skyBoxTexture then

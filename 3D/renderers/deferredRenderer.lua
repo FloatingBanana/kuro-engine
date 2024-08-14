@@ -97,7 +97,6 @@ function DeferredRenderer:renderMeshes()
             self.shader:trySendUniform(bufferPart.uniform, bufferPart.buffer)
         end
 
-        light:generateShadowMap(self.meshParts)
         light:sendLightData(self.shader)
 
         for j, effect in ipairs(self.postProcessingEffects) do
@@ -105,8 +104,6 @@ function DeferredRenderer:renderMeshes()
         end
 
         self.shader:use()
-
-        self.shader:trySendUniform("u_qpressed", love.keyboard.isDown("q"))
 
         if light:is(PointLight) then ---@cast light PointLight
             local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * self.camera.viewProjectionMatrix
