@@ -101,7 +101,7 @@ end
 
 ---@private
 function Renderer:_renderSkyBox()
-    local view = self.camera.viewMatrix:clone()
+    local view = self.camera.viewMatrix
     view.m41, view.m42, view.m43 = 0, 0, 0
 
     love.graphics.setCanvas({self.resultCanvas, depthstencil = self.depthCanvas})
@@ -109,7 +109,7 @@ function Renderer:_renderSkyBox()
     love.graphics.setDepthMode("lequal", false)
 
     skyboxShader:use()
-    skyboxShader:sendUniform("u_viewProj", "column", view * self.camera.projectionMatrix)
+    skyboxShader:sendUniform("u_viewProj", "column", view:multiply(self.camera.projectionMatrix))
     skyboxShader:sendUniform("u_skyTex", self.skyBoxTexture)
 
     love.graphics.draw(CubemapUtils.cubeMesh)
