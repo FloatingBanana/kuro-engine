@@ -24,11 +24,7 @@ end
 function ChromaticAberration:onPostRender(renderer, canvas)
     love.graphics.setCanvas(self.effectCanvas)
     love.graphics.setShader(self.shader)
-
     love.graphics.draw(canvas)
-
-    love.graphics.setCanvas()
-    love.graphics.setShader()
 
     return self.effectCanvas
 end

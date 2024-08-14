@@ -34,11 +34,7 @@ end
 function HDR:onPostRender(renderer, canvas)
     love.graphics.setCanvas(self.hdrCanvas)
     love.graphics.setShader(self.shader)
-
     love.graphics.draw(canvas)
-
-    love.graphics.setCanvas()
-    love.graphics.setShader()
 
     return self.hdrCanvas
 end

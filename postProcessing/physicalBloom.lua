@@ -64,18 +64,6 @@ function Bloom:onPostRender(renderer, canvas)
         lg.draw(mips[i], 0, 0, 0, 2, 2)
     end
 
-    -- local b = self.blurAmount
-    -- lg.setCanvas(self.blurCanvas)
-    -- lg.clear(b,b,b)
-
-    -- lg.setBlendMode("multiply", "premultiplied")
-    -- lg.draw(mips[1], 0, 0, 0, 2, 2)
-
-    -- lg.setBlendMode("add", "premultiplied")
-    -- lg.setColor(1-b, 1-b, 1-b)
-    -- lg.setShader()
-    -- lg.draw(canvas)
-
     lg.setBlendMode("alpha", "alphamultiply")
 
     lg.setCanvas(self.blurCanvas)
@@ -85,9 +73,6 @@ function Bloom:onPostRender(renderer, canvas)
     interpolateShader:send("u_bloomTex", mips[1])
 
     lg.draw(canvas)
-
-    lg.setShader()
-    lg.setCanvas()
 
     return self.blurCanvas
 end

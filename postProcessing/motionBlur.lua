@@ -52,9 +52,6 @@ function MotionBlur:onPostRender(renderer, canvas)
     motionBlurShader:send("u_velocityScale", (1 - love.timer.getAverageDelta()) * self.amount)
     love.graphics.draw(canvas)
 
-    love.graphics.setCanvas()
-    love.graphics.setShader()
-
     return self.blurCanvas
 end
 

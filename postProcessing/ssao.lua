@@ -82,9 +82,6 @@ function SSAO:onPreRender(renderer)
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.clear()
     love.graphics.draw(self.blurCanvas)
-
-    love.graphics.setCanvas()
-    love.graphics.setShader()
 end
 
 

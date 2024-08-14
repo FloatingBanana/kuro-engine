@@ -36,11 +36,7 @@ end
 function ColorCorrection:onPostRender(renderer, canvas)
     love.graphics.setCanvas(self.canvas)
     love.graphics.setShader(self.shader)
-
     love.graphics.draw(canvas)
-
-    love.graphics.setCanvas()
-    love.graphics.setShader()
 
     return self.canvas
 end

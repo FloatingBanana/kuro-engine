@@ -27,11 +27,7 @@ end
 function FXAA:onPostRender(renderer, canvas)
     love.graphics.setCanvas(self.fxaaCanvas)
     love.graphics.setShader(self.shader)
-
     love.graphics.draw(canvas)
-
-    love.graphics.setCanvas()
-    love.graphics.setShader()
 
     return self.fxaaCanvas
 end

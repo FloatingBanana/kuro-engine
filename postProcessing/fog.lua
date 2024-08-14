@@ -35,11 +35,7 @@ function Fog:onPostRender(renderer, canvas)
 
     self.shader:sendCommonUniforms()
     self.shader:sendRendererUniforms(renderer)
-
     love.graphics.draw(canvas)
-
-    love.graphics.setCanvas()
-    love.graphics.setShader()
 
     return self.fogCanvas
 end
