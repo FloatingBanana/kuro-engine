@@ -27,6 +27,7 @@ local Assimp = ffi.load(libpath)
 
 -- A few pointers
 local aiStringPtr = ffi.new("struct aiString[1]")
+local aiColor4Ptr = ffi.new("struct aiColor4D[1]")
 local aiRealPtr = ffi.new("ai_real[1]")
 local uintPtr = ffi.new("unsigned int[1]")
 
@@ -234,10 +235,12 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             tex_emissive = getMaterialTexture(aiMat, path, Assimp.aiTextureType_EMISSIVE),
             tex_normals  = getMaterialTexture(aiMat, path, Assimp.aiTextureType_NORMALS),
 
-            tex_basecolor = getMaterialTexture(aiMat, path, Assimp.aiTextureType_BASE_COLOR),
-            tex_metalness = getMaterialTexture(aiMat, path, Assimp.aiTextureType_METALNESS),
-            tex_roughness = getMaterialTexture(aiMat, path, Assimp.aiTextureType_DIFFUSE_ROUGHNESS),
-
+            basecolor          = getMaterialValue(aiMat, "$clr.base"             , "color") or {1,1,1,1},
+            diffusecolor       = getMaterialValue(aiMat, "$clr.diffuse"          , "color") or {1,1,1,1},
+            specularcolor      = getMaterialValue(aiMat, "$clr.specular"         , "color") or {1,1,1,1},
+            emissivecolor      = getMaterialValue(aiMat, "$clr.emissive"         , "color") or {1,1,1,1},
+            metallic           = getMaterialValue(aiMat, "$mat.metallicFactor"   , "float") or 0,
+            roughness          = getMaterialValue(aiMat, "$mat.roughnessFactor"  , "float") or 1,
             shininess          = getMaterialValue(aiMat, "$mat.shininess"        , "float") or 1,
             opacity            = getMaterialValue(aiMat, "$mat.opacity"          , "float") or 1,
             reflectivity       = getMaterialValue(aiMat, "$mat.reflectivity"     , "float") or 0,
