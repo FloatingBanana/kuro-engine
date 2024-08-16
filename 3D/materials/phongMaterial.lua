@@ -23,7 +23,7 @@ function PhongMaterial:new(model, matData)
         shininess      = {uniform = "u_shininess",      value = 128 --[[matData.shininess]]},
         diffuseTexture = {uniform = "u_diffuseTexture", value = Material.DefaultColorTex},
         normalMap      = {uniform = "u_normalMap",      value = Material.DefaultNormalTex},
-        transparence   = {uniform = "u_transparence",   value = 0},
+        transparence   = {uniform = "u_transparence",   value = 1.0 - matData.opacity},
     }
 
     Material.new(self, attributes, phongShader)
