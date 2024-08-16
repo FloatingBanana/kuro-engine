@@ -9,6 +9,7 @@ local canvasTable = {}
 --- @class DirectionalLight: BaseLight
 ---
 --- @field public position Vector3
+--- @field public direction Vector3
 --- @field public color number[]
 --- @field public specular number[]
 --- @field public nearPlane number
@@ -16,19 +17,21 @@ local canvasTable = {}
 ---
 --- @field private viewProjMatrix Matrix
 ---
---- @overload fun(position: Vector3, color: table, specular: table): DirectionalLight
+--- @overload fun(position: Vector3, direction: Vector3, color: table, specular: table): DirectionalLight
 local Dirlight = BaseLight:extend("DirectionalLight")
 
 
-function Dirlight:new(position, color, specular)
+function Dirlight:new(position, direction, color, specular)
     BaseLight.new(self, BaseLight.LIGHT_TYPE_DIRECTIONAL)
 
     self.position = position
+    self.direction = direction
     self.color = color
     self.specular = specular
     self.viewProjMatrix = Matrix.Identity()
     self.nearPlane = 0.1
-    self.farPlane = 50
+    self.farPlane = 100
+    self.projectionSize = 20
 end
 
 
@@ -46,8 +49,8 @@ end
 ---@param shader ShaderEffect
 ---@param meshparts MeshPartConfig[]
 function Dirlight:drawShadows(shader, meshparts)
-    local viewMatrix = Matrix.CreateLookAt(self.position, Vector3(0,0,0), Vector3(0,1,0))
-    local projMatrix = Matrix.CreateOrthographicOffCenter(-10, 10, 10, -10, self.nearPlane, self.farPlane)
+    local viewMatrix = Matrix.CreateLookAtDirection(self.position, -self.direction, Vector3(0,1,0))
+    local projMatrix = Matrix.CreateOrthographicOffCenter(-self.projectionSize, self.projectionSize, self.projectionSize, -self.projectionSize, self.nearPlane, self.farPlane)
 
     self.viewProjMatrix = viewMatrix:multiply(projMatrix)
     canvasTable.depthstencil = self.shadowMap
@@ -55,7 +58,7 @@ function Dirlight:drawShadows(shader, meshparts)
     love.graphics.setCanvas(canvasTable)
     love.graphics.clear()
 
-    shader:sendUniform("light.direction", self.position.normalized)
+    shader:sendUniform("light.direction", -self.direction)
     shader:sendUniform("uViewProjMatrix", "column", self.viewProjMatrix)
 
     for i, config in ipairs(meshparts) do
@@ -74,9 +77,9 @@ function Dirlight:sendLightData(shader)
         shader:trySendUniform("light.lightMatrix", "column", self.viewProjMatrix)
     end
 
-    shader:trySendUniform("light.direction", self.position.normalized)
-    shader:trySendUniform("light.color", self.color)
-    shader:trySendUniform("light.specular", self.specular)
+    shader:trySendUniform("light.direction", self.direction)
+    shader:trySendUniform("light.color",     self.color)
+    shader:trySendUniform("light.specular",  self.specular)
 end
 
 
