@@ -148,10 +148,24 @@ local function readColor3(aiColor)
 end
 
 local function getMaterialTexture(aiMat, basePath, aiTextureType)
-    local relativePath = checkSuccess(Assimp.aiGetMaterialTexture(aiMat, aiTextureType, 0, aiStringPtr, nil, nil, nil, nil, nil, nil)) and readString(aiStringPtr[0]) or nil
+    local path            = ffi.new("struct aiString[1]")
+    local textureMapping  = ffi.new("enum aiTextureMapping[1]")
+    local uvIndex         = ffi.new("unsigned int[1]")
+    local blend           = ffi.new("ai_real[1]")
+    local textureOp       = ffi.new("enum aiTextureOp[1]")
+    local textureMapMode  = ffi.new("enum aiTextureMapMode[2]")
+    local flags           = ffi.new("unsigned int[1]")
 
-    if relativePath then
-        return basePath:match("^.*/")..relativePath:gsub("%%20", " ")
+    if checkSuccess(Assimp.aiGetMaterialTexture(aiMat, aiTextureType, 0, path, textureMapping, uvIndex, blend, textureOp, textureMapMode, flags)) then
+        return {
+            path      = basePath:match("^.*/")..readString(path[0]):gsub("%%20", " "),
+            mapping   = select(tonumber(textureMapping[0])+1, "uv", "sphere", "cylinder", "box", "plane", "other"),
+            uvIndex   = tonumber(uvIndex[0]),
+            blend     = tonumber(uvIndex[0]),
+            op        = select(tonumber(textureOp[0])+1, "multiply", "add", "subtract", "divide", "smoothAdd", "signedAdd"),
+            mapMode_h = select(tonumber(textureMapMode[0])+1, "repeat", "clamp", "clampzero", "mirroredrepeat"),
+            mapMode_v = select(tonumber(textureMapMode[1])+1, "repeat", "clamp", "clampzero", "mirroredrepeat"),
+        }
     end
     return nil
 end
@@ -163,6 +177,8 @@ local function getMaterialValue(aiMat, property, type)
         return checkSuccess(Assimp.aiGetMaterialFloatArray(aiMat, property, 0, 0, aiRealPtr, uintPtr)) and aiRealPtr[0] or nil
     elseif type == "string" then
         return checkSuccess(Assimp.aiGetMaterialString(aiMat, property, 0, 0, aiStringPtr)) and readString(aiStringPtr[0]) or nil
+    elseif type == "color" then
+        return checkSuccess(Assimp.aiGetMaterialColor(aiMat, property, 0, 0, aiColor4Ptr)) and {aiColor4Ptr[0].r, aiColor4Ptr[0].g, aiColor4Ptr[0].b, aiColor4Ptr[0].a} or nil
     end
 end
 
@@ -234,6 +250,11 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             tex_specular = getMaterialTexture(aiMat, path, Assimp.aiTextureType_SPECULAR),
             tex_emissive = getMaterialTexture(aiMat, path, Assimp.aiTextureType_EMISSIVE),
             tex_normals  = getMaterialTexture(aiMat, path, Assimp.aiTextureType_NORMALS),
+
+            tex_basecolor         = getMaterialTexture(aiMat, path, Assimp.aiTextureType_BASE_COLOR),
+            tex_metalness         = getMaterialTexture(aiMat, path, Assimp.aiTextureType_METALNESS),
+            tex_roughness         = getMaterialTexture(aiMat, path, Assimp.aiTextureType_DIFFUSE_ROUGHNESS),
+            tex_metallicroughness = getMaterialTexture(aiMat, path, Assimp.aiTextureType_UNKNOWN),
 
             basecolor          = getMaterialValue(aiMat, "$clr.base"             , "color") or {1,1,1,1},
             diffusecolor       = getMaterialValue(aiMat, "$clr.diffuse"          , "color") or {1,1,1,1},
