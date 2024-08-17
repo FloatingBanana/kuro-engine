@@ -40,7 +40,7 @@ local Meshpart = Object:extend("MeshPart")
 
 
 function Meshpart:new(meshPartData, model)
-    self.buffer = love.graphics.newMesh(vertexFormat, #meshPartData.verts, "triangles", "static")
+    self.buffer = love.graphics.newMesh(vertexFormat, #meshPartData.positions, "triangles", "static")
     self.material = model.materials[meshPartData.material]
     self.model = model
 
@@ -54,18 +54,18 @@ function Meshpart:__loadVertices(meshPartData)
     assert(jitEnabled, "Mesh loading requires jit to be enabled")
 
     -- Vertices
-    local vertices = love.data.newByteData(ffi.sizeof("struct vertex") * #meshPartData.verts)
+    local vertices = love.data.newByteData(ffi.sizeof("struct vertex") * #meshPartData.positions)
     local pointer = ffi.cast("struct vertex*", vertices:getFFIPointer())
 
-    for i, vert in ipairs(meshPartData.verts) do
+    for i=1, #meshPartData.positions do
         local index = i-1
 
-        pointer[index].position  = vert.position
-        pointer[index].uv        = vert.uv
-        pointer[index].normal    = vert.normal
-        pointer[index].tangent   = vert.tangent
-        pointer[index].boneIds   = vert.boneIds
-        pointer[index].weights   = vert.weights
+        pointer[index].position  = meshPartData.positions[i]
+        pointer[index].uv        = meshPartData.uvs[i]
+        pointer[index].normal    = meshPartData.normals[i]
+        pointer[index].tangent   = meshPartData.tangents[i]
+        pointer[index].boneIds   = meshPartData.boneIds[i]
+        pointer[index].weights   = meshPartData.weights[i]
     end
 
     self.buffer:setVertices(vertices)

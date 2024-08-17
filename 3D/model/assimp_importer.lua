@@ -333,23 +333,29 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
         local part = {
             name     = readString(aiMesh.mName),
             material = getMaterialValue(aiScene.mMaterials[aiMesh.mMaterialIndex], "?mat.name", "string"),
-            verts    = newtable(aiMesh.mNumVertices, 0),
-            indices  = newtable(aiMesh.mNumFaces*3, 0)
+            indices  = newtable(aiMesh.mNumFaces*3, 0),
+
+            positions  = newtable(aiMesh.mNumVertices, 0),
+            normals    = newtable(aiMesh.mNumVertices, 0),
+            tangents   = newtable(aiMesh.mNumVertices, 0),
+            bitangents = newtable(aiMesh.mNumVertices, 0),
+            uvs        = newtable(aiMesh.mNumVertices, 0),
+            boneIds    = newtable(aiMesh.mNumVertices, 0),
+            weights    = newtable(aiMesh.mNumVertices, 0),
         }
         scene.meshParts[m] = part
 
         -- Vertices
         for v=1, aiMesh.mNumVertices do
             local vi = v-1
-            part.verts[v] = {
-                position  = readVector3(aiMesh.mVertices[vi]),
-                normal    = aiMesh.mNormals    ~= nil and readVector3(aiMesh.mNormals[vi])    or Vector3(),
-                tangent   = aiMesh.mTangents   ~= nil and readVector3(aiMesh.mTangents[vi])   or Vector3(),
-                bitangent = aiMesh.mBitangents ~= nil and readVector3(aiMesh.mBitangents[vi]) or Vector3(),
-                uv        = readVector2(aiMesh.mTextureCoords[0][vi]),
-                boneIds   = {-1,-1,-1,-1},
-                weights   = {0,0,0,0}
-            }
+
+            part.positions[v]  = readVector3(aiMesh.mVertices[vi])
+            part.normals[v]    = aiMesh.mNormals    ~= nil and readVector3(aiMesh.mNormals[vi])    or Vector3()
+            part.tangents[v]   = aiMesh.mTangents   ~= nil and readVector3(aiMesh.mTangents[vi])   or Vector3()
+            part.bitangents[v] = aiMesh.mBitangents ~= nil and readVector3(aiMesh.mBitangents[vi]) or Vector3()
+            part.uvs[v]        = readVector2(aiMesh.mTextureCoords[0][vi])
+            part.boneIds[v]   = {-1,-1,-1,-1}
+            part.weights[v]   = {0,0,0,0}
         end
 
         -- Indices
@@ -386,12 +392,12 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             -- Assign bone weights to vertices
             for w=1, aiBone.mNumWeights do
                 local aiWeight = aiBone.mWeights[w-1]
-                local vert = part.verts[aiWeight.mVertexId+1]
+                local vert = aiWeight.mVertexId+1
 
                 for i=1, 4 do
-                    if vert.boneIds[i] == -1 then
-                        vert.boneIds[i] = bone.id
-                        vert.weights[i] = aiWeight.mWeight
+                    if part.boneIds[vert][i] == -1 then
+                        part.boneIds[vert][i] = bone.id
+                        part.weights[vert][i] = aiWeight.mWeight
                         break
                     end
                 end
