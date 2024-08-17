@@ -334,7 +334,7 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             name     = readString(aiMesh.mName),
             material = getMaterialValue(aiScene.mMaterials[aiMesh.mMaterialIndex], "?mat.name", "string"),
             verts    = newtable(aiMesh.mNumVertices, 0),
-            indices  = newtable(aiMesh.mNumVertices, 0)
+            indices  = newtable(aiMesh.mNumFaces*3, 0)
         }
         scene.meshParts[m] = part
 
