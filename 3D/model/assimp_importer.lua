@@ -232,7 +232,7 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
         bones      = {},
         materials  = newtable(0, aiScene.mNumMaterials),
         animations = newtable(0, aiScene.mNumAnimations),
-        meshParts  = newtable(0, aiScene.mNumMeshes),
+        meshParts  = newtable(aiScene.mNumMeshes, 0),
         lights     = newtable(0, aiScene.mNumLights),
         cameras    = newtable(0, aiScene.mNumCameras),
         armatures  = newtable(0, aiScene.mNumSkeletons)
@@ -336,6 +336,7 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             verts    = newtable(aiMesh.mNumVertices, 0),
             indices  = newtable(aiMesh.mNumVertices, 0)
         }
+        scene.meshParts[m] = part
 
         -- Vertices
         for v=1, aiMesh.mNumVertices do
@@ -396,8 +397,6 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
                 end
             end
         end
-
-        scene.meshParts[part.name] = part
     end
 
 
@@ -416,7 +415,7 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
 
             for m=1, aiNode.mNumMeshes do
                 local aiMesh = aiScene.mMeshes[aiNode.mMeshes[m-1]]
-                node.meshParts[m] = readString(aiMesh.mName)
+                node.meshParts[m] = aiNode.mMeshes[m-1]+1
             end
         end
 

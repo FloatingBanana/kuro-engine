@@ -17,7 +17,7 @@ local Object         = require "engine.3rdparty.classic.classic"
 ---
 --- @field nodes table<string, ModelNode>
 --- @field meshes table<string, ModelMesh>
---- @field meshParts table<string, MeshPart>
+--- @field meshParts MeshPart[]
 --- @field lights table<string, ModelLight>
 --- @field cameras table<string, ModelCamera>
 --- @field materials table<string, BaseMaterial>
@@ -61,8 +61,8 @@ function Model:new(file, opts)
     self.contentLoader:loadAllAsync()
 
     -- Get mesh parts
-    for name, partData in pairs(modelData.meshParts) do
-        self.meshParts[name] = Meshpart(partData, self)
+    for p, partData in pairs(modelData.meshParts) do
+        self.meshParts[p] = Meshpart(partData, self)
     end
 
     -- Start loading from root node
@@ -88,8 +88,8 @@ function Model:__loadNode(nodeData, modelData)
     if nodeData.meshParts then
         local parts = {}
 
-        for p, partname in ipairs(nodeData.meshParts) do
-            parts[p] = self.meshParts[partname]
+        for p, pIndex in ipairs(nodeData.meshParts) do
+            parts[p] = self.meshParts[pIndex]
         end
 
         -- Mesh node
