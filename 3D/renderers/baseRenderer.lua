@@ -12,6 +12,7 @@ local configPool = Stack()
 
 --- @class BaseRenderer: Object
 ---
+--- @field public screensize Vector2
 --- @field public resultCanvas love.Canvas
 --- @field public depthCanvas love.Canvas
 --- @field public skyBoxTexture love.Texture
@@ -21,7 +22,6 @@ local configPool = Stack()
 --- @field public postProcessingEffects BasePostProcessingEffect[]
 --- @field protected meshParts Stack
 --- @field protected lights BaseLight[]
---- @field private screensize Vector2
 ---
 --- @overload fun(screenSize: Vector2, camera: Camera3D): BaseRenderer
 local Renderer = Object:extend("BaseRenderer")

@@ -111,7 +111,7 @@ function DeferredRenderer:renderMeshes()
             self.shader:sendUniform("u_volumeTransform", transform)
             volume:draw()
         else
-            self.shader:sendUniform("u_volumeTransform", Matrix.CreateOrthographicOffCenter(0, WIDTH, HEIGHT, 0, 0, 1))
+            self.shader:sendUniform("u_volumeTransform", Matrix.CreateOrthographicOffCenter(0, self.screensize.width, self.screensize.height, 0, 0, 1))
             lg.draw(self.dummySquare)
         end
 
