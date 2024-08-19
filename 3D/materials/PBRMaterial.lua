@@ -51,7 +51,7 @@ function PBRMaterial:_setupTexturePromise(field, texData, promise)
     promise.onCompleteEvent:addCallback(function(event, promise)
         self[field] = promise.content
         promise.content:setWrap(texData.mapMode_h, texData.mapMode_v)
-        promise.content:setMipmapFilter("linear", 1)
+        promise.content:setMipmapFilter("linear", 0)
     end)
 
     promise:setErrorHandler(function(promise, message)
