@@ -17,7 +17,7 @@ local configPool = Stack()
 --- @field public depthCanvas love.Canvas
 --- @field public skyBoxTexture love.Texture
 --- @field public irradianceMap love.Texture
---- @field public preFilteredEnvironment love.Texture
+--- @field public environmentRadianceMap love.Texture
 --- @field public camera Camera3D
 --- @field public postProcessingEffects BasePostProcessingEffect[]
 --- @field protected meshParts Stack
@@ -36,7 +36,7 @@ function Renderer:new(screensize, camera)
 
     self.skyBoxTexture = nil
     self.irradianceMap = nil
-    self.preFilteredEnvironment = nil
+    self.environmentRadianceMap = nil
 
     self.resultCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg11b10f"})
     self.depthCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "depth24stencil8", readable = true})

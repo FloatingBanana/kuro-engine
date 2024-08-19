@@ -9,7 +9,7 @@
 
 
 
-vec3 shadeFragmentPBR(LightData light, vec3 fragPos, vec3 normal, vec3 albedo, float metallic, float roughness, float ao, samplerCube irradianceMap, samplerCube prefilteredEnvironmentMap) {
+vec3 shadeFragmentPBR(LightData light, vec3 fragPos, vec3 normal, vec3 albedo, float metallic, float roughness, float ao, samplerCube irradianceMap, samplerCube environmentRadianceMap) {
 	vec3 lightFragDirection = normalize(light.position - fragPos);
     vec3 viewFragDirection = normalize(uViewPosition - fragPos);
 	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragPos, 1.0);
@@ -33,7 +33,7 @@ vec3 shadeFragmentPBR(LightData light, vec3 fragPos, vec3 normal, vec3 albedo, f
 #   endif
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-        result = CalculateAmbientPBRLighting(light, irradianceMap, prefilteredEnvironmentMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
+        result = CalculateAmbientPBRLighting(light, irradianceMap, environmentRadianceMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
 #   endif
 
 #   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
@@ -99,7 +99,7 @@ uniform sampler2D u_GAlbedoAO;
 
 uniform sampler2D u_ssaoTex;
 uniform samplerCube u_irradianceMap;
-uniform samplerCube u_prefilteredEnvironmentMap;
+uniform samplerCube u_environmentRadianceMap;
 
 out vec4 oFragColor;
 
@@ -117,7 +117,7 @@ void effect() {
 		normalMetallicRoughness.a,
 		albedoAO.a * texture(u_ssaoTex, screenUV).r,
 		u_irradianceMap,
-		u_prefilteredEnvironmentMap
+		u_environmentRadianceMap
 	);
 
 	oFragColor = vec4(result, 1.0);
@@ -135,7 +135,7 @@ uniform sampler2D u_ao;
 
 uniform sampler2D u_ssaoTex;
 uniform samplerCube u_irradianceMap;
-uniform samplerCube u_prefilteredEnvironmentMap;
+uniform samplerCube u_environmentRadianceMap;
 
 out vec4 oFragColor;
 
@@ -152,7 +152,7 @@ void effect() {
 		metallicRoughness.g,
 		texture(u_ssaoTex, screenUV).r,
 		u_irradianceMap,
-		u_prefilteredEnvironmentMap
+		u_environmentRadianceMap
 	);
 
 

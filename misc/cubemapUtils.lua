@@ -101,7 +101,7 @@ vec4 effect(EFFECTARGS) {
 ]])
 
 
-local preFilteredEnvironmentShader = ShaderEffect(vertShaderCode, [[
+local environmentRadianceShader = ShaderEffect(vertShaderCode, [[
 #pragma language glsl3
 #pragma include "engine/shaders/3D/misc/incl_IBLCalculation.glsl"
 #pragma include "engine/shaders/3D/misc/incl_PBRLighting.glsl"
@@ -284,13 +284,13 @@ end
 
 ---@param envMap love.Texture
 ---@return love.Canvas
-function Cmap.getPreFilteredEnvironment(envMap)
-    local preFilteredMap = love.graphics.newCanvas(128, 128, {type = "cube", mipmaps = "manual"})
-    preFilteredMap:setMipmapFilter("linear")
-    preFilteredMap:generateMipmaps()
+function Cmap.environmentRadianceMap(envMap)
+    local radianceMap = love.graphics.newCanvas(128, 128, {type = "cube", mipmaps = "manual"})
+    radianceMap:setMipmapFilter("linear")
+    radianceMap:generateMipmaps()
 
-    preFilteredEnvironmentShader:use()
-    preFilteredEnvironmentShader:sendUniform("u_envMap", envMap)
+    environmentRadianceShader:use()
+    environmentRadianceShader:sendUniform("u_envMap", envMap)
     love.graphics.setMeshCullMode("front")
     love.graphics.setBlendMode("replace", "alphamultiply")
     love.graphics.setDepthMode()
@@ -301,10 +301,10 @@ function Cmap.getPreFilteredEnvironment(envMap)
         local roughness = mip / (maxMipLevel - 1)
 
         for i, dir in ipairs(Cmap.cubeSides) do
-            love.graphics.setCanvas {{preFilteredMap, face = i, mipmap = mip+1}}
+            love.graphics.setCanvas {{radianceMap, face = i, mipmap = mip+1}}
 
-            preFilteredEnvironmentShader:sendUniform("u_roughness", roughness)
-            preFilteredEnvironmentShader:sendUniform("u_viewProj", "column", dir.viewMatrix * projectionMatrix)
+            environmentRadianceShader:sendUniform("u_roughness", roughness)
+            environmentRadianceShader:sendUniform("u_viewProj", "column", dir.viewMatrix * projectionMatrix)
             love.graphics.draw(Cmap.cubeMesh)
         end
     end
@@ -312,7 +312,7 @@ function Cmap.getPreFilteredEnvironment(envMap)
     love.graphics.setCanvas()
     love.graphics.setShader()
 
-    return preFilteredMap
+    return radianceMap
 end
 
 

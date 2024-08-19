@@ -75,7 +75,7 @@ vec3 CalculateDirectPBRLighting(LightData light, vec3 lightDirection, vec3 viewF
 }
 
 
-vec3 CalculateAmbientPBRLighting(LightData light, samplerCube irradianceMap, samplerCube prefilteredEnvironmentMap, sampler2D brdfLUT, vec3 viewFragDirection, vec3 normal, vec3 albedo, float roughness, float metallic, float ao) {
+vec3 CalculateAmbientPBRLighting(LightData light, samplerCube irradianceMap, samplerCube environmentRadianceMap, sampler2D brdfLUT, vec3 viewFragDirection, vec3 normal, vec3 albedo, float roughness, float metallic, float ao) {
     vec3 N = normal;
     vec3 V = viewFragDirection;
     vec3 F0 = BaseFresnelReflection(albedo, metallic);
@@ -91,7 +91,7 @@ vec3 CalculateAmbientPBRLighting(LightData light, samplerCube irradianceMap, sam
     vec3 irradiance = texture(irradianceMap, N).rgb;
     vec3 diffuse = irradiance * albedo;
 
-    vec3 prefilteredColor = textureLod(prefilteredEnvironmentMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+    vec3 prefilteredColor = textureLod(environmentRadianceMap, R, roughness * MAX_REFLECTION_LOD).rgb;
     vec2 envBRDF = texture(brdfLUT, vec2(NdotV, roughness)).rg;
     vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 

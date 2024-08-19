@@ -89,7 +89,7 @@ function ForwardRenderer:renderMeshes()
                 light:sendLightData(shader)
 
                 shader:trySendUniform("u_irradianceMap", self.irradianceMap)
-                shader:trySendUniform("u_prefilteredEnvironmentMap", self.preFilteredEnvironment)
+                shader:trySendUniform("u_environmentRadianceMap", self.environmentRadianceMap)
 
                 shader:sendCommonUniforms()
                 shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
