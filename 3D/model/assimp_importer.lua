@@ -265,8 +265,8 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             shininess          = getMaterialValue(aiMat, "$mat.shininess"        , "float") or 1,
             opacity            = getMaterialValue(aiMat, "$mat.opacity"          , "float") or 1,
             reflectivity       = getMaterialValue(aiMat, "$mat.reflectivity"     , "float") or 0,
-            refraction         = getMaterialValue(aiMat, "$mat.emissiveIntensity", "float") or 0,
-            emissive_intensity = getMaterialValue(aiMat, "$mat.refracti"         , "float") or 0,
+            refraction         = getMaterialValue(aiMat, "$mat.refracti"         , "float") or 0,
+            emissive_intensity = getMaterialValue(aiMat, "$mat.emissiveIntensity", "float") or 0,
         }
     end
 
