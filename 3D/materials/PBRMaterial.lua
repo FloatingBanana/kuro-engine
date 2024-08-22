@@ -17,8 +17,10 @@ local PBRMaterial = Material:extend("PBRMaterial")
 function PBRMaterial:new(model, matData)
     local attributes = {
         albedoMap            = {uniform = "u_albedoMap",            value = Material.DefaultColorTex},
+        emissiveMap          = {uniform = "u_emissiveMap",          value = Material.DefaultZeroTex},
         metallicRoughnessMap = {uniform = "u_metallicRoughnessMap", value = Material.DefaultOneTex},
         normalMap            = {uniform = "u_normalMap",            value = Material.DefaultNormalTex},
+        emissiveIntensity    = {uniform = "u_emissiveIntensity",    value = matData.emissive_intensity},
         transparence         = {uniform = "u_transparence",         value = 1.0 - matData.opacity},
     }
 
@@ -29,6 +31,12 @@ function PBRMaterial:new(model, matData)
         self:_setupTexturePromise("albedoMap", matData.tex_basecolor, model.contentLoader:getImage(matData.tex_basecolor.path, {mipmaps = true}))
     else
         self.albedoMap = Utils.newColorImage(Vector2(1), matData.basecolor)
+    end
+
+    if matData.tex_emissive then
+        self:_setupTexturePromise("emissiveMap", matData.tex_emissive, model.contentLoader:getImage(matData.tex_emissive.path, {mipmaps = true}))
+    else
+        self.emissiveMap = Utils.newColorImage(Vector2(1), matData.emissivecolor)
     end
 
     if matData.tex_metallicroughness then
@@ -65,7 +73,8 @@ end
 function PBRMaterial.GenerateGBuffer(screenSize)
     local gbuffer = {
         {uniform = "u_GNormalMetallicRoughness", buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba8"})},
-        {uniform = "u_GAlbedoAO"               , buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba8"})}
+        {uniform = "u_GAlbedoAO"               , buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba8"})},
+        {uniform = "u_GEmissive"               , buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rg11b10f"})},
     }
 
     return gbuffer, pbrShader

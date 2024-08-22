@@ -69,12 +69,15 @@ void effect() {
 #if CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED
 uniform sampler2D u_normalMap;
 uniform sampler2D u_albedoMap;
+uniform sampler2D u_emissiveMap;
 uniform sampler2D u_metallicRoughnessMap;
 uniform sampler2D u_ao;
 uniform float u_transparence;
+uniform float u_emissiveIntensity;
 
 out vec4 oNormalMetallicRoughness;
 out vec4 oAlbedoAO;
+out vec4 oEmissive;
 
 void effect() {
 	if (Dither8(gl_FragCoord.xy, u_transparence))
@@ -87,6 +90,7 @@ void effect() {
 
 	oNormalMetallicRoughness = vec4(EncodeNormal(normal), metallicRoughness.b, metallicRoughness.g);
 	oAlbedoAO = vec4(albedo, ao);
+	oEmissive = vec4(texture(u_emissiveMap, v_texCoords).rgb * u_emissiveIntensity, 1.0);
 }
 #endif
 
@@ -96,6 +100,7 @@ void effect() {
 uniform LightData light;
 uniform sampler2D u_GNormalMetallicRoughness;
 uniform sampler2D u_GAlbedoAO;
+uniform sampler2D u_GEmissive;
 
 uniform sampler2D u_ssaoTex;
 uniform samplerCube u_irradianceMap;
@@ -107,6 +112,7 @@ void effect() {
 	vec2 screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
 	vec4 normalMetallicRoughness = texture(u_GNormalMetallicRoughness, screenUV);
 	vec4 albedoAO = texture(u_GAlbedoAO, screenUV);
+	vec3 emissive = texture(u_GEmissive, screenUV).rgb;
 
 	vec3 result = shadeFragmentPBR(
 		light,
@@ -120,7 +126,7 @@ void effect() {
 		u_environmentRadianceMap
 	);
 
-	oFragColor = vec4(result, 1.0);
+	oFragColor = vec4(result + emissive, 1.0);
 }
 #endif
 
@@ -130,8 +136,10 @@ void effect() {
 uniform LightData light;
 uniform sampler2D u_normalMap;
 uniform sampler2D u_albedoMap;
+uniform sampler2D u_emissiveMap;
 uniform sampler2D u_metallicRoughnessMap;
 uniform sampler2D u_ao;
+uniform float u_emissiveIntensity;
 
 uniform sampler2D u_ssaoTex;
 uniform samplerCube u_irradianceMap;
@@ -142,6 +150,7 @@ out vec4 oFragColor;
 void effect() {
 	vec2 screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
 	vec4 metallicRoughness = texture(u_metallicRoughnessMap, v_texCoords);
+	vec3 emissive = texture(u_emissiveMap, v_texCoords).rgb * u_emissiveIntensity;
 
 	vec3 result = shadeFragmentPBR(
 		light,
@@ -156,6 +165,6 @@ void effect() {
 	);
 
 
-	oFragColor = vec4(result, 1.0);
+	oFragColor = vec4(result + emissive, 1.0);
 }
 #endif
