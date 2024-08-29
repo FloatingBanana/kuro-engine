@@ -330,7 +330,7 @@ function Vector3:worldToScreen(screenMatrix, screenSize, minDepth, maxDepth)
 
     self.x = ( self.x * 0.5 + 0.5) * screenSize.width
     self.y = (-self.y * 0.5 + 0.5) * screenSize.height
-	self.z = (self.z * (maxDepth - minDepth)) + minDepth;
+	self.z = ( self.z * 0.5 + 0.5) * (maxDepth - minDepth) + minDepth;
 
     return self;
 end
@@ -345,7 +345,7 @@ end
 function Vector3:screenToWorld(screenMatrix, screenSize, minDepth, maxDepth)
     self.x = self.x / screenSize.width * 2 - 1
 	self.y = -self.y / screenSize.height * 2 - 1
-	self.z = (self.z - minDepth) / (maxDepth - minDepth)
+	self.z = (self.z - minDepth) / (maxDepth - minDepth) * 2 - 1
 
     local mat = screenMatrix.inverse
 	local w = self.x * mat.m14 + self.y * mat.m24 + self.z * mat.m34 + mat.m44;
