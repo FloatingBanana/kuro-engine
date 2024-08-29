@@ -70,7 +70,7 @@ end
 ----- Metamethods -----
 -----------------------
 
-local numberIndexes = {
+local numberIndices = {
     "m11", "m12", "m13", "m14",
     "m21", "m22", "m23", "m24",
     "m31", "m32", "m33", "m34",
@@ -78,8 +78,8 @@ local numberIndexes = {
 }
 
 function Matrix:__index(key)
-    if numberIndexes[key] then
-        return self[numberIndexes[key]]
+    if numberIndices[key] then
+        return self[numberIndices[key]]
     end
 
     -- Vectors
@@ -129,8 +129,8 @@ function Matrix:__index(key)
 end
 
 function Matrix:__newindex(key, value)
-    if numberIndexes[key] then
-        self[numberIndexes[key]] = value
+    if numberIndices[key] then
+        self[numberIndices[key]] = value
         return
     end
 
