@@ -231,6 +231,9 @@ function ShaderEffect:sendMeshConfigUniforms(config)
 
     if config.animator then
         self:trySendUniform("uBoneMatrices", "column", config.animator.finalMatrices)
+        self:trySendUniform("uHasAnimation", true)
+    else
+        self:trySendUniform("uHasAnimation", false)
     end
 
     return self

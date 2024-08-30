@@ -11,7 +11,7 @@ uniform mat4 uInvViewMatrix;
 uniform mat4 uInvProjMatrix;
 uniform mat4 uInvViewProjMatrix;
 
-uniform mat4 uPrevTransform;
+uniform bool uHasAnimation;
 uniform mat4 uBoneMatrices[MAX_BONE_COUNT];
 
 uniform vec3 uViewPosition;

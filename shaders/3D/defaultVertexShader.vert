@@ -18,7 +18,7 @@ out mat3 v_tbnMatrix;
 uniform mat4 u_volumeTransform;
 
 vec4 position(mat4 transformProjection, vec4 position) {
-    mat4 skinMat = GetSkinningMatrix(uBoneMatrices, VertexBoneIDs, VertexWeights);
+    mat4 skinMat = uHasAnimation ? GetSkinningMatrix(uBoneMatrices, VertexBoneIDs, VertexWeights) : mat4(1);
     vec4 worldPos = uWorldMatrix * skinMat * position;
     vec4 screen = uViewProjMatrix * worldPos;
 
