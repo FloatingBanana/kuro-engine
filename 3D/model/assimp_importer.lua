@@ -1,11 +1,11 @@
-local Matrix     = require "engine.math.matrix"
-local Stack      = require "engine.collections.stack"
-local Vector3    = require "engine.math.vector3"
-local Vector2    = require "engine.math.vector2"
-local Quaternion = require "engine.math.quaternion"
-local bit        = require "bit"
-local ffi        = require "ffi"
-local newtable   = require "table.new"
+local Matrix      = require "engine.math.matrix"
+local Vector3     = require "engine.math.vector3"
+local Vector2     = require "engine.math.vector2"
+local Quaternion  = require "engine.math.quaternion"
+local BoundingBox = require "engine.math.boundingBox"
+local bit         = require "bit"
+local ffi         = require "ffi"
+local newtable    = require "table.new"
 
 
 local ENABLE_LOGGING = false
@@ -210,6 +210,7 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
         Assimp.aiProcess_GenUVCoords,
         Assimp.aiProcess_TransformUVCoords,
         Assimp.aiProcess_SplitLargeMeshes,
+        Assimp.aiProcess_GenBoundingBoxes,
 
         removeUnusedMaterials and Assimp.aiProcess_RemoveRedundantMaterials or 0x0,
         optimizeGraph         and Assimp.aiProcess_OptimizeGraph            or 0x0,
@@ -334,6 +335,7 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             name     = readString(aiMesh.mName),
             material = getMaterialValue(aiScene.mMaterials[aiMesh.mMaterialIndex], "?mat.name", "string"),
             indices  = newtable(aiMesh.mNumFaces*3, 0),
+            aabb     = BoundingBox(readVector3(aiMesh.mAABB.mMin), readVector3(aiMesh.mAABB.mMax)),
 
             positions  = newtable(aiMesh.mNumVertices, 0),
             normals    = newtable(aiMesh.mNumVertices, 0),

@@ -1,15 +1,15 @@
-local PointLight       = require "engine.3D.lights.pointLight"
-local Model            = require "engine.3D.model.model"
-local BaseRederer      = require "engine.3D.renderers.baseRenderer"
-local Matrix           = require "engine.math.matrix"
-local Vector3          = require "engine.math.vector3"
-local Utils            = require "engine.misc.utils"
-local ShaderEffect     = require "engine.misc.shaderEffect"
-local lg               = love.graphics
+local PointLight    = require "engine.3D.lights.pointLight"
+local Model         = require "engine.3D.model.model"
+local BaseRederer   = require "engine.3D.renderers.baseRenderer"
+local Matrix        = require "engine.math.matrix"
+local Vector3       = require "engine.math.vector3"
+local CameraFrustum = require "engine.misc.cameraFrustum"
+local Utils         = require "engine.misc.utils"
+local lg            = love.graphics
 
 
 local volume = Model("engine/3D/renderers/lightvolume.fbx", {triangulate = true, optimizeGraph = true, removeUnusedMaterials = true}).meshes.Sphere.parts[1]
-
+local frustum = CameraFrustum()
 
 ---@alias GBuffer {uniform: string, buffer: love.Canvas}[]
 
@@ -53,13 +53,17 @@ function DeferredRenderer:renderMeshes()
     lg.setBlendMode("replace", "premultiplied")
     lg.setMeshCullMode("back")
 
-    for i, config in ipairs(self.meshParts) do
-        self.shader:sendCommonUniforms()
-        self.shader:sendRendererUniforms(self)
-        self.shader:sendMeshConfigUniforms(config)
+    frustum:updatePlanes(self.camera.viewProjectionMatrix)
 
-        config.material:apply(self.shader)
-        config.meshPart:draw()
+    for i, config in ipairs(self.meshParts) do
+        if frustum:testIntersection(config.meshPart.aabb, config.worldMatrix) then
+            self.shader:sendCommonUniforms()
+            self.shader:sendRendererUniforms(self)
+            self.shader:sendMeshConfigUniforms(config)
+
+            config.material:apply(self.shader)
+            config.meshPart:draw()
+        end
     end
 
 

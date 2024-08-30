@@ -33,6 +33,7 @@ end
 --- @class MeshPart: Object
 --- @field buffer love.Mesh
 --- @field material BaseMaterial
+--- @field aabb BoundingBox
 --- @field model Model
 ---
 --- @overload fun(part: unknown, model: Model): MeshPart
@@ -43,6 +44,7 @@ function Meshpart:new(meshPartData, model)
     self.buffer = love.graphics.newMesh(vertexFormat, #meshPartData.positions, "triangles", "static")
     self.material = model.materials[meshPartData.material]
     self.model = model
+    self.aabb = meshPartData.aabb
 
     self:__loadVertices(meshPartData)
 end

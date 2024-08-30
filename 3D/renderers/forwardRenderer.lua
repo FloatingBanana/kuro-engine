@@ -1,5 +1,8 @@
-local BaseRederer = require "engine.3D.renderers.baseRenderer"
-local lg          = love.graphics
+local BaseRederer   = require "engine.3D.renderers.baseRenderer"
+local CameraFrustum = require "engine.misc.cameraFrustum"
+local lg            = love.graphics
+
+local frustum = CameraFrustum()
 
 --- @class ForwardRenderer: BaseRenderer
 ---
@@ -16,6 +19,8 @@ function ForwardRenderer:renderMeshes()
     lg.setCanvas({depthstencil = self.depthCanvas})
     lg.clear()
 
+    frustum:updatePlanes(self.camera.viewProjectionMatrix)
+
     --------------------
     -- Depth pre-pass --
     --------------------
@@ -30,16 +35,18 @@ function ForwardRenderer:renderMeshes()
     lg.setBlendMode("replace")
 
     for i, config in ipairs(self.meshParts) do
-        config.material.shader:define("CURRENT_RENDER_PASS", "RENDER_PASS_DEPTH_PREPASS")
-        config.material.shader:undefine("CURRENT_LIGHT_TYPE")
+        if frustum:testIntersection(config.meshPart.aabb, config.worldMatrix) then
+            config.material.shader:define("CURRENT_RENDER_PASS", "RENDER_PASS_DEPTH_PREPASS")
+            config.material.shader:undefine("CURRENT_LIGHT_TYPE")
 
-        config.material.shader:use()
-        config.material.shader:sendMeshConfigUniforms(config)
-        config.material.shader:sendCommonUniforms()
-        config.material.shader:sendRendererUniforms(self)
+            config.material.shader:use()
+            config.material.shader:sendMeshConfigUniforms(config)
+            config.material.shader:sendCommonUniforms()
+            config.material.shader:sendRendererUniforms(self)
 
-        config.material:apply()
-        lg.draw(config.meshPart.buffer)
+            config.material:apply()
+            lg.draw(config.meshPart.buffer)
+        end
     end
 
 
@@ -67,42 +74,44 @@ function ForwardRenderer:renderMeshes()
         local config = self.meshParts:pop() --[[@as MeshPartConfig]]
         local shader = config.material.shader
 
-        shader:define("CURRENT_RENDER_PASS", "RENDER_PASS_FORWARD")
+        if frustum:testIntersection(config.meshPart.aabb, config.worldMatrix) then
+            shader:define("CURRENT_RENDER_PASS", "RENDER_PASS_FORWARD")
 
-        if config.ignoreLighting then
-            shader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
-            shader:use()
-
-            shader:sendCommonUniforms()
-            shader:sendRendererUniforms(self)
-            shader:sendMeshConfigUniforms(config)
-
-            config.material:apply(shader)
-            config.meshPart:draw()
-        else
-            for i, light in ipairs(self.lights) do
-                if not light.enabled then goto continue end
-
-                shader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
+            if config.ignoreLighting then
+                shader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
                 shader:use()
 
-                light:sendLightData(shader)
-
-                shader:trySendUniform("u_irradianceMap", self.irradianceMap)
-                shader:trySendUniform("u_environmentRadianceMap", self.environmentRadianceMap)
-
                 shader:sendCommonUniforms()
-                shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                shader:sendRendererUniforms(self)
                 shader:sendMeshConfigUniforms(config)
-
-                for j, effect in ipairs(self.postProcessingEffects) do
-                    effect:onLightRender(light, shader.shader)
-                end
 
                 config.material:apply(shader)
                 config.meshPart:draw()
+            else
+                for i, light in ipairs(self.lights) do
+                    if not light.enabled then goto continue end
 
-                ::continue::
+                    shader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
+                    shader:use()
+
+                    light:sendLightData(shader)
+
+                    shader:trySendUniform("u_irradianceMap", self.irradianceMap)
+                    shader:trySendUniform("u_environmentRadianceMap", self.environmentRadianceMap)
+
+                    shader:sendCommonUniforms()
+                    shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                    shader:sendMeshConfigUniforms(config)
+
+                    for j, effect in ipairs(self.postProcessingEffects) do
+                        effect:onLightRender(light, shader.shader)
+                    end
+
+                    config.material:apply(shader)
+                    config.meshPart:draw()
+
+                    ::continue::
+                end
             end
         end
 
