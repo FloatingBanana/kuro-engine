@@ -39,7 +39,7 @@ function Bloom:new(screenSize)
     self.filterRadius = 0.005
     self.bloomAmount = 0.04
     self.blurCanvas = lg.newCanvas(screenSize.x, screenSize.y, {format = "rg11b10f"})
-    self.mipmaps = self:generateMipmaps(screenSize, MIPMAP_COUNT)
+    self.mipmaps = self:generateMipmaps(MIPMAP_COUNT)
 
     self.blurCanvas:setFilter("linear", "linear")
     self.blurCanvas:setWrap("clamp", "clamp")
@@ -77,14 +77,14 @@ function Bloom:onPostRender(renderer, canvas)
     return self.blurCanvas
 end
 
-function Bloom:generateMipmaps(screenSize, count)
+function Bloom:generateMipmaps(count)
     local mips = {}
-    local mipSize = screenSize:clone()
 
     for i = 1, count do
-        mipSize:multiply(0.5)
+        local w = self.blurCanvas:getWidth()  * (0.5 ^ i)
+        local h = self.blurCanvas:getHeight() * (0.5 ^ i)
 
-        mips[i] = lg.newCanvas(mipSize.x, mipSize.y, {format = "rg11b10f"})
+        mips[i] = lg.newCanvas(w, h, {format = "rg11b10f"})
         mips[i]:setFilter("linear", "linear")
         mips[i]:setWrap("clamp", "clamp")
     end
