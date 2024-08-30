@@ -340,7 +340,6 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             positions  = newtable(aiMesh.mNumVertices, 0),
             normals    = newtable(aiMesh.mNumVertices, 0),
             tangents   = newtable(aiMesh.mNumVertices, 0),
-            bitangents = newtable(aiMesh.mNumVertices, 0),
             uvs        = newtable(aiMesh.mNumVertices, 0),
             boneIds    = newtable(aiMesh.mNumVertices, 0),
             weights    = newtable(aiMesh.mNumVertices, 0),
@@ -354,7 +353,6 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             part.positions[v]  = readVector3(aiMesh.mVertices[vi])
             part.normals[v]    = aiMesh.mNormals    ~= nil and readVector3(aiMesh.mNormals[vi])    or Vector3()
             part.tangents[v]   = aiMesh.mTangents   ~= nil and readVector3(aiMesh.mTangents[vi])   or Vector3()
-            part.bitangents[v] = aiMesh.mBitangents ~= nil and readVector3(aiMesh.mBitangents[vi]) or Vector3()
             part.uvs[v]        = readVector2(aiMesh.mTextureCoords[0][vi])
             part.boneIds[v]   = {-1,-1,-1,-1}
             part.weights[v]   = {0,0,0,0}
