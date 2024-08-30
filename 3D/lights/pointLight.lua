@@ -1,9 +1,10 @@
 local Matrix = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
-local Utils = require "engine.misc.utils"
+local CameraFrustum = require "engine.misc.cameraFrustum"
 
 
+local frustum = CameraFrustum()
 local canvasTable = {depthstencil = {}}
 local dirs = {
     {dir = Vector3( 1, 0, 0), up = Vector3(0,-1, 0)},
@@ -66,18 +67,20 @@ function PointLight:drawShadows(shader, meshparts)
     shader:sendUniform("light.position", self.position)
     shader:sendUniform("light.farPlane", self.farPlane)
 
+    
     for i = 1, 6 do
         local viewProj = Matrix.CreateLookAtDirection(self.position, dirs[i].dir, dirs[i].up):multiply(proj)
         canvasTable.depthstencil[1] = self.shadowMap
         canvasTable.depthstencil.face = i
-
+        
         love.graphics.setCanvas(canvasTable)
         love.graphics.clear()
-
+        
         shader:sendUniform("uViewProjMatrix", "column", viewProj)
+        frustum:updatePlanes(viewProj)
 
         for j, config in ipairs(meshparts) do
-            if self:canMeshCastShadow(config) then
+            if self:canMeshCastShadow(config) and frustum:testIntersection(config.meshPart.aabb, config.worldMatrix) then
                 shader:sendMeshConfigUniforms(config)
                 config.meshPart:draw()
             end

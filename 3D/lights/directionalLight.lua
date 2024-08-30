@@ -1,8 +1,9 @@
 local Matrix = require "engine.math.matrix"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
-local Utils = require "engine.misc.utils"
+local CameraFrustum = require "engine.misc.cameraFrustum"
 
+local frustum = CameraFrustum()
 local canvasTable = {}
 
 
@@ -60,9 +61,10 @@ function Dirlight:drawShadows(shader, meshparts)
 
     shader:sendUniform("light.direction", -self.direction)
     shader:sendUniform("uViewProjMatrix", "column", self.viewProjMatrix)
+    frustum:updatePlanes(self.viewProjMatrix)
 
     for i, config in ipairs(meshparts) do
-        if self:canMeshCastShadow(config) then
+        if self:canMeshCastShadow(config) and frustum:testIntersection(config.meshPart.aabb, config.worldMatrix) then
             shader:sendMeshConfigUniforms(config)
             config.meshPart:draw()
         end
