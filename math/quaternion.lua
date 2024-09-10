@@ -389,8 +389,8 @@ end
 ---@param up Vector3 Up direction relative to the deisired rotation
 ---@return Quaternion result
 function Quaternion.CreateFromDirection(direction, up)
-	local cross = Vector3.Cross(direction, up)
-	return Quaternion(cross.x, cross.y, cross.z, Vector3.Dot(direction, up))
+	local right = Vector3.Cross(direction, up):normalize()
+	return Quaternion(right.x, right.y, right.z, Vector3.Dot(direction, up))
 end
 
 
