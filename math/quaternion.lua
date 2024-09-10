@@ -34,7 +34,7 @@ end
 --- @operator mul: Quaternion
 --- @operator div: Quaternion
 local Quaternion = CStruct("quaternion", [[
-	double x, y, z, w;
+	float x, y, z, w;
 ]])
 
 
