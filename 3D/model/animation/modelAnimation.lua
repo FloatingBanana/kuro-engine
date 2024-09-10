@@ -2,6 +2,7 @@ local Matrix = require "engine.math.matrix"
 local AnimationNode = require "engine.3D.model.animation.modelAnimationNode"
 local Animator = require "engine.3D.model.animation.modelAnimator"
 local Object   = require "engine.3rdparty.classic.classic"
+local Quaternion = require "engine.math.quaternion"
 
 
 --- @class ModelAnimation: Object
@@ -40,11 +41,38 @@ end
 
 
 --- @param time number
+--- @param dqListPtr ffi.cdata*
+--- @param bone ModelBone
+--- @param parentTransform Matrix
+function Anim:updateBonesDQS(time, dqListPtr, bone, parentTransform)
+    local transform = bone.localMatrix
+    local animNode = self.animNodes[bone.name]
+
+    if animNode then
+        local position, rotation, scale = animNode:getInterpolated(time)
+        transform = Matrix.CreateTransformationMatrix(rotation, scale, position)
+    end
+
+    local globalTransform = transform * parentTransform
+
+    local finalBoneTransform = bone.offset * globalTransform
+    local rotation = finalBoneTransform.rotation
+
+    dqListPtr[bone.id*2]   = rotation
+    dqListPtr[bone.id*2+1] = Quaternion.CreateDualQuaternionTranslation(rotation, finalBoneTransform.translation)
+
+    for i, child in ipairs(bone.children) do
+        ---@cast child ModelBone
+        self:updateBonesDQS(time, dqListPtr, child, globalTransform)
+    end
+end
+
+
+--- @param time number
 --- @param matrixList ffi.cdata*
 --- @param bone ModelBone
 --- @param parentTransform Matrix
---- @param armatureToModelMatrix Matrix
-function Anim:updateBones(time, matrixList, bone, parentTransform, armatureToModelMatrix)
+function Anim:updateBonesLBS(time, matrixList, bone, parentTransform)
     local transform = bone.localMatrix
     local animNode = self.animNodes[bone.name]
 
@@ -56,12 +84,12 @@ function Anim:updateBones(time, matrixList, bone, parentTransform, armatureToMod
     local globalTransform = transform * parentTransform
 
     if bone then
-        matrixList[bone.id] = (bone.offset * globalTransform):multiply(armatureToModelMatrix)
+        matrixList[bone.id] = bone.offset * globalTransform
     end
 
     for i, child in ipairs(bone.children) do
         ---@cast child ModelBone
-        self:updateBones(time, matrixList, child, globalTransform, armatureToModelMatrix)
+        self:updateBonesLBS(time, matrixList, child, globalTransform)
     end
 end
 

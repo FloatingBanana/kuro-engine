@@ -1,6 +1,9 @@
 local Matrix = require "engine.math.matrix"
 local Object = require "engine.3rdparty.classic.classic"
 local ffi    = require "ffi"
+local Quaternion = require "engine.math.quaternion"
+
+local MAX_BONES = 50
 
 
 --- @class ModelAnimator: Object
@@ -9,12 +12,12 @@ local ffi    = require "ffi"
 --- @field public isPlaying boolean
 --- @field public duration number
 --- @field public fps integer
---- @field public finalMatrices love.ByteData
+--- @field public finalQuaternions love.ByteData
 ---
 --- @field private animation ModelAnimation
 --- @field private armature ModelArmature
 --- @field private armatureToModelMatrix Matrix
---- @field private finalMatricesPtr ffi.cdata*
+--- @field private finalQuaternionsPtr ffi.cdata*
 ---
 --- @overload fun(animation: ModelAnimation, armature: ModelArmature, modelOriginalGlobalMatrix: Matrix): ModelAnimator
 local Animator = Object:extend("ModelAnimator")
@@ -28,13 +31,14 @@ function Animator:new(animation, armature, modelOriginalGlobalMatrix)
 
     self.animation = animation
     self.armature = armature
-    self.armatureToModelMatrix = modelOriginalGlobalMatrix * armature:getGlobalMatrix().inverse
+    self.armatureToModelMatrix = armature:getGlobalMatrix() * modelOriginalGlobalMatrix.inverse
 
-    self.finalMatrices = love.data.newByteData(ffi.sizeof("matrix") * 50)
-    self.finalMatricesPtr = ffi.cast("matrix*", self.finalMatrices:getFFIPointer())
+    self.finalQuaternions = love.data.newByteData(ffi.sizeof("quaternion") * MAX_BONES*2)
+    self.finalQuaternionsPtr = ffi.cast("quaternion*", self.finalQuaternions:getFFIPointer())
 
-    for i=0, 49 do
-        self.finalMatricesPtr[i] = Matrix.Identity()
+    for i=0, MAX_BONES-1 do
+        self.finalQuaternionsPtr[i*2]   = Quaternion.Identity()
+        self.finalQuaternionsPtr[i*2+1] = Quaternion()
     end
 end
 
@@ -45,7 +49,7 @@ function Animator:update(dt)
     end
 
     for name, bone in pairs(self.armature.rootBones) do
-        self.animation:updateBones(self.time, self.finalMatricesPtr, bone, Matrix.Identity(), self.armatureToModelMatrix)
+        self.animation:updateBonesDQS(self.time, self.finalQuaternionsPtr, bone, self.armatureToModelMatrix)
     end
 end
 

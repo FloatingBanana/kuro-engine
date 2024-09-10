@@ -1,5 +1,7 @@
 #pragma language glsl3
 #pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_meshSkinning.glsl"
+#pragma include "engine/shaders/include/incl_dualQuaternion.glsl"
 #pragma include "engine/shaders/incl_commonBuffers.glsl"
 
 
@@ -18,29 +20,29 @@ out mat3 v_tbnMatrix;
 uniform mat4 u_volumeTransform;
 
 vec4 position(mat4 transformProjection, vec4 position) {
-    mat4 skinMat = uHasAnimation ? GetSkinningMatrix(uBoneMatrices, VertexBoneIDs, VertexWeights) : mat4(1);
-    vec4 worldPos = uWorldMatrix * skinMat * position;
+    DualQuaternion dqSkinning = uHasAnimation ? GetDualQuaternionSkinning(uBoneQuaternions, VertexBoneIDs, VertexWeights) : dq_identity();
+    vec4 worldPos = uWorldMatrix * vec4(dq_transform(dqSkinning, position.xyz), 1.0);
     vec4 screen = uViewProjMatrix * worldPos;
 
 #   if CURRENT_RENDER_PASS == RENDER_PASS_DEPTH_PREPASS
         screen.y *= -1.0;
         screen.z += 0.00001;
-    
+
 #   elif CURRENT_RENDER_PASS == RENDER_PASS_SHADOWMAPPING
         v_fragPos = worldPos.xyz;
-        v_normal  = uInverseTransposedWorldMatrix * mat3(skinMat) * VertexNormal;
+        v_normal  = uInverseTransposedWorldMatrix * dq_rotate(dqSkinning, VertexNormal);
 
 #   elif CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED_LIGHTPASS
         screen = u_volumeTransform * position * vec4(1,-1,1,1);
 
 #   elif CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED
-        v_tbnMatrix = GetTBNMatrix(uWorldMatrix, mat3(skinMat) * VertexNormal, mat3(skinMat) * VertexTangent);
+        v_tbnMatrix = GetTBNMatrix(uWorldMatrix, dq_rotate(dqSkinning, VertexNormal), dq_rotate(dqSkinning, VertexTangent));
         v_texCoords = VertexTexCoords;
         // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
         screen.y *= (uIsCanvasActive ? -1.0 : 1.0);
 
 #   elif CURRENT_RENDER_PASS == RENDER_PASS_FORWARD
-        v_tbnMatrix = GetTBNMatrix(uWorldMatrix, mat3(skinMat) * VertexNormal, mat3(skinMat) * VertexTangent);
+        v_tbnMatrix = GetTBNMatrix(uWorldMatrix, dq_rotate(dqSkinning, VertexNormal), dq_rotate(dqSkinning, VertexTangent));
         v_texCoords = VertexTexCoords;
         v_fragPos = worldPos.xyz;
         v_screenPos = screen;

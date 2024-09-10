@@ -149,26 +149,3 @@ mat3 GetTBNMatrix(mat4 world, vec3 normal, vec3 tangent) {
 
     return mat3(T, B, N);
 }
-
-
-mat4 GetSkinningMatrix(mat4 boneMatrices[MAX_BONE_COUNT], vec4 boneIDs, vec4 weights) {
-    mat4 boneTransform = mat4(0);
-    bool hasBones = false;
-
-    for (int i=0; i < 4; i++) {
-        if (boneIDs[i] < 0)
-            continue;
-        if (boneIDs[i] >= MAX_BONE_COUNT) {
-            hasBones = false;
-            break;
-        }
-
-        boneTransform += boneMatrices[int(boneIDs[i])] * weights[i];
-        hasBones = true;
-    }
-
-    if (hasBones)
-        return boneTransform;
-        
-    return mat4(1.0);
-}

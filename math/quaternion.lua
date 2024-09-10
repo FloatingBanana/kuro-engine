@@ -394,4 +394,19 @@ function Quaternion.CreateFromDirection(direction, up)
 end
 
 
+
+--- Creates the dual part of a dual quaternion representating the translation
+---@param rotation Quaternion
+---@param pos Vector3
+---@return Quaternion
+function Quaternion.CreateDualQuaternionTranslation(rotation, pos)
+	return Quaternion(
+         0.5*( pos.x * rotation.w + pos.y * rotation.z - pos.z * rotation.y),
+         0.5*(-pos.x * rotation.z + pos.y * rotation.w + pos.z * rotation.x),
+         0.5*( pos.x * rotation.y - pos.y * rotation.x + pos.z * rotation.w),
+		-0.5*( pos.x * rotation.x + pos.y * rotation.y + pos.z * rotation.z)
+	)
+end
+
+
 return Quaternion
