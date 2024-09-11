@@ -45,7 +45,7 @@ float CalculateSpotLight(LightData light, vec3 fragPos) {
 
 float CalculatePointLight(LightData light, vec3 fragPos) {
     float dist = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist));
+    float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist) + 0.0001);
 
     return attenuation;
 }
