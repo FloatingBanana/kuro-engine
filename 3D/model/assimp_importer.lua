@@ -351,9 +351,9 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             local vi = v-1
 
             part.positions[v]  = readVector3(aiMesh.mVertices[vi])
-            part.normals[v]    = aiMesh.mNormals    ~= nil and readVector3(aiMesh.mNormals[vi])    or Vector3()
-            part.tangents[v]   = aiMesh.mTangents   ~= nil and readVector3(aiMesh.mTangents[vi])   or Vector3()
-            part.uvs[v]        = readVector2(aiMesh.mTextureCoords[0][vi])
+            part.normals[v]    = aiMesh.mNormals          ~= nil and readVector3(aiMesh.mNormals[vi])          or Vector3()
+            part.tangents[v]   = aiMesh.mTangents         ~= nil and readVector3(aiMesh.mTangents[vi])         or Vector3()
+            part.uvs[v]        = aiMesh.mTextureCoords[0] ~= nil and readVector2(aiMesh.mTextureCoords[0][vi]) or Vector2()
             part.boneIds[v]   = {-1,-1,-1,-1}
             part.weights[v]   = {0,0,0,0}
         end
@@ -407,7 +407,7 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
 
 
     local loadNode
-    loadNode = function(aiNode)
+    loadNode = function(aiNode, parentNode, armatureName)
         local node = {
             name      = readString(aiNode.mName),
             meshParts = nil,
@@ -420,20 +420,29 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
             node.meshParts = {}
 
             for m=1, aiNode.mNumMeshes do
-                local aiMesh = aiScene.mMeshes[aiNode.mMeshes[m-1]]
                 node.meshParts[m] = aiNode.mMeshes[m-1]+1
             end
         end
 
+        -- Load missing bones
+        local armature = armatureName and scene.armatures[armatureName] or nil
+        if armature and armature[parentNode.name] and not armature[node.name] then
+            armature[node.name] = {
+                id = armatureBoneIDs[armatureName],
+                offset = Matrix.Identity()
+            }
+            armatureBoneIDs[armatureName] = armatureBoneIDs[armatureName] + 1
+        end
+
         -- Load children
         for c=1, aiNode.mNumChildren do
-            table.insert(node.children, loadNode(aiNode.mChildren[c-1]))
+            table.insert(node.children, loadNode(aiNode.mChildren[c-1], node, armatureName or (scene.armatures[node.name] and node.name or nil)))
         end
 
         return node
     end
 
-    scene.rootNode = loadNode(aiScene.mRootNode)
+    scene.rootNode = loadNode(aiScene.mRootNode, nil, nil)
 
 
     -- Load animations
