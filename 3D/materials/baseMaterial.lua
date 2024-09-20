@@ -64,7 +64,7 @@ end
 
 ---@returned BaseMaterial
 function Material:clone()
-    return Material(Utils.deepCopy(self.__attrs), self.shader)
+    return setmetatable(Material(Utils.deepCopy(self.__attrs), self.shader), getmetatable(self))
 end
 
 
