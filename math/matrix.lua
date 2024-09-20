@@ -107,14 +107,14 @@ function Matrix:__index(key)
 
     if key == "rotation" then
         local scale = self.scale
-
-        local m1 = Matrix(self.m11 / scale.x, self.m12 / scale.x, self.m13 / scale.x, 0,
-                          self.m21 / scale.y, self.m22 / scale.y, self.m23 / scale.y, 0,
-                          self.m31 / scale.z, self.m32 / scale.z, self.m33 / scale.z, 0,
-                          0, 0, 0, 1
+        local mat = Matrix(
+            self.m11 / scale.x, self.m12 / scale.x, self.m13 / scale.x, 0,
+            self.m21 / scale.y, self.m22 / scale.y, self.m23 / scale.y, 0,
+            self.m31 / scale.z, self.m32 / scale.z, self.m33 / scale.z, 0,
+            0,                  0,                  0,                  1
         )
 
-        return Quaternion.CreateFromRotationMatrix(m1);
+        return Quaternion.CreateFromRotationMatrix(mat);
     end
 
     if key == "transposed" then
