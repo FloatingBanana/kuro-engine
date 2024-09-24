@@ -73,15 +73,16 @@ end
 
 
 --- @param shader ShaderEffect
-function Dirlight:sendLightData(shader)
+--- @param lightUniform string
+function Dirlight:sendLightData(shader, lightUniform)
     if self.shadowMap then
-        shader:trySendUniform("light.shadowMap", self.shadowMap)
-        shader:trySendUniform("light.lightMatrix", "column", self.viewProjMatrix)
+        shader:trySendUniform(lightUniform..".shadowMap", self.shadowMap)
+        shader:trySendUniform(lightUniform..".lightMatrix", "column", self.viewProjMatrix)
     end
 
-    shader:trySendUniform("light.direction", self.direction)
-    shader:trySendUniform("light.color",     self.color)
-    shader:trySendUniform("light.specular",  self.specular)
+    shader:trySendUniform(lightUniform..".direction", self.direction)
+    shader:trySendUniform(lightUniform..".color",     self.color)
+    shader:trySendUniform(lightUniform..".specular",  self.specular)
 end
 
 

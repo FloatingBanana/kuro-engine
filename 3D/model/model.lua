@@ -51,10 +51,11 @@ function Model:new(file, opts)
     -- Load materials
     if opts.materials then
         for name, matData in pairs(modelData.materials) do
-            local matClass = opts.materials[name] or opts.materials.default
+            local mat = opts.materials[name] or opts.materials.default:clone() ---@type BaseMaterial
+            assert(mat, "Material for '"..name.."' not defined")
 
-            assert(matClass, "Material class for '"..name.."' not defined")
-            self.materials[name] = matClass(self, matData)
+            mat:loadMaterialData(matData, self)
+            self.materials[name] = mat
         end
     end
 

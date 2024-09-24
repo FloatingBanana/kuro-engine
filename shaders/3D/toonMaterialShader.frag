@@ -1,132 +1,62 @@
-#pragma language glsl3
+#define MATERIAL_DATA_CHANNELS 2
+
+#pragma include "engine/shaders/3D/material.glsl"
 #pragma include "engine/shaders/incl_utils.glsl"
 #pragma include "engine/shaders/incl_commonBuffers.glsl"
 #pragma include "engine/shaders/include/incl_dither.glsl"
 #pragma include "engine/shaders/3D/misc/incl_lights.glsl"
-#pragma include "engine/shaders/3D/misc/incl_toonLighting.glsl"
-#pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
+#pragma include "engine/shaders/3D/misc/incl_ToonLighting.glsl"
 
-#define ENABLE_SHADOWS
+uniform struct MaterialInput {
+	sampler2D normalMap;
+	sampler2D diffuseMap;
+	float shininess;
+	float transparency;
+} uInput;
+
+uniform sampler2D u_ssaoTex;
+
+void materialPrepass() {
+	if (Dither8(gl_FragCoord.xy, uInput.transparency))
+		discard;
+}
 
 
-vec3 shadeFragmentPhong(LightData light, sampler2D ssaoTex, vec3 fragPos, vec3 normal, vec3 diffuseColor, float shininess) {
-	vec3 viewFragDirection = normalize(uViewPosition - fragPos);
-	vec3 lightFragDirection = normalize(light.position - fragPos);
-	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragPos, 1.0);
-	vec2 screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
-	vec3 result;
+void materialGBufferPass(FragmentData fragData, out vec4 data[MATERIAL_DATA_CHANNELS]) {
+	vec3 normal = normalize(v_tbnMatrix * (texture(uInput.normalMap, v_texCoords).xyz * 2.0 - 1.0));
+	vec3 diffuse = texture(uInput.diffuseMap, v_texCoords).rgb;
 
-#   if CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL
-		result = CaculateToonLighting(light, light.direction, normal, viewFragDirection, diffuseColor, shininess);
-		result *= 1.0 - ShadowCalculation(light.shadowMap, lightSpaceFragPos);
+	data[0] = vec4(EncodeNormal(normal), 1.0, 1.0);
+	data[1] = vec4(diffuse, uInput.shininess / 255.0);
+}
 
-#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
-		result = CaculateToonLighting(light, lightFragDirection, normal, viewFragDirection, diffuseColor, shininess);
-        result *= CalculateSpotLight(light, fragPos) * CalculatePointLight(light, fragPos);
-		result *= 1.0 - ShadowCalculation(light.shadowMap, lightSpaceFragPos);
 
-#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
-		result = CaculateToonLighting(light, lightFragDirection, normal, viewFragDirection, diffuseColor, shininess);
-		result *= CalculatePointLight(light, fragPos);
-		result *= 1.0 - ShadowCalculation(light.position, light.farPlane, light.pointShadowMap, uViewPosition, fragPos);
+vec4 materialLightingPass(FragmentData fragData, LightData light, vec4 data[MATERIAL_DATA_CHANNELS]) {
+	vec3 lightFragDirection = normalize(light.position - fragData.position);
+    vec3 viewFragDirection = normalize(uViewPosition - fragData.position);
+	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragData.position, 1.0);
 
-#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-		result = light.color * diffuseColor;
-		result *= texture(ssaoTex, screenUV).r;
+	vec3 normal     = DecodeNormal(data[0].rg);
+	vec3 diffuse    = data[1].rgb;
+	float shininess = data[1].a * 255.0;
+	vec3 result     = vec3(0.0);
+
+
+#	if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
+        result = diffuse * light.color * texture(u_ssaoTex, fragData.screenUV).r;
 
 #   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
-		result = diffuseColor;
-#   else
-#       error Invalid light type
+        result = diffuse;
+#	else
+		vec3 lightDir = CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
+		result = CaculateToonLighting(light, lightDir, normal, viewFragDirection, diffuse, shininess);
+
+#		if CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
+			result *= CalculateSpotLight(light, fragData.position) * CalculatePointLight(light, fragData.position);
+#		elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
+			result *= CalculatePointLight(light, fragData.position);
+#		endif
 #   endif
 
-	return result;
+	return vec4(result, 1.0);
 }
-
-
-in vec2 v_texCoords;
-in vec3 v_fragPos;
-in mat3 v_tbnMatrix;
-
-
-#if CURRENT_RENDER_PASS == RENDER_PASS_DEPTH_PREPASS
-uniform float u_transparence;
-
-void effect() {
-	if (Dither8(gl_FragCoord.xy, u_transparence))
-		discard;
-}
-#endif
-
-
-#if CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED
-uniform float u_shininess;
-uniform sampler2D u_diffuseTexture;
-uniform sampler2D u_normalMap;
-uniform float u_transparence;
-
-out vec4 oNormal;
-out vec4 oAlbedoTreshold;
-
-void effect() {
-	if (Dither8(gl_FragCoord.xy, u_transparence))
-		discard;
-
-	vec3 normal = normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0));
-
-	oNormal         = vec4(EncodeNormal(normal), 1.0, 1.0);
-	oAlbedoTreshold = vec4(texture(u_diffuseTexture, v_texCoords).rgb, u_shininess / 255.0);
-}
-#endif
-
-
-
-#if CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED_LIGHTPASS
-uniform LightData light;
-uniform sampler2D u_ssaoTex;
-uniform sampler2D u_GNormal;
-uniform sampler2D u_GAlbedoShininess;
-
-out vec4 oFragColor;
-
-void effect() {
-	vec2 screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
-	vec4 albedoShininess = texture(u_GAlbedoShininess, screenUV);
-
-	vec3 result = shadeFragmentPhong(
-		light,
-		u_ssaoTex,
-		ReconstructPosition(screenUV, uDepthBuffer, uInvViewProjMatrix),
-		DecodeNormal(texture(u_GNormal, screenUV).xy),
-		albedoShininess.rgb,
-		albedoShininess.a * 255.0
-	);
-
-	oFragColor = vec4(result, 1.0);
-}
-#endif
-
-
-
-#if CURRENT_RENDER_PASS == RENDER_PASS_FORWARD
-uniform LightData light;
-uniform float u_shininess;
-uniform sampler2D u_diffuseTexture;
-uniform sampler2D u_normalMap;
-uniform sampler2D u_ssaoTex;
-
-out vec4 oFragColor;
-
-void effect() {
-	vec3 result = shadeFragmentPhong(
-		light,
-		u_ssaoTex,
-		v_fragPos,
-		normalize(v_tbnMatrix * (texture(u_normalMap, v_texCoords).rgb * 2.0 - 1.0)),
-		texture(u_diffuseTexture, v_texCoords).rgb,
-		u_shininess
-	);
-
-	oFragColor = vec4(result, 1.0);
-}
-#endif

@@ -8,28 +8,37 @@ local phongShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "
 
 --- @class ToonMaterial: BaseMaterial
 ---
---- @field shininess number
---- @field diffuseTexture love.Texture
+--- @field diffuseMap love.Texture
 --- @field normalMap love.Texture
+--- @field shininess number
+--- @field transparency number
 ---
---- @overload fun(model: Model, aiMat: table): ToonMaterial
+--- @overload fun(): ToonMaterial
 local ToonMaterial = Material:extend("ToonMaterial")
 
 
-function ToonMaterial:new(model, matData)
+function ToonMaterial:new()
     local attributes = {
-        diffuseTexture     = {uniform = "u_diffuseTexture",     value = Material.DefaultColorTex},
-        normalMap          = {uniform = "u_normalMap",          value = Material.DefaultNormalTex},
-        transparence       = {uniform = "u_transparence",       value = 1.0 - matData.opacity},
-        shininess          = {uniform = "u_shininess",          value = 50},
+        diffuseMap   = {uniform = "uInput.diffuseMap",   value = Material.DefaultColorTex},
+        normalMap    = {uniform = "uInput.normalMap",    value = Material.DefaultNormalTex},
+        shininess    = {uniform = "uInput.shininess",    value = 128},
+        transparency = {uniform = "uInput.transparency", value = 0},
     }
 
     Material.new(self, attributes, phongShader)
+end
+
+
+---@param matData table
+---@param model Model
+function ToonMaterial:loadMaterialData(matData, model)
+    -- self.shininess = matData.shininess
+    self.transparency = 1.0 - matData.opacity
 
     if matData.tex_diffuse then
-        self:_setupTexturePromise("diffuseTexture", matData.tex_diffuse, model.contentLoader:getImage(matData.tex_diffuse.path, {mipmaps = true}))
+        self:_setupTexturePromise("diffuseMap", matData.tex_diffuse, model.contentLoader:getImage(matData.tex_diffuse.path, {mipmaps = true}))
     else
-        self.diffuseTexture = Utils.newColorImage(Vector2(1), matData.diffusecolor)
+        self.diffuseMap = Utils.newColorImage(Vector2(1), matData.diffusecolor)
     end
 
     if matData.tex_normals then
@@ -54,6 +63,9 @@ function ToonMaterial:_setupTexturePromise(field, texData, promise)
     end)
 end
 
+
+---@type love.PixelFormat[]
+ToonMaterial.GBufferLayout = {"rg8", "rgba8"}
 
 
 ---@param screenSize Vector2

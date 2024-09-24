@@ -76,23 +76,24 @@ end
 
 
 --- @param shader ShaderEffect
-function Spotlight:sendLightData(shader)
+--- @param lightUniform string
+function Spotlight:sendLightData(shader, lightUniform)
     if self.shadowMap then
-        shader:trySendUniform("light.shadowMap", self.shadowMap)
-        shader:trySendUniform("light.lightMatrix", "column", self.viewProjMatrix)
+        shader:trySendUniform(lightUniform..".shadowMap", self.shadowMap)
+        shader:trySendUniform(lightUniform..".lightMatrix", "column", self.viewProjMatrix)
     end
 
-    shader:trySendUniform("light.position",    self.position)
-    shader:trySendUniform("light.color",       self.color)
-    shader:trySendUniform("light.specular",    self.specular)
+    shader:trySendUniform(lightUniform..".position",    self.position)
+    shader:trySendUniform(lightUniform..".color",       self.color)
+    shader:trySendUniform(lightUniform..".specular",    self.specular)
 
-    shader:trySendUniform("light.constant",  self.constant)
-    shader:trySendUniform("light.linear",    self.linear)
-    shader:trySendUniform("light.quadratic", self.quadratic)
+    shader:trySendUniform(lightUniform..".constant",  self.constant)
+    shader:trySendUniform(lightUniform..".linear",    self.linear)
+    shader:trySendUniform(lightUniform..".quadratic", self.quadratic)
 
-    shader:trySendUniform("light.direction",   self.direction)
-    shader:trySendUniform("light.cutOff",      math.cos(self.innerAngle))
-    shader:trySendUniform("light.outerCutOff", math.cos(self.outerAngle))
+    shader:trySendUniform(lightUniform..".direction",   self.direction)
+    shader:trySendUniform(lightUniform..".cutOff",      math.cos(self.innerAngle))
+    shader:trySendUniform(lightUniform..".outerCutOff", math.cos(self.outerAngle))
 end
 
 

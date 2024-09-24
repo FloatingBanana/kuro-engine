@@ -8,24 +8,35 @@ local pbrShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "en
 
 --- @class PBRMaterial: BaseMaterial
 ---
---- @field shininess number
---- @field diffuseTexture love.Texture
+--- @field albedoMap love.Texture
+--- @field emissiveMap love.Texture
+--- @field metallicRoughnessMap love.Texture
+--- @field normalMap love.Texture
+--- @field emissiveIntensity number
+--- @field transparency number
 ---
---- @overload fun(model: Model, aiMat: table): PBRMaterial
+--- @overload fun(): PBRMaterial
 local PBRMaterial = Material:extend("PBRMaterial")
 
-function PBRMaterial:new(model, matData)
+function PBRMaterial:new()
     local attributes = {
-        albedoMap            = {uniform = "u_albedoMap",            value = Material.DefaultColorTex},
-        emissiveMap          = {uniform = "u_emissiveMap",          value = Material.DefaultZeroTex},
-        metallicRoughnessMap = {uniform = "u_metallicRoughnessMap", value = Material.DefaultOneTex},
-        normalMap            = {uniform = "u_normalMap",            value = Material.DefaultNormalTex},
-        emissiveIntensity    = {uniform = "u_emissiveIntensity",    value = matData.emissive_intensity},
-        transparence         = {uniform = "u_transparence",         value = 1.0 - matData.opacity},
+        albedoMap            = {uniform = "uInput.albedoMap",            value = Material.DefaultColorTex},
+        emissiveMap          = {uniform = "uInput.emissiveMap",          value = Material.DefaultZeroTex},
+        metallicRoughnessMap = {uniform = "uInput.metallicRoughnessMap", value = Material.DefaultOneTex},
+        normalMap            = {uniform = "uInput.normalMap",            value = Material.DefaultNormalTex},
+        emissiveIntensity    = {uniform = "uInput.emissiveIntensity",    value = 0},
+        transparency         = {uniform = "uInput.transparency",         value = 0},
     }
 
     Material.new(self, attributes, pbrShader)
+end
 
+
+---@param matData table
+---@param model Model
+function PBRMaterial:loadMaterialData(matData, model)
+    self.emissiveIntensity = matData.emissive_intensity
+    self.transparency = 1.0 - matData.opacity
 
     if matData.tex_basecolor then
         self:_setupTexturePromise("albedoMap", matData.tex_basecolor, model.contentLoader:getImage(matData.tex_basecolor.path, {mipmaps = true}))
@@ -66,6 +77,10 @@ function PBRMaterial:_setupTexturePromise(field, texData, promise)
         print("Failed to load material texture "..field..", using a default one. ("..message..")")
     end)
 end
+
+
+---@type love.PixelFormat[]
+PBRMaterial.GBufferLayout = {"rgba8", "rgba8", "rg11b10f"}
 
 
 ---@param screenSize Vector2

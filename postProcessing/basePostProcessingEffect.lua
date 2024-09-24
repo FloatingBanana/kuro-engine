@@ -13,7 +13,7 @@ end
 
 
 --- @param light BaseLight
---- @param shader love.Shader
+--- @param shader ShaderEffect
 function baseEffect:onLightRender(light, shader)
     
 end

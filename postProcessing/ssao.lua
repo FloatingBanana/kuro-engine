@@ -87,7 +87,7 @@ end
 
 function SSAO:onLightRender(light, shader)
     if light:is(AmbientLight) then
-        shader:send("u_ssaoTex", self.ssaoCanvas)
+        shader:sendUniform("u_ssaoTex", self.ssaoCanvas)
     end
 end
 

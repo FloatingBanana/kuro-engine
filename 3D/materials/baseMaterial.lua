@@ -62,6 +62,13 @@ function Material:__newindex(key, value)
 end
 
 
+---@param matData table
+---@param model Model
+function Material:loadMaterialData(matData, model)
+    error("Not implemented")
+end
+
+
 ---@returned BaseMaterial
 function Material:clone()
     return setmetatable(Material(Utils.deepCopy(self.__attrs), self.shader), getmetatable(self))
@@ -79,11 +86,46 @@ function Material:apply(shader)
 end
 
 
----@param screenSize Vector2
----@return GBuffer, ShaderEffect
-function Material.GenerateGBuffer(screenSize)
-    error("Not implemented")
+---@param light BaseLight
+---@overload fun()
+function Material:setLight(light)
+    if light then
+        if light.shadowMap then
+            self.shader:undefine("MATERIAL_DISABLE_SHADOWS")
+        else
+            self.shader:define("MATERIAL_DISABLE_SHADOWS")
+        end
+
+        self.shader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
+        light:sendLightData(self.shader, "u_light")
+    else
+        self.shader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
+    end
 end
+
+
+---@param pass "forward"|"gbuffer"|"lightpass"|"depth"|"shadowmapping"
+---@return BaseMaterial
+function Material:setRenderPass(pass)
+    local def =
+        pass == "forward"       and "RENDER_PASS_FORWARD"            or
+        pass == "gbuffer"       and "RENDER_PASS_DEFERRED"           or
+        pass == "lightpass"     and "RENDER_PASS_DEFERRED_LIGHTPASS" or
+        pass == "depth"         and "RENDER_PASS_DEPTH_PREPASS"      or
+        pass == "shadowmapping" and "RENDER_PASS_SHADOWMAPPING"      or nil
+
+    self.shader:define("CURRENT_RENDER_PASS", def)
+
+    if pass == "depth" then
+        self.shader:undefine("CURRENT_LIGHT_TYPE")
+    end
+
+    return self
+end
+
+
+---@type love.PixelFormat[]
+Material.GBufferLayout = {}
 
 
 return Material

@@ -8,26 +8,35 @@ local phongShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "
 
 --- @class PhongMaterial: BaseMaterial
 ---
---- @field shininess number
 --- @field diffuseTexture love.Texture
 --- @field normalMap love.Texture
+--- @field shininess number
+--- @field transparency number
 ---
---- @overload fun(model: Model, aiMat: table): PhongMaterial
+--- @overload fun(): PhongMaterial
 local PhongMaterial = Material:extend("PhongMaterial")
 
 
-function PhongMaterial:new(model, matData)
+function PhongMaterial:new()
     local attributes = {
-        shininess      = {uniform = "u_shininess",      value = 128 --[[matData.shininess]]},
-        diffuseTexture = {uniform = "u_diffuseTexture", value = Material.DefaultColorTex},
-        normalMap      = {uniform = "u_normalMap",      value = Material.DefaultNormalTex},
-        transparence   = {uniform = "u_transparence",   value = 1.0 - matData.opacity},
+        diffuseMap   = {uniform = "uInput.diffuseMap",   value = Material.DefaultColorTex},
+        normalMap    = {uniform = "uInput.normalMap",    value = Material.DefaultNormalTex},
+        shininess    = {uniform = "uInput.shininess",    value = 128},
+        transparence = {uniform = "uInput.transparency", value = 0},
     }
 
     Material.new(self, attributes, phongShader)
+end
+
+
+---@param matData table
+---@param model Model
+function PhongMaterial:loadMaterialData(matData, model)
+    -- self.shininess = matData.shininess
+    self.opacity = 1.0 - matData.opacity
 
     if matData.tex_diffuse then
-        self:_setupTexturePromise("diffuseTexture", matData.tex_diffuse, model.contentLoader:getImage(matData.tex_diffuse.path, {mipmaps = true}))
+        self:_setupTexturePromise("diffuseMap", matData.tex_diffuse, model.contentLoader:getImage(matData.tex_diffuse.path, {mipmaps = true}))
     else
         self.diffuseTexture = Utils.newColorImage(Vector2(1), matData.diffusecolor)
     end
@@ -55,6 +64,8 @@ function PhongMaterial:_setupTexturePromise(field, texData, promise)
 end
 
 
+---@type love.PixelFormat[]
+PhongMaterial.GBufferLayout = {"rg8", "rgba8"}
 
 ---@param screenSize Vector2
 ---@return GBuffer, ShaderEffect

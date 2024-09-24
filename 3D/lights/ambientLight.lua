@@ -16,8 +16,9 @@ end
 
 
 --- @param shader ShaderEffect
-function AmbientLight:sendLightData(shader)
-    shader:trySendUniform("light.color", self.color)
+--- @param lightUniform string
+function AmbientLight:sendLightData(shader, lightUniform)
+    shader:trySendUniform(lightUniform..".color", self.color)
 end
 
 return AmbientLight

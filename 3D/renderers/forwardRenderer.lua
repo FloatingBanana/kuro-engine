@@ -36,8 +36,7 @@ function ForwardRenderer:renderMeshes()
 
     for i, config in ipairs(self.meshParts) do
         if frustum:testIntersection(config.meshPart.aabb, config.worldMatrix) then
-            config.material.shader:define("CURRENT_RENDER_PASS", "RENDER_PASS_DEPTH_PREPASS")
-            config.material.shader:undefine("CURRENT_LIGHT_TYPE")
+            config.material:setRenderPass("depth")
 
             config.material.shader:use()
             config.material.shader:sendMeshConfigUniforms(config)
@@ -72,42 +71,40 @@ function ForwardRenderer:renderMeshes()
 
     while self.meshParts:peek() do
         local config = self.meshParts:pop() --[[@as MeshPartConfig]]
-        local shader = config.material.shader
+        local material = config.material
+        local shader = material.shader
 
         if frustum:testIntersection(config.meshPart.aabb, config.worldMatrix) then
-            shader:define("CURRENT_RENDER_PASS", "RENDER_PASS_FORWARD")
+            material:setRenderPass("forward")
 
             if config.ignoreLighting then
-                shader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
+                material:setLight()
                 shader:use()
 
                 shader:sendCommonUniforms()
                 shader:sendRendererUniforms(self)
                 shader:sendMeshConfigUniforms(config)
 
-                config.material:apply(shader)
+                material:apply()
                 config.meshPart:draw()
             else
                 for i, light in ipairs(self.lights) do
                     if not light.enabled then goto continue end
 
-                    shader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
+                    material:setLight(light)
+
                     shader:use()
-
-                    light:sendLightData(shader)
-
                     shader:trySendUniform("u_irradianceMap", self.irradianceMap)
                     shader:trySendUniform("u_environmentRadianceMap", self.environmentRadianceMap)
-
                     shader:sendCommonUniforms()
                     shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
                     shader:sendMeshConfigUniforms(config)
 
                     for j, effect in ipairs(self.postProcessingEffects) do
-                        effect:onLightRender(light, shader.shader)
+                        effect:onLightRender(light, shader)
                     end
 
-                    config.material:apply(shader)
+                    material:apply()
                     config.meshPart:draw()
 
                     ::continue::

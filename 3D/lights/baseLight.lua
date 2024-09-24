@@ -87,7 +87,8 @@ end
 
 
 --- @param shader ShaderEffect
-function BaseLight:sendLightData(shader)
+--- @param lightUniform string
+function BaseLight:sendLightData(shader, lightUniform)
     error("Not implemented")
 end
 
