@@ -36,9 +36,13 @@ function Animator:new(animation, armature, modelOriginalGlobalMatrix)
     self.finalQuaternions = love.data.newByteData(ffi.sizeof("quaternion") * MAX_BONES*2)
     self.finalQuaternionsPtr = ffi.cast("quaternion*", self.finalQuaternions:getFFIPointer())
 
+    self.finalMatrices = love.data.newByteData(ffi.sizeof("matrix") * MAX_BONES)
+    self.finalMatricesPtr = ffi.cast("matrix*", self.finalMatrices:getFFIPointer())
+
     for i=0, MAX_BONES-1 do
         self.finalQuaternionsPtr[i*2]   = Quaternion.Identity()
         self.finalQuaternionsPtr[i*2+1] = Quaternion()
+        self.finalMatricesPtr[i] = Matrix.Identity()
     end
 end
 
@@ -49,7 +53,7 @@ function Animator:update(dt)
     end
 
     for name, bone in pairs(self.armature.rootBones) do
-        self.animation:updateBonesDQS(self.time, self.finalQuaternionsPtr, bone, self.armatureToModelMatrix)
+        self.animation:updateBonesDQS(self.time, self.finalQuaternionsPtr, self.finalMatricesPtr, bone, self.armatureToModelMatrix)
     end
 end
 
