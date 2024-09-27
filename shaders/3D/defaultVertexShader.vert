@@ -29,6 +29,7 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
 #   if CURRENT_RENDER_PASS == RENDER_PASS_DEPTH_PREPASS
         screen.z += 0.00001;
+        screen.y *= -1;
 
 #   elif CURRENT_RENDER_PASS == RENDER_PASS_SHADOWMAPPING
         v_fragPos = worldPos.xyz;
