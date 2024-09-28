@@ -67,16 +67,5 @@ end
 ---@type love.PixelFormat[]
 PhongMaterial.GBufferLayout = {"rg8", "rgba8"}
 
----@param screenSize Vector2
----@return GBuffer, ShaderEffect
-function PhongMaterial.GenerateGBuffer(screenSize)
-    local gbuffer = {
-        {uniform = "u_GNormal"        , buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rg8"})},
-        {uniform = "u_GAlbedoSpecular", buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba8"})}
-    }
-
-    return gbuffer, phongShader
-end
-
 
 return PhongMaterial

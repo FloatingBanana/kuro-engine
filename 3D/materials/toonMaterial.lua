@@ -68,16 +68,4 @@ end
 ToonMaterial.GBufferLayout = {"rg8", "rgba8"}
 
 
----@param screenSize Vector2
----@return GBuffer, ShaderEffect
-function ToonMaterial.GenerateGBuffer(screenSize)
-    local gbuffer = {
-        {uniform = "u_GNormal"         , buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rg8"})},
-        {uniform = "u_GAlbedoShininess", buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba8"})}
-    }
-
-    return gbuffer, phongShader
-end
-
-
 return ToonMaterial

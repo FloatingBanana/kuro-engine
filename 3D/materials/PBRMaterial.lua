@@ -83,17 +83,4 @@ end
 PBRMaterial.GBufferLayout = {"rgba8", "rgba8", "rg11b10f"}
 
 
----@param screenSize Vector2
----@return GBuffer, ShaderEffect
-function PBRMaterial.GenerateGBuffer(screenSize)
-    local gbuffer = {
-        {uniform = "u_GNormalMetallicRoughness", buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba8"})},
-        {uniform = "u_GAlbedoAO"               , buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rgba8"})},
-        {uniform = "u_GEmissive"               , buffer = love.graphics.newCanvas(screenSize.width, screenSize.height, {format = "rg11b10f"})},
-    }
-
-    return gbuffer, pbrShader
-end
-
-
 return PBRMaterial
