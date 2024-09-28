@@ -110,8 +110,8 @@ end
 local treshold = 256/5
 function PointLight:getLightRadius()
     local linear, constant, quadratic = self.linear, self.constant, self.quadratic
-    local color = self.color + self.specular
-    local max = math.max(math.max(color.r, color.g), color.b)
+    local c, s = self.color, self.specular
+    local max = math.max(math.max(c[1]+s[1], c[2]+s[2]), c[3]+s[3])
 
     return (-linear + math.sqrt(linear * linear - 4 * quadratic * (constant - treshold * max))) / (2 * quadratic)
 end
