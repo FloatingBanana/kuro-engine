@@ -60,6 +60,10 @@ vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj, out vec3 po
 
     return normalize(cross(hDeriv, vDeriv)) * -1.0;
 }
+vec3 ReconstructNormal(sampler2D depthBuffer, vec2 uv, mat4 invProj) {
+    vec3 _p;
+    return ReconstructNormal(depthBuffer, uv, invProj, _p);
+}
 
 
 float LinearizeDepth(float depth, float near, float far) {
@@ -131,13 +135,19 @@ float Random(vec2 uv) {
     return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+#define Saturate(v) (clamp(v, 0.0, 1.0))
 
-bool Check01Range(float v) {
+bool IsSaturated(float v) {
     return v >= 0.0 && v <= 1.0;
 }
-
-bool Check01Range(vec2 v) {
-    return Check01Range(v.x) && Check01Range(v.y);
+bool IsSaturated(vec2 v) {
+    return IsSaturated(v.x) && IsSaturated(v.y);
+}
+bool IsSaturated(vec3 v) {
+    return IsSaturated(v.x) && IsSaturated(v.y) && IsSaturated(v.z);
+}
+bool IsSaturated(vec4 v) {
+    return IsSaturated(v.x) && IsSaturated(v.y) && IsSaturated(v.z) && IsSaturated(v.w);
 }
 
 
