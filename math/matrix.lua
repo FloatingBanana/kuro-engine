@@ -632,7 +632,7 @@ end
 --- @param near number: Near plane depth
 --- @param far number: Far plane depth
 --- @return Matrix: Result
-function Matrix.CreateOrtographic(width, height, near, far)
+function Matrix.CreateOrthographic(width, height, near, far)
     local mat = Matrix.Identity()
 
     mat.m11 = 2 / width
