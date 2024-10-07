@@ -1,18 +1,17 @@
 #pragma language glsl3
 
+#define UVtoNDC(uv) (vec3(uv.x, 1.0 - uv.y, uv.z) * 2.0 - 1.0)
+#define NDCtoUV(ndc) (ndc * vec3(0.5, -0.5, 0.5) + 0.5)
+
 vec3 ProjectUV(vec3 position, mat4 proj) {
     vec4 clipPos = proj * vec4(position, 1.0);
-    vec3 screen = (clipPos.xyz / clipPos.w) * vec3(0.5, -0.5, 0.5) + 0.5;
 
-    return screen;
+    return NDCtoUV(clipPos.xyz / clipPos.w);
 }
 
 
 vec3 ReconstructPosition(vec2 uv, float depth, mat4 invProj) {
-    float x = uv.x * 2.0 - 1.0;
-    float y = (1.0 - uv.y) * 2.0 - 1.0;
-    float z = depth * 2.0 - 1.0;
-    vec4 pos = invProj * vec4(x, y, z, 1.0);
+    vec4 pos = invProj * vec4(UVtoNDC(vec3(uv, depth)), 1.0);
 
     return pos.xyz / pos.w;
 }
