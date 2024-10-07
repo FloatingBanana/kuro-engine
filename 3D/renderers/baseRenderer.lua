@@ -109,7 +109,7 @@ function Renderer:_renderSkyBox()
     love.graphics.setDepthMode("lequal", false)
 
     skyboxShader:use()
-    skyboxShader:sendUniform("u_viewProj", "column", view:multiply(self.camera.projectionMatrix))
+    skyboxShader:sendUniform("u_viewProj", "column", view:multiply(self.camera.perspectiveMatrix))
     skyboxShader:sendUniform("u_skyTex", self.skyBoxTexture)
 
     love.graphics.draw(CubemapUtils.cubeMesh)

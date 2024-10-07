@@ -49,7 +49,7 @@ function DeferredRenderer:renderMeshes()
     lg.setBlendMode("replace", "premultiplied")
     lg.setMeshCullMode("back")
 
-    frustum:updatePlanes(self.camera.viewProjectionMatrix)
+    frustum:updatePlanes(self.camera.viewPerspectiveMatrix)
     self.lightPassMaterial:setRenderPass("gbuffer")
     self.lightPassMaterial.shader:sendCommonUniforms()
     self.lightPassMaterial.shader:sendRendererUniforms(self)
@@ -104,7 +104,7 @@ function DeferredRenderer:renderMeshes()
         end
 
         if light:is(PointLight) then ---@cast light PointLight
-            local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * self.camera.viewProjectionMatrix
+            local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * self.camera.viewPerspectiveMatrix
 
             self.lightPassMaterial.shader:sendUniform("u_volumeTransform", transform)
             volume:draw()

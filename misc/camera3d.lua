@@ -7,12 +7,14 @@ local Object  = require "engine.3rdparty.classic.classic"
 --- @field position Vector3
 --- @field rotation Quaternion
 --- @field fov number
---- @field aspectRatio number
+--- @field screenSize Vector2
 --- @field nearPlane number
 --- @field farPlane number
 --- @field viewMatrix Matrix
---- @field projectionMatrix Matrix
---- @field viewProjectionMatrix Matrix
+--- @field perspectiveMatrix Matrix
+--- @field orthographicMatrix Matrix
+--- @field viewPerspectiveMatrix Matrix
+--- @field viewOrthographicMatrix Matrix
 --- @field forward Vector3
 --- @field backward Vector3
 --- @field up Vector3
@@ -20,14 +22,14 @@ local Object  = require "engine.3rdparty.classic.classic"
 --- @field left Vector3
 --- @field right Vector3
 ---
---- @overload fun(position: Vector3, rotation: Quaternion, fov: number, aspectRatio: number, nearPlane: number, farPlane: number): Camera3D
+--- @overload fun(position: Vector3, rotation: Quaternion, fov: number, screenSize: Vector2, nearPlane: number, farPlane: number): Camera3D
 local Camera = Object:extend("Camera3D")
 
-function Camera:new(position, rotation, fov, aspectRatio, nearPlane, farPlane)
+function Camera:new(position, rotation, fov, screenSize, nearPlane, farPlane)
     self.position = position
     self.rotation = rotation
     self.fov = fov
-    self.aspectRatio = aspectRatio
+    self.screenSize = screenSize
     self.nearPlane = nearPlane
     self.farPlane = farPlane
 end
@@ -37,12 +39,20 @@ function Camera:__index(key)
         return Matrix.CreateLookAtDirection(self.position, self.forward, self.up)
     end
 
-    if key == "projectionMatrix" then
-        return Matrix.CreatePerspectiveFOV(self.fov, self.aspectRatio, self.nearPlane, self.farPlane)
+    if key == "perspectiveMatrix" then
+        return Matrix.CreatePerspectiveFOV(self.fov, self.screenSize.width / self.screenSize.height, self.nearPlane, self.farPlane)
     end
 
-    if key == "viewProjectionMatrix" then
-        return self.viewMatrix * self.projectionMatrix
+    if key == "orthographicMatrix" then
+        return Matrix.CreateOrthographic(self.screenSize.width, self.screenSize.height, self.nearPlane, self.farPlane)
+    end
+
+    if key == "viewPerspectiveMatrix" then
+        return self.viewMatrix * self.perspectiveMatrix
+    end
+
+    if key == "viewOrthographicMatrix" then
+        return self.viewMatrix * self.perspectiveMatrix
     end
 
     if key == "forward" then
