@@ -10,6 +10,8 @@
 #pragma include "engine/shaders/3D/misc/incl_lights.glsl"
 #pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
 
+#define ISLIGHT(t) (CURRENT_LIGHT_TYPE == t)
+
 
 in vec2 v_texCoords;
 in vec3 v_fragPos;
@@ -53,6 +55,7 @@ void effect() {
 
 #elif CURRENT_RENDER_PASS == RENDER_PASS_FORWARD
 uniform LightData u_light;
+uniform sampler2D u_ambientOcclusion;
 
 out vec4 oFragColor;
 
@@ -65,8 +68,13 @@ void effect() {
     vec4 inData[MATERIAL_DATA_CHANNELS];
     materialGBufferPass(fragData, inData);
 
-    float visibility = 1.0 - _getShadowOcclusion(u_light, v_fragPos, uViewPosition);
-	oFragColor = materialLightingPass(fragData, u_light, inData) * visibility;
+    float visibility = 1.0;
+    if (ISLIGHT(LIGHT_TYPE_AMBIENT)) {
+        visibility = texture(u_ambientOcclusion, fragData.screenUV).r;
+    }
+    else {
+        visibility = 1.0 - _getShadowOcclusion(u_light, v_fragPos, uViewPosition);
+    }
 }
 
 
@@ -99,6 +107,7 @@ uniform sampler2D u_deferredInput5;
 uniform sampler2D u_deferredInput6;
 uniform sampler2D u_deferredInput7;
 uniform sampler2D u_deferredInput8;
+uniform sampler2D u_ambientOcclusion;
 
 uniform LightData u_light;
 
@@ -136,7 +145,13 @@ void effect() {
         inData[7] = texture(u_deferredInput7, fragData.screenUV);
 #   endif
 
-    float visibility = 1.0 - _getShadowOcclusion(u_light, fragData.position, uViewPosition);
-    oFragColor = materialLightingPass(fragData, u_light, inData) * visibility;
+
+    float visibility = 1.0;
+    if (ISLIGHT(LIGHT_TYPE_AMBIENT)) {
+        visibility = texture(u_ambientOcclusion, fragData.screenUV).r;
+    }
+    else {
+        visibility = 1.0 - _getShadowOcclusion(u_light, fragData.position, uViewPosition);
+    }
 }
 #endif

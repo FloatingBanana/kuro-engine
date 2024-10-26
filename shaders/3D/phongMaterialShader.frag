@@ -43,7 +43,7 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, vec4 data[MATE
 
 
 #	if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-        result = diffuse * light.color * texture(u_ssaoTex, fragData.screenUV).r;
+        result = diffuse * light.color;
 
 #   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
         result = diffuse;

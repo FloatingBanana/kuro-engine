@@ -49,7 +49,7 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, vec4 data[MATE
 	float metallic  = data[0].b;
 	float roughness = data[0].a;
 	vec3 albedo     = data[1].rgb;
-	float ao        = data[1].a * texture(u_ssaoTex, fragData.screenUV).r;
+	float ao        = data[1].a;
 	vec3 emissive   = data[2].rgb;
 	vec3 result     = vec3(0.0);
 

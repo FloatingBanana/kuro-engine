@@ -94,6 +94,7 @@ function ForwardRenderer:renderMeshes()
                     material:setLight(light)
 
                     shader:use()
+                    shader:trySendUniform("u_ambientOcclusion", self.ambientOcclusion)
                     shader:trySendUniform("u_irradianceMap", self.irradianceMap)
                     shader:trySendUniform("u_environmentRadianceMap", self.environmentRadianceMap)
                     shader:sendCommonUniforms()

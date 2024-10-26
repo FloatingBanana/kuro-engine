@@ -80,13 +80,8 @@ function SSAO:onPreRender(renderer)
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.clear()
     love.graphics.draw(self.blurCanvas)
-end
 
-
-function SSAO:onLightRender(light, shader)
-    if light:is(AmbientLight) then
-        shader:sendUniform("u_ssaoTex", self.ssaoCanvas)
-    end
+    renderer.ambientOcclusion = self.ssaoCanvas
 end
 
 
