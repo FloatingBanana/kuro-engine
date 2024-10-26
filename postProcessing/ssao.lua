@@ -35,22 +35,20 @@ local vdir = {0,1}
 --- @field private blurCanvas love.Canvas
 --- @field private shader ShaderEffect
 --- @field private dummySquare love.Mesh
---- @field private algorithm string
 --- @field public kernelSize integer
 --- @field public kernelRadius number
 ---
---- @overload fun(screenSize: Vector2, kernelSize: integer, kernelRadius: number, algorithm: "accurate" | "naive" | "deferred" | nil): SSAO
+--- @overload fun(screenSize: Vector2, kernelSize: integer, kernelRadius: number): SSAO
 local SSAO = BaseEffect:extend("SSAO")
 
 
-function SSAO:new(screenSize, kernelSize, kernelRadius, algorithm)
+function SSAO:new(screenSize, kernelSize, kernelRadius)
     local ssaoSize = screenSize / 2
 
     self.kernel = Stack()
     self.ssaoCanvas = love.graphics.newCanvas(ssaoSize.width, ssaoSize.height, {format = "r8"})
     self.blurCanvas = love.graphics.newCanvas(ssaoSize.width, ssaoSize.height, {format = "r8"})
     self.dummySquare = Utils.newSquareMesh(ssaoSize)
-    self.algorithm = algorithm or "deferred"
     self.kernelSize = kernelSize
     self.kernelRadius = kernelRadius
 
