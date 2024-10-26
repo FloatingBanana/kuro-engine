@@ -83,13 +83,14 @@ function Spotlight:sendLightData(shader, lightUniform)
         shader:trySendUniform(lightUniform..".lightMatrix", "column", self.viewProjMatrix)
     end
 
+    shader:trySendUniform(lightUniform..".type",        self.typeDefinition)
     shader:trySendUniform(lightUniform..".position",    self.position)
     shader:trySendUniform(lightUniform..".color",       self.color)
     shader:trySendUniform(lightUniform..".specular",    self.specular)
 
-    shader:trySendUniform(lightUniform..".constant",  self.constant)
-    shader:trySendUniform(lightUniform..".linear",    self.linear)
-    shader:trySendUniform(lightUniform..".quadratic", self.quadratic)
+    shader:trySendUniform(lightUniform..".constant",    self.constant)
+    shader:trySendUniform(lightUniform..".linear",      self.linear)
+    shader:trySendUniform(lightUniform..".quadratic",   self.quadratic)
 
     shader:trySendUniform(lightUniform..".direction",   self.direction)
     shader:trySendUniform(lightUniform..".cutOff",      math.cos(self.innerAngle))

@@ -80,6 +80,7 @@ function Dirlight:sendLightData(shader, lightUniform)
         shader:trySendUniform(lightUniform..".lightMatrix", "column", self.viewProjMatrix)
     end
 
+    shader:trySendUniform(lightUniform..".type",      self.typeDefinition)
     shader:trySendUniform(lightUniform..".direction", self.direction)
     shader:trySendUniform(lightUniform..".color",     self.color)
     shader:trySendUniform(lightUniform..".specular",  self.specular)

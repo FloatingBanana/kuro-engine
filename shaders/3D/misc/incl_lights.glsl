@@ -5,6 +5,8 @@
 #define LIGHT_TYPE_POINT 4
 
 struct LightData {
+    int type;
+
     vec3 position;
     vec3 direction;
 

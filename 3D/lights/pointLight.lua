@@ -96,6 +96,7 @@ function PointLight:sendLightData(shader, lightUniform)
         shader:trySendUniform(lightUniform..".pointShadowMap", self.shadowMap)
     end
 
+    shader:trySendUniform(lightUniform..".type",      self.typeDefinition)
     shader:trySendUniform(lightUniform..".position",  self.position)
     shader:trySendUniform(lightUniform..".color",     self.color)
     shader:trySendUniform(lightUniform..".specular",  self.specular)
