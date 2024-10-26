@@ -3,7 +3,7 @@ local Object = require "engine.3rdparty.classic.classic"
 local ffi    = require "ffi"
 local Quaternion = require "engine.math.quaternion"
 
-local MAX_BONES = 50
+local MAX_BONES = 20
 
 
 --- @class ModelAnimator: Object
