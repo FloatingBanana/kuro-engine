@@ -50,12 +50,7 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, vec4 data[MATE
 #	else
 		vec3 lightDir = CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
 		result = CaculateToonLighting(light, lightDir, normal, viewFragDirection, diffuse, shininess);
-
-#		if CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
-			result *= CalculateSpotLight(light, fragData.position) * CalculatePointLight(light, fragData.position);
-#		elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
-			result *= CalculatePointLight(light, fragData.position);
-#		endif
+		result *= CalculateLightInfluence(light, fragData.position);
 #   endif
 
 	return vec4(result, 1.0);

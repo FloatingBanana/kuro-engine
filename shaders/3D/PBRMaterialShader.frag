@@ -62,17 +62,8 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, vec4 data[MATE
 #	else
 		vec3 lightDir = CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
 		result = CalculateDirectPBRLighting(light, lightDir, viewFragDirection, normal, albedo, roughness, metallic);
-
-#		if CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
-			result *= CalculateSpotLight(light, fragData.position) * CalculatePointLight(light, fragData.position);
-#		elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
-			result *= CalculatePointLight(light, fragData.position);
-#		endif
-#   endif
-
-
-	// result = result / (result + vec3(1.0));
-    // result = pow(result, vec3(1.0/2.2));
+		result *= CalculateLightInfluence(light, fragData.position);
+#	endif
 
 	return vec4(result, 1.0);
 }

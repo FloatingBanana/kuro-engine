@@ -30,24 +30,32 @@ struct LightData {
 };
 
 
-float CalculateSpotLight(LightData light, vec3 fragPos) {
-    vec3 fragLightDir = normalize(light.position - fragPos);
-    float theta = dot(fragLightDir, -light.direction);
+float CalculateSpotCone(vec3 lightPos, vec3 lightDir, float cutOff, float outerCutOff, vec3 fragPos) {
+    vec3 fragLightDir = normalize(lightPos - fragPos);
+    float theta = dot(fragLightDir, -lightDir);
 
-    if (theta > light.outerCutOff) {
-        float epsilon = light.cutOff - light.outerCutOff;
-        float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
-
-        return intensity;
+    if (theta > outerCutOff) {
+        float epsilon = cutOff - outerCutOff;
+        return clamp((theta - outerCutOff) / epsilon, 0.0, 1.0);
     }
     
     return 0.0;
 }
 
 
-float CalculatePointLight(LightData light, vec3 fragPos) {
-    float dist = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * dist + light.quadratic * (dist * dist) + 0.0001);
+float CalculateAttenuation(vec3 lightPos, float constant, float linear, float quadratic, vec3 fragPos) {
+    float dist = length(lightPos - fragPos);
+    return 1.0 / (constant + linear * dist + quadratic * (dist * dist) + 0.0001);
+}
 
-    return attenuation;
+
+float CalculateLightInfluence(LightData light, vec3 fragPos) {
+    switch (light.type) {
+        case LIGHT_TYPE_POINT:
+            return CalculateAttenuation(light.position, light.constant, light.linear, light.quadratic, fragPos);
+        case LIGHT_TYPE_SPOT:
+            return CalculateAttenuation(light.position, light.constant, light.linear, light.quadratic, fragPos) * CalculateSpotCone(light.position, light.direction, light.cutOff, light.outerCutOff, fragPos);
+        default:
+            return 1.0;
+    }
 }
