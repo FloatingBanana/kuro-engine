@@ -107,7 +107,7 @@ vec2 DecodeVelocity(vec2 vel) {
 }
 
 
-const vec3 lumFactor = vec3(0.299, 0.587, 0.114);
+const vec3 lumFactor = vec3(0.2126, 0.7152, 0.0722);
 
 float Luminance(vec3 color) {
     return dot(color, lumFactor);
