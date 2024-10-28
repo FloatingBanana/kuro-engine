@@ -98,15 +98,7 @@ void effect() {
 
 
 #elif CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED_LIGHTPASS
-uniform sampler2D u_deferredInput0;  
-uniform sampler2D u_deferredInput1;
-uniform sampler2D u_deferredInput2;
-uniform sampler2D u_deferredInput3;
-uniform sampler2D u_deferredInput4;
-uniform sampler2D u_deferredInput5;
-uniform sampler2D u_deferredInput6;
-uniform sampler2D u_deferredInput7;
-uniform sampler2D u_deferredInput8;
+uniform sampler2D u_deferredInput[MATERIAL_DATA_CHANNELS];
 uniform sampler2D u_ambientOcclusion;
 
 uniform LightData u_light;
@@ -121,28 +113,28 @@ void effect() {
     vec4 inData[MATERIAL_DATA_CHANNELS];
 
 #   if MATERIAL_DATA_CHANNELS >= 1
-        inData[0] = texture(u_deferredInput0, fragData.screenUV);
+        inData[0] = texture(u_deferredInput[0], fragData.screenUV);
 #   endif
 #   if MATERIAL_DATA_CHANNELS >= 2
-        inData[1] = texture(u_deferredInput1, fragData.screenUV);
+        inData[1] = texture(u_deferredInput[1], fragData.screenUV);
 #   endif
 #   if MATERIAL_DATA_CHANNELS >= 3
-        inData[2] = texture(u_deferredInput2, fragData.screenUV);
+        inData[2] = texture(u_deferredInput[2], fragData.screenUV);
 #   endif
 #   if MATERIAL_DATA_CHANNELS >= 4
-        inData[3] = texture(u_deferredInput3, fragData.screenUV);
+        inData[3] = texture(u_deferredInput[3], fragData.screenUV);
 #   endif
 #   if MATERIAL_DATA_CHANNELS >= 5
-        inData[4] = texture(u_deferredInput4, fragData.screenUV);
+        inData[4] = texture(u_deferredInput[4], fragData.screenUV);
 #   endif
 #   if MATERIAL_DATA_CHANNELS >= 6
-        inData[5] = texture(u_deferredInput5, fragData.screenUV);
+        inData[5] = texture(u_deferredInput[5], fragData.screenUV);
 #   endif
 #   if MATERIAL_DATA_CHANNELS >= 7
-        inData[6] = texture(u_deferredInput6, fragData.screenUV);
+        inData[6] = texture(u_deferredInput[6], fragData.screenUV);
 #   endif
 #   if MATERIAL_DATA_CHANNELS >= 8
-        inData[7] = texture(u_deferredInput7, fragData.screenUV);
+        inData[7] = texture(u_deferredInput[7], fragData.screenUV);
 #   endif
 
 

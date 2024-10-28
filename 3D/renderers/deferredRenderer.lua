@@ -95,9 +95,7 @@ function DeferredRenderer:renderMeshes()
         self.lightPassMaterial.shader:trySendUniform("u_irradianceMap", self.irradianceMap)
         self.lightPassMaterial.shader:trySendUniform("u_environmentRadianceMap", self.environmentRadianceMap)
 
-        for b, bufferPart in ipairs(self.gbuffer) do
-            self.lightPassMaterial.shader:trySendUniform("u_deferredInput"..(b-1), bufferPart)
-        end
+        self.lightPassMaterial.shader:trySendUniform("u_deferredInput", unpack(self.gbuffer))
 
         if light:is(PointLight) then ---@cast light PointLight
             local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * self.camera.viewPerspectiveMatrix
