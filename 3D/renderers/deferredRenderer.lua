@@ -88,11 +88,6 @@ function DeferredRenderer:renderMeshes()
         if not light.enabled then goto continue end
 
         self.lightPassMaterial:setLight(light)
-
-        for j, effect in ipairs(self.postProcessingEffects) do
-            effect:onLightRender(light, self.lightPassMaterial.shader)
-        end
-
         self.lightPassMaterial.shader:use()
         self.lightPassMaterial.shader:sendCommonUniforms()
         self.lightPassMaterial.shader:sendRendererUniforms(self)

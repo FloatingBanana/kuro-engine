@@ -12,13 +12,6 @@ function baseEffect:onPreRender(renderer)
 end
 
 
---- @param light BaseLight
---- @param shader ShaderEffect
-function baseEffect:onLightRender(light, shader)
-    
-end
-
-
 --- @param renderer BaseRenderer
 --- @param canvas love.Canvas
 --- @return love.Canvas

@@ -101,9 +101,6 @@ function ForwardRenderer:renderMeshes()
                     shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
                     shader:sendMeshConfigUniforms(config)
 
-                    for j, effect in ipairs(self.postProcessingEffects) do
-                        effect:onLightRender(light, shader)
-                    end
 
                     material:apply()
                     config.meshPart:draw()
