@@ -20,12 +20,12 @@ local PBRMaterial = Material:extend("PBRMaterial")
 
 function PBRMaterial:new()
     local attributes = {
-        albedoMap            = {uniform = "uInput.albedoMap",            value = Material.DefaultColorTex},
-        emissiveMap          = {uniform = "uInput.emissiveMap",          value = Material.DefaultZeroTex},
-        metallicRoughnessMap = {uniform = "uInput.metallicRoughnessMap", value = Material.DefaultOneTex},
-        normalMap            = {uniform = "uInput.normalMap",            value = Material.DefaultNormalTex},
-        emissiveIntensity    = {uniform = "uInput.emissiveIntensity",    value = 0},
-        transparency         = {uniform = "uInput.transparency",         value = 0},
+        albedoMap            = {uniform = "u_input.albedoMap",            value = Material.DefaultColorTex},
+        emissiveMap          = {uniform = "u_input.emissiveMap",          value = Material.DefaultZeroTex},
+        metallicRoughnessMap = {uniform = "u_input.metallicRoughnessMap", value = Material.DefaultOneTex},
+        normalMap            = {uniform = "u_input.normalMap",            value = Material.DefaultNormalTex},
+        emissiveIntensity    = {uniform = "u_input.emissiveIntensity",    value = 0},
+        transparency         = {uniform = "u_input.transparency",         value = 0},
     }
 
     Material.new(self, attributes, pbrShader)

@@ -19,10 +19,10 @@ local ToonMaterial = Material:extend("ToonMaterial")
 
 function ToonMaterial:new()
     local attributes = {
-        diffuseMap   = {uniform = "uInput.diffuseMap",   value = Material.DefaultColorTex},
-        normalMap    = {uniform = "uInput.normalMap",    value = Material.DefaultNormalTex},
-        shininess    = {uniform = "uInput.shininess",    value = 128},
-        transparency = {uniform = "uInput.transparency", value = 0},
+        diffuseMap   = {uniform = "u_input.diffuseMap",   value = Material.DefaultColorTex},
+        normalMap    = {uniform = "u_input.normalMap",    value = Material.DefaultNormalTex},
+        shininess    = {uniform = "u_input.shininess",    value = 128},
+        transparency = {uniform = "u_input.transparency", value = 0},
     }
 
     Material.new(self, attributes, phongShader)
