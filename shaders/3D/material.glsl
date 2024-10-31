@@ -71,6 +71,7 @@ void effect() {
 	FragmentData fragData;
 	fragData.screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
     fragData.position = v_fragPos;
+    fragData.uv = v_texCoords;
     fragData.tbnMatrix = v_tbnMatrix;
 	
     vec4 inData[MATERIAL_DATA_CHANNELS];
@@ -97,6 +98,7 @@ out vec4 oDeferredOutputs[MATERIAL_DATA_CHANNELS];
 void effect() {
     FragmentData fragData;
     fragData.position = v_fragPos;
+    fragData.uv = v_texCoords;
     fragData.tbnMatrix = v_tbnMatrix;
 
 

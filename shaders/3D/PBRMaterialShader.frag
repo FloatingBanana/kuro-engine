@@ -30,13 +30,13 @@ void materialPrepass() {
 
 
 void materialGBufferPass(FragmentData fragData, out vec4 data[MATERIAL_DATA_CHANNELS]) {
-	vec3 normal = normalize(v_tbnMatrix * (texture(uInput.normalMap, v_texCoords).xyz * 2.0 - 1.0));
-	vec3 albedo = texture(uInput.albedoMap, v_texCoords).rgb;
-    vec4 metallicRoughness = texture(uInput.metallicRoughnessMap, v_texCoords);
+	vec3 normal = normalize(fragData.tbnMatrix * (texture(uInput.normalMap, fragData.uv).xyz * 2.0 - 1.0));
+	vec3 albedo = texture(uInput.albedoMap, fragData.uv).rgb;
+    vec4 metallicRoughness = texture(uInput.metallicRoughnessMap, fragData.uv);
 
 	data[0] = vec4(EncodeNormal(normal), metallicRoughness.b, metallicRoughness.g);
 	data[1] = vec4(albedo, 1.0);
-	data[2] = vec4(texture(uInput.emissiveMap, v_texCoords).rgb * uInput.emissiveIntensity, 1.0);
+	data[2] = vec4(texture(uInput.emissiveMap, fragData.uv).rgb * uInput.emissiveIntensity, 1.0);
 }
 
 

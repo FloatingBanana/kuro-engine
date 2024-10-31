@@ -23,8 +23,8 @@ void materialPrepass() {
 
 
 void materialGBufferPass(FragmentData fragData, out vec4 data[MATERIAL_DATA_CHANNELS]) {
-	vec3 normal = normalize(v_tbnMatrix * (texture(uInput.normalMap, v_texCoords).xyz * 2.0 - 1.0));
-	vec3 diffuse = texture(uInput.diffuseMap, v_texCoords).rgb;
+	vec3 normal = normalize(fragData.tbnMatrix * (texture(uInput.normalMap, fragData.uv).xyz * 2.0 - 1.0));
+	vec3 diffuse = texture(uInput.diffuseMap, fragData.uv).rgb;
 
 	data[0] = vec4(EncodeNormal(normal), 1.0, 1.0);
 	data[1] = vec4(diffuse, uInput.shininess / 255.0);
