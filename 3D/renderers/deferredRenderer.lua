@@ -92,8 +92,6 @@ function DeferredRenderer:renderMeshes()
         self.lightPassMaterial.shader:sendCommonUniforms()
         self.lightPassMaterial.shader:sendRendererUniforms(self)
         self.lightPassMaterial.shader:trySendUniform("u_ambientOcclusion", self.ambientOcclusion)
-        self.lightPassMaterial.shader:trySendUniform("u_irradianceMap", self.irradianceMap)
-        self.lightPassMaterial.shader:trySendUniform("u_environmentRadianceMap", self.environmentRadianceMap)
         self.lightPassMaterial:apply()
 
         self.lightPassMaterial.shader:trySendUniform("u_deferredInput", unpack(self.gbuffer))

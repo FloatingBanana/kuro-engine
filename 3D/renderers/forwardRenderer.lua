@@ -82,20 +82,17 @@ function ForwardRenderer:renderMeshes()
 
                 material:setLight(light)
 
-                    shader:use()
-                    shader:trySendUniform("u_ambientOcclusion", self.ambientOcclusion)
-                    shader:trySendUniform("u_irradianceMap", self.irradianceMap)
-                    shader:trySendUniform("u_environmentRadianceMap", self.environmentRadianceMap)
-                    shader:sendCommonUniforms()
-                    shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
-                    shader:sendMeshConfigUniforms(config)
+                shader:use()
+                shader:trySendUniform("u_ambientOcclusion", self.ambientOcclusion)
+                shader:sendCommonUniforms()
+                shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                shader:sendMeshConfigUniforms(config)
 
 
-                    material:apply()
-                    config.meshPart:draw()
+                material:apply()
+                config.meshPart:draw()
 
-                    ::continue::
-                end
+                ::continue::
             end
         end
 

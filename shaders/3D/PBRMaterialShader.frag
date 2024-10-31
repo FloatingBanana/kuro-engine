@@ -13,6 +13,8 @@ struct MaterialInput {
 	float emissiveIntensity;
 	float transparency;
 
+	samplerCube irradianceMap;
+	samplerCube environmentRadianceMap;
 };
 
 
@@ -23,8 +25,6 @@ struct MaterialInput {
 #pragma include "engine/shaders/include/incl_dither.glsl"
 #pragma include "engine/shaders/3D/misc/incl_lights.glsl"
 #pragma include "engine/shaders/3D/misc/incl_PBRLighting.glsl"
-uniform samplerCube u_irradianceMap;
-uniform samplerCube u_environmentRadianceMap;
 
 
 void materialPrepass(MaterialInput matInput) {
@@ -59,10 +59,9 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput 
 
 
 #	if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-        result = CalculateAmbientPBRLighting(light, u_irradianceMap, u_environmentRadianceMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
-
+		result = CalculateAmbientPBRLighting(light, matInput.irradianceMap, matInput.environmentRadianceMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
 #	else
-		vec3 lightDir = CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
+		vec3 lightDir = light.type == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
 		result = CalculateDirectPBRLighting(light, lightDir, viewFragDirection, normal, albedo, roughness, metallic);
 		result *= CalculateLightInfluence(light, fragData.position);
 #	endif

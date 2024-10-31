@@ -16,9 +16,10 @@ local pbrShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "en
 --- @field transparency number
 ---
 --- @overload fun(): PBRMaterial
+--- @overload fun(irradianceMap: love.Texture, environmentRadianceMap: love.Texture): PBRMaterial
 local PBRMaterial = Material:extend("PBRMaterial")
 
-function PBRMaterial:new()
+function PBRMaterial:new(irradianceMap, environmentRadianceMap)
     local attributes = {
         albedoMap            = {uniform = "u_input.albedoMap",            value = Material.DefaultColorTex},
         emissiveMap          = {uniform = "u_input.emissiveMap",          value = Material.DefaultZeroTex},
@@ -26,6 +27,10 @@ function PBRMaterial:new()
         normalMap            = {uniform = "u_input.normalMap",            value = Material.DefaultNormalTex},
         emissiveIntensity    = {uniform = "u_input.emissiveIntensity",    value = 0},
         transparency         = {uniform = "u_input.transparency",         value = 0},
+
+        -- Ambient
+        irradianceMap          = {uniform = "u_input.irradianceMap",          value = irradianceMap or Material.DefaultColorCubeTex},
+        environmentRadianceMap = {uniform = "u_input.environmentRadianceMap", value = environmentRadianceMap or Material.DefaultColorCubeTex},
     }
 
     Material.new(self, attributes, pbrShader)
@@ -80,7 +85,7 @@ end
 
 
 ---@type love.PixelFormat[]
-PBRMaterial.GBufferLayout = {"rgba8", "rgba8", "rg11b10f"}
+PBRMaterial.GBufferLayout = {"rgba16", "rgba8", "rg11b10f"}
 
 
 return PBRMaterial
