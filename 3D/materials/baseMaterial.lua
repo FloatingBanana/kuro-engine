@@ -10,6 +10,7 @@ local Utils   = require "engine.misc.utils"
 --- @field DefaultNormalTex love.Image
 --- @field DefaultOneTex love.Image
 --- @field DefaultZeroTex love.Image
+--- @field DefaultColorCubeTex love.Image
 ---
 --- @field public shader ShaderEffect
 ---
@@ -24,6 +25,7 @@ Material.DefaultColorTex = love.graphics.newImage(defaultColorTexData, {linear =
 Material.DefaultNormalTex = Utils.newColorImage(Vector2(1), {.5,.5,1,1})
 Material.DefaultZeroTex = Utils.newColorImage(Vector2(1), {0,0,0,1})
 Material.DefaultOneTex = Utils.newColorImage(Vector2(1), {1,1,1,1})
+Material.DefaultColorCubeTex = love.graphics.newCubeImage({defaultColorTexData, defaultColorTexData, defaultColorTexData, defaultColorTexData, defaultColorTexData, defaultColorTexData}, {linear = true})
 
 Material.DefaultColorTex:setWrap("repeat")
 Material.DefaultColorTex:setFilter("nearest", "nearest")
