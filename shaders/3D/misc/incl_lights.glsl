@@ -1,8 +1,7 @@
-#define LIGHT_TYPE_UNLIT 0
-#define LIGHT_TYPE_AMBIENT 1
-#define LIGHT_TYPE_DIRECTIONAL 2
-#define LIGHT_TYPE_SPOT 3
-#define LIGHT_TYPE_POINT 4
+#define LIGHT_TYPE_AMBIENT 0
+#define LIGHT_TYPE_DIRECTIONAL 1
+#define LIGHT_TYPE_SPOT 2
+#define LIGHT_TYPE_POINT 3
 
 struct LightData {
     int type;

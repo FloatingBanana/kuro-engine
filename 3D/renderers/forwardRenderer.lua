@@ -77,21 +77,10 @@ function ForwardRenderer:renderMeshes()
         if frustum:testIntersection(config.meshPart.aabb, config.worldMatrix) then
             material:setRenderPass("forward")
 
-            if config.ignoreLighting then
-                material:setLight()
-                shader:use()
+            for i, light in ipairs(self.lights) do
+                if not light.enabled then goto continue end
 
-                shader:sendCommonUniforms()
-                shader:sendRendererUniforms(self)
-                shader:sendMeshConfigUniforms(config)
-
-                material:apply()
-                config.meshPart:draw()
-            else
-                for i, light in ipairs(self.lights) do
-                    if not light.enabled then goto continue end
-
-                    material:setLight(light)
+                material:setLight(light)
 
                     shader:use()
                     shader:trySendUniform("u_ambientOcclusion", self.ambientOcclusion)

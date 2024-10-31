@@ -87,20 +87,15 @@ end
 
 
 ---@param light BaseLight
----@overload fun()
 function Material:setLight(light)
-    if light then
-        if light.shadowMap then
-            self.shader:undefine("MATERIAL_DISABLE_SHADOWS")
-        else
-            self.shader:define("MATERIAL_DISABLE_SHADOWS")
-        end
-
-        self.shader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
-        light:sendLightData(self.shader, "u_light")
+    if light.shadowMap then
+        self.shader:undefine("MATERIAL_DISABLE_SHADOWS")
     else
-        self.shader:define("CURRENT_LIGHT_TYPE", "LIGHT_TYPE_UNLIT")
+        self.shader:define("MATERIAL_DISABLE_SHADOWS")
     end
+
+    self.shader:define("CURRENT_LIGHT_TYPE", light.typeDefinition)
+    light:sendLightData(self.shader, "u_light")
 end
 
 

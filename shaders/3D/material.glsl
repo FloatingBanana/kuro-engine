@@ -12,6 +12,12 @@
 
 #define ISLIGHT(t) (CURRENT_LIGHT_TYPE == t)
 
+#ifndef CURRENT_LIGHT_TYPE
+#   define CURRENT_LIGHT_TYPE LIGHT_TYPE_AMBIENT
+#endif
+
+// #define MATERIAL_DISABLE_SHADOWS
+
 
 in vec2 v_texCoords;
 in vec3 v_fragPos;
@@ -36,12 +42,14 @@ void materialPrepass();
 float _getShadowOcclusion(LightData light, vec3 fragPos, vec3 viewPos) {
     vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragPos, 1.0);
 
-#	if defined(MATERIAL_DISABLE_SHADOWS) || CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT || CURRENT_LIGHT_TYPE == LIGHT_TYPE_UNLIT
+#	if defined(MATERIAL_DISABLE_SHADOWS)
 		return 0.0;
-#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL || CURRENT_LIGHT_TYPE == LIGHT_TYPE_SPOT
+#   elif ISLIGHT(LIGHT_TYPE_DIRECTIONAL) || ISLIGHT(LIGHT_TYPE_SPOT)
         return ShadowCalculation(light.shadowMap, lightSpaceFragPos);
-#   elif CURRENT_LIGHT_TYPE == LIGHT_TYPE_POINT
+#   elif ISLIGHT(LIGHT_TYPE_POINT)
 		return ShadowCalculation(light.position, light.farPlane, light.pointShadowMap, viewPos, fragPos);
+#   else
+        return 0.0;
 #   endif
 }
 
