@@ -12,6 +12,22 @@
 
 #define ISLIGHT(t) (CURRENT_LIGHT_TYPE == t)
 
+#ifndef MATERIAL_DATA_CHANNELS
+#   define MATERIAL_DATA_CHANNELS 8
+#endif
+
+#ifndef MATERIAL_DEPTH_PASS
+#   define MATERIAL_DEPTH_PASS defaultDepthPass
+#endif
+
+#ifndef MATERIAL_GBUFFER_PASS
+#   define MATERIAL_GBUFFER_PASS defaultGBufferPass
+#endif
+
+#ifndef MATERIAL_LIGHT_PASS
+#   define MATERIAL_LIGHT_PASS defaultLightPass
+#endif
+
 #ifndef CURRENT_LIGHT_TYPE
 #   define CURRENT_LIGHT_TYPE LIGHT_TYPE_AMBIENT
 #endif
@@ -31,11 +47,15 @@ struct FragmentData {
     mat3 tbnMatrix;
 };
 
+void MATERIAL_DEPTH_PASS();
+void MATERIAL_GBUFFER_PASS(FragmentData fragData, out vec4 data[MATERIAL_DATA_CHANNELS]);
+vec4 MATERIAL_LIGHT_PASS(FragmentData fragData, LightData light, vec4 data[MATERIAL_DATA_CHANNELS]);
 
-void materialGBufferPass(FragmentData fragData, out vec4 data[MATERIAL_DATA_CHANNELS]);
-vec4 materialLightingPass(FragmentData fragData, LightData light, vec4 data[MATERIAL_DATA_CHANNELS]);
-// vec4 materialAmbientPass(FragmentData fragData, LightData light, vec4 data[MATERIAL_DATA_CHANNELS]);
-void materialPrepass();
+
+void defaultDepthPass() {}
+void defaultGBufferPass(FragmentData fragData, out vec4 data[MATERIAL_DATA_CHANNELS]) {}
+vec4 defaultLightPass(FragmentData fragData, LightData light, vec4 data[MATERIAL_DATA_CHANNELS]) {return vec4(0,0,0,1);}
+
 
 
 
@@ -57,7 +77,7 @@ float _getShadowOcclusion(LightData light, vec3 fragPos, vec3 viewPos) {
 
 #if CURRENT_RENDER_PASS == RENDER_PASS_DEPTH_PREPASS
 void effect() {
-    materialPrepass();
+    MATERIAL_DEPTH_PASS();
 }
 
 
@@ -73,9 +93,9 @@ void effect() {
     fragData.position = v_fragPos;
     fragData.uv = v_texCoords;
     fragData.tbnMatrix = v_tbnMatrix;
-	
+
     vec4 inData[MATERIAL_DATA_CHANNELS];
-    materialGBufferPass(fragData, inData);
+    MATERIAL_GBUFFER_PASS(fragData, inData);
 
     float visibility = 1.0;
     if (ISLIGHT(LIGHT_TYPE_AMBIENT)) {
@@ -84,6 +104,8 @@ void effect() {
     else {
         visibility = 1.0 - _getShadowOcclusion(u_light, v_fragPos, uViewPosition);
     }
+
+	oFragColor = MATERIAL_LIGHT_PASS(fragData, u_light, inData) * visibility;
 }
 
 
@@ -102,8 +124,8 @@ void effect() {
     fragData.tbnMatrix = v_tbnMatrix;
 
 
-	materialPrepass();
-    materialGBufferPass(fragData, oDeferredOutputs);
+	MATERIAL_DEPTH_PASS();
+    MATERIAL_GBUFFER_PASS(fragData, oDeferredOutputs);
 }
 
 
@@ -155,5 +177,7 @@ void effect() {
     else {
         visibility = 1.0 - _getShadowOcclusion(u_light, fragData.position, uViewPosition);
     }
+    
+    oFragColor = MATERIAL_LIGHT_PASS(fragData, u_light, inData) * visibility;
 }
 #endif

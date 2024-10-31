@@ -1,5 +1,9 @@
 #define MATERIAL_DATA_CHANNELS 2
 
+#define MATERIAL_DEPTH_PASS materialPrepass
+#define MATERIAL_GBUFFER_PASS materialGBufferPass
+#define MATERIAL_LIGHT_PASS materialLightingPass
+
 #pragma include "engine/shaders/3D/material.glsl"
 #pragma include "engine/shaders/incl_utils.glsl"
 #pragma include "engine/shaders/incl_commonBuffers.glsl"
