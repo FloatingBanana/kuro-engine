@@ -1,5 +1,6 @@
 local Object  = require "engine.3rdparty.classic.classic"
 local Vector3 = require "engine.math.vector3"
+local Matrix3 = require "engine.math.matrix3"
 local Utils   = require "engine.misc.utils"
 
 local globalCache = {}
@@ -226,7 +227,7 @@ function ShaderEffect:sendMeshConfigUniforms(config)
     self:trySendUniform("uWorldMatrix", "column", config.worldMatrix)
 
     if self:hasUniform("uInverseTransposedWorldMatrix") then
-        self:sendUniform("uInverseTransposedWorldMatrix", "column", config.worldMatrix.inverse:transpose():to3x3())
+        self:sendUniform("uInverseTransposedWorldMatrix", "column", Matrix3.CreateFromMatrix4(config.worldMatrix):invert():transpose())
     end
 
     if config.animator then

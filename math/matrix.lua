@@ -343,22 +343,6 @@ function Matrix:invert()
 end
 
 
---- Internaly converts this matrix to a 3x3 matrix
----
---- Only use this method if you want to send this matrix to a shader as a `mat3` uniform
---- @return Matrix: This matrix
-function Matrix:to3x3()
-    self:new(
-        self.m11, self.m12, self.m13,
-        self.m21, self.m22, self.m23,
-        self.m31, self.m32, self.m33,
-        0,0,0,0,0,0,0
-    )
-
-    return self
-end
-
-
 --- Checks if the translation, scale and rotation can be extracted from this matrix
 --- @return boolean: `true` if this matrix can be decomposed, `false` otherwise
 function Matrix:isDecomposable()
