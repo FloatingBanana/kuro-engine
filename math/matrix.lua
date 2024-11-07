@@ -407,6 +407,19 @@ function Matrix.Identity()
 end
 
 
+--- Converts a Matrix3 to a Matrix4
+---@param mat Matrix3: The Matrix3 to convert from
+---@return Matrix: The resulting Matrix4
+function Matrix.CreateFromMatrix3(mat)
+    return Matrix(
+        mat.m11, mat.m12, mat.m13, 0,
+        mat.m21, mat.m22, mat.m23, 0,
+        mat.m31, mat.m32, mat.m33, 0,
+        0,       0,       0,       1
+    )
+end
+
+
 --- Creates a world matrix
 --- @param position Vector3: The world position
 --- @param forward Vector3: The forward direction
