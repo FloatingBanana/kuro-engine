@@ -1,4 +1,4 @@
-local Matrix  = require "engine.math.matrix"
+local Matrix4 = require "engine.math.matrix4"
 local Vector3 = require "engine.math.vector3"
 local Object  = require "engine.3rdparty.classic.classic"
 
@@ -10,11 +10,11 @@ local Object  = require "engine.3rdparty.classic.classic"
 --- @field screenSize Vector2
 --- @field nearPlane number
 --- @field farPlane number
---- @field viewMatrix Matrix
---- @field perspectiveMatrix Matrix
---- @field orthographicMatrix Matrix
---- @field viewPerspectiveMatrix Matrix
---- @field viewOrthographicMatrix Matrix
+--- @field viewMatrix Matrix4
+--- @field perspectiveMatrix Matrix4
+--- @field orthographicMatrix Matrix4
+--- @field viewPerspectiveMatrix Matrix4
+--- @field viewOrthographicMatrix Matrix4
 --- @field forward Vector3
 --- @field backward Vector3
 --- @field up Vector3
@@ -36,15 +36,15 @@ end
 
 function Camera:__index(key)
     if key == "viewMatrix" then
-        return Matrix.CreateLookAtDirection(self.position, self.forward, self.up)
+        return Matrix4.CreateLookAtDirection(self.position, self.forward, self.up)
     end
 
     if key == "perspectiveMatrix" then
-        return Matrix.CreatePerspectiveFOV(self.fov, self.screenSize.width / self.screenSize.height, self.nearPlane, self.farPlane)
+        return Matrix4.CreatePerspectiveFOV(self.fov, self.screenSize.width / self.screenSize.height, self.nearPlane, self.farPlane)
     end
 
     if key == "orthographicMatrix" then
-        return Matrix.CreateOrthographic(self.screenSize.width, self.screenSize.height, self.nearPlane, self.farPlane)
+        return Matrix4.CreateOrthographic(self.screenSize.width, self.screenSize.height, self.nearPlane, self.farPlane)
     end
 
     if key == "viewPerspectiveMatrix" then

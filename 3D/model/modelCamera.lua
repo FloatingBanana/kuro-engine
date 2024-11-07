@@ -9,7 +9,7 @@ local ModelNode = require "engine.3D.model.modelNode"
 --- @field isOrthographic boolean
 --- @field orthographicWidth number
 ---
---- @overload fun(model: Model, name: string, localMatrix: Matrix, aiCameraData: table): ModelCamera
+--- @overload fun(model: Model, name: string, localMatrix: Matrix4, aiCameraData: table): ModelCamera
 local Camera = ModelNode:extend("ModelCamera")
 
 

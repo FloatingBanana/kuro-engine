@@ -1,5 +1,5 @@
-local Object = require "engine.3rdparty.classic.classic"
-local Matrix = require "engine.math.matrix"
+local Object  = require "engine.3rdparty.classic.classic"
+local Matrix4 = require "engine.math.matrix4"
 
 
 ---@class BoundingBox: Object
@@ -50,7 +50,7 @@ function BoundingBox:__newindex(key, value)
 end
 
 
----@param mat Matrix
+---@param mat Matrix4
 ---@return self
 function BoundingBox:transform(mat)
     self.min, self.max = self:getMinMaxTransformed(mat)
@@ -72,13 +72,13 @@ function BoundingBox:testIntersection(box)
 end
 
 
----@param mat Matrix
+---@param mat Matrix4
 ---@return Vector3, Vector3
 function BoundingBox:getMinMaxTransformed(mat)
     local trCenter = self.center:transform(mat)
 
     local abs = math.abs
-    local absMat = Matrix(
+    local absMat = Matrix4(
         abs(mat.m11), abs(mat.m12), abs(mat.m13), 0,
         abs(mat.m21), abs(mat.m22), abs(mat.m23), 0,
         abs(mat.m31), abs(mat.m32), abs(mat.m33), 0,

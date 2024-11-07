@@ -5,7 +5,7 @@ local ModelNode = require "engine.3D.model.modelNode"
 --- @field parts MeshPart[]
 --- @field materials BaseMaterial[]
 ---
---- @overload fun(model: Model, name: string, localMatrix: Matrix, meshparts: MeshPart[]): ModelMesh
+--- @overload fun(model: Model, name: string, localMatrix: Matrix4, meshparts: MeshPart[]): ModelMesh
 local Mesh = ModelNode:extend("ModelMesh")
 
 

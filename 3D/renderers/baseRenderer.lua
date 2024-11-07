@@ -1,5 +1,5 @@
 local Lume         = require "engine.3rdparty.lume"
-local Matrix       = require "engine.math.matrix"
+local Matrix4      = require "engine.math.matrix4"
 local Stack        = require "engine.collections.stack"
 local ShaderEffect = require "engine.misc.shaderEffect"
 local CubemapUtils = require "engine.misc.cubemapUtils"
@@ -8,7 +8,7 @@ local Object       = require "engine.3rdparty.classic.classic"
 local skyboxShader = ShaderEffect("engine/shaders/3D/skybox.glsl")
 local configPool = Stack()
 
---- @alias MeshPartConfig {meshPart: MeshPart, material: BaseMaterial, castShadows: boolean, ignoreLighting: boolean, static: boolean, worldMatrix: Matrix, animator: ModelAnimator?}
+--- @alias MeshPartConfig {meshPart: MeshPart, material: BaseMaterial, castShadows: boolean, ignoreLighting: boolean, static: boolean, worldMatrix: Matrix4, animator: ModelAnimator?}
 
 --- @class BaseRenderer: Object
 ---
@@ -50,7 +50,7 @@ function Renderer:pushMeshPart(meshPart)
     config.castShadows = true
     config.ignoreLighting = false
     config.static = false
-    config.worldMatrix = Matrix.Identity()
+    config.worldMatrix = Matrix4.Identity()
     config.animator = nil
 
     self.meshParts:push(config)

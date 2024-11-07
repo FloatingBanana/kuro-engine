@@ -1,4 +1,4 @@
-local Matrix = require "engine.math.matrix"
+local Matrix4 = require "engine.math.matrix4"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
 local CameraFrustum = require "engine.misc.cameraFrustum"
@@ -16,7 +16,7 @@ local canvasTable = {}
 --- @field public nearPlane number
 --- @field public farPlane number
 ---
---- @field private viewProjMatrix Matrix
+--- @field private viewProjMatrix Matrix4
 ---
 --- @overload fun(position: Vector3, direction: Vector3, color: table, specular: table): DirectionalLight
 local Dirlight = BaseLight:extend("DirectionalLight")
@@ -29,7 +29,7 @@ function Dirlight:new(position, direction, color, specular)
     self.direction = direction
     self.color = color
     self.specular = specular
-    self.viewProjMatrix = Matrix.Identity()
+    self.viewProjMatrix = Matrix4.Identity()
     self.nearPlane = 0.1
     self.farPlane = 100
     self.projectionSize = 20
@@ -50,8 +50,8 @@ end
 ---@param shader ShaderEffect
 ---@param meshparts MeshPartConfig[]
 function Dirlight:drawShadows(shader, meshparts)
-    local viewMatrix = Matrix.CreateLookAtDirection(self.position, -self.direction, Vector3(0,1,0))
-    local projMatrix = Matrix.CreateOrthographicOffCenter(-self.projectionSize, self.projectionSize, self.projectionSize, -self.projectionSize, self.nearPlane, self.farPlane)
+    local viewMatrix = Matrix4.CreateLookAtDirection(self.position, -self.direction, Vector3(0,1,0))
+    local projMatrix = Matrix4.CreateOrthographicOffCenter(-self.projectionSize, self.projectionSize, self.projectionSize, -self.projectionSize, self.nearPlane, self.farPlane)
 
     self.viewProjMatrix = viewMatrix:multiply(projMatrix)
     canvasTable.depthstencil = self.shadowMap

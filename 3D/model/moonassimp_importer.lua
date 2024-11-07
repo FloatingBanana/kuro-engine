@@ -1,5 +1,5 @@
 local Assimp     = require "moonassimp"
-local Matrix     = require "engine.math.matrix"
+local Matrix4    = require "engine.math.matrix4"
 local Stack      = require "engine.collections.stack"
 local Vector3    = require "engine.math.vector3"
 local Quaternion = require "engine.math.quaternion"
@@ -112,7 +112,7 @@ local function importer(data)
         local aiNode = nodeStack:pop()
         local node = {
             name = aiNode:name(),
-            transform = Matrix(aiNode:transformation()):transpose(),
+            transform = Matrix4(aiNode:transformation()):transpose(),
             meshparts = nil,
             children = {}
         }
@@ -155,7 +155,7 @@ local function importer(data)
 
                     if not bone then
                         bone = {
-                            offset = Matrix(aiBone:offset_matrix()):transpose(),
+                            offset = Matrix4(aiBone:offset_matrix()):transpose(),
                             id = boneId
                         }
                         boneId = boneId + 1
@@ -221,7 +221,7 @@ local function importer(data)
 
             -- Read missing bones
             if not bones[nodeName] then
-                bones[nodeName] = {id = #bones, offset = Matrix.Identity()}
+                bones[nodeName] = {id = #bones, offset = Matrix4.Identity()}
                 boneId = boneId + 1
             end
         end

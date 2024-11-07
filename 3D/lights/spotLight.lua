@@ -1,4 +1,4 @@
-local Matrix = require "engine.math.matrix"
+local Matrix4 = require "engine.math.matrix4"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
 local CameraFrustum = require "engine.misc.cameraFrustum"
@@ -53,8 +53,8 @@ end
 ---@param shader ShaderEffect
 ---@param meshparts MeshPartConfig[]
 function Spotlight:drawShadows(shader, meshparts)
-    local viewMatrix = Matrix.CreateLookAtDirection(self.position, self.direction, Vector3(0,1,0))
-    local projMatrix = Matrix.CreatePerspectiveFOV(self.outerAngle * 2, -1, self.nearPlane, self.farPlane)
+    local viewMatrix = Matrix4.CreateLookAtDirection(self.position, self.direction, Vector3(0,1,0))
+    local projMatrix = Matrix4.CreatePerspectiveFOV(self.outerAngle * 2, -1, self.nearPlane, self.farPlane)
 
     self.viewProjMatrix = viewMatrix:multiply(projMatrix)
     canvasTable.depthstencil = self.shadowMap

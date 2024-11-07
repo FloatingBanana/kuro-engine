@@ -1,7 +1,7 @@
-local Matrix = require "engine.math.matrix"
-local Object = require "engine.3rdparty.classic.classic"
-local ffi    = require "ffi"
+local Matrix4    = require "engine.math.matrix4"
 local Quaternion = require "engine.math.quaternion"
+local Object     = require "engine.3rdparty.classic.classic"
+local ffi        = require "ffi"
 
 local MAX_BONES = 20
 
@@ -16,10 +16,10 @@ local MAX_BONES = 20
 ---
 --- @field private animation ModelAnimation
 --- @field private armature ModelArmature
---- @field private armatureToModelMatrix Matrix
+--- @field private armatureToModelMatrix Matrix4
 --- @field private finalQuaternionsPtr ffi.cdata*
 ---
---- @overload fun(animation: ModelAnimation, armature: ModelArmature, modelOriginalGlobalMatrix: Matrix): ModelAnimator
+--- @overload fun(animation: ModelAnimation, armature: ModelArmature, modelOriginalGlobalMatrix: Matrix4): ModelAnimator
 local Animator = Object:extend("ModelAnimator")
 
 
@@ -36,13 +36,13 @@ function Animator:new(animation, armature, modelOriginalGlobalMatrix)
     self.finalQuaternions = love.data.newByteData(ffi.sizeof("quaternion") * MAX_BONES*2)
     self.finalQuaternionsPtr = ffi.cast("quaternion*", self.finalQuaternions:getFFIPointer())
 
-    self.finalMatrices = love.data.newByteData(ffi.sizeof("matrix") * MAX_BONES)
+    self.finalMatrices = love.data.newByteData(ffi.sizeof("matrix4") * MAX_BONES)
     self.finalMatricesPtr = ffi.cast("matrix*", self.finalMatrices:getFFIPointer())
 
     for i=0, MAX_BONES-1 do
         self.finalQuaternionsPtr[i*2]   = Quaternion.Identity()
         self.finalQuaternionsPtr[i*2+1] = Quaternion()
-        self.finalMatricesPtr[i] = Matrix.Identity()
+        self.finalMatricesPtr[i] = Matrix4.Identity()
     end
 end
 

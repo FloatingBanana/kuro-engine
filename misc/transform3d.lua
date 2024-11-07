@@ -1,4 +1,4 @@
-local Matrix    = require "engine.math.matrix"
+local Matrix4   = require "engine.math.matrix4"
 local Object    = require "engine.3rdparty.classic.classic"
 local Transform = Object:extend("Transform")
 
@@ -6,7 +6,7 @@ local function rebuildMatrix(matrix, rotation, scale)
     assert(matrix:canDecompose(), "Can't decompose matrix")
 
     local matPosition, matScale, matRotation = matrix:decompose()
-    return Matrix.CreateTransformationMatrix(rotation or matRotation, scale or matScale, matPosition)
+    return Matrix4.CreateTransformationMatrix(rotation or matRotation, scale or matScale, matPosition)
 end
 
 
@@ -43,7 +43,7 @@ function Transform:__index(key)
     end
 
     if key == "parentGlobalMatrix" then
-        return self.parent.globalMatrix or Matrix.Identity()
+        return self.parent.globalMatrix or Matrix4.Identity()
     end
 
     if key == "globalMatrix" then

@@ -363,7 +363,7 @@ end
 
 
 --- Extracts the rotantion and scale from a Matrix4
----@param mat Matrix: The Matrix4 to extract from
+---@param mat Matrix4: The Matrix4 to extract from
 ---@return Matrix3: The resulting Matrix3
 function Matrix3.CreateFromMatrix4(mat)
     return Matrix3(

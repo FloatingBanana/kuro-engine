@@ -292,7 +292,7 @@ end
 
 
 --- Transform this vector by a matrix or quaternion
---- @param value Matrix | Quaternion: The transformation matrix or quaternion
+--- @param value Matrix4 | Quaternion: The transformation matrix or quaternion
 --- @return Vector3: This vector
 function Vector3:transform(value)
     if value.typename == "quaternion" then
@@ -317,7 +317,7 @@ end
 
 
 --- Transform this vector to screen space
---- @param screenMatrix Matrix: The full transformation matrix from current space to screen space
+--- @param screenMatrix Matrix4: The full transformation matrix from current space to screen space
 --- @param screenSize Vector2: The resolution of the screen
 --- @param minDepth number: The smallest depth value allowed
 --- @param maxDepth number: The greatest depht value allowed
@@ -337,7 +337,7 @@ end
 
 
 --- Transform this vector from screen space to another space
---- @param screenMatrix Matrix: The full transformation matrix from screen space to the desired
+--- @param screenMatrix Matrix4: The full transformation matrix from screen space to the desired
 --- @param screenSize Vector2: The resolution of the screen
 --- @param minDepth number: The smallest depth value allowed
 --- @param maxDepth number: The greatest depht value allowed

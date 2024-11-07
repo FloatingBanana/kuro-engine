@@ -15,7 +15,7 @@ end
 ---
 --- A right-handed 4x4 matrix. Mostly used to store 3D transformations.
 ---
---- @class Matrix: CStruct
+--- @class Matrix4: CStruct
 ---
 --- @field translation Vector3: The translation part of this matrix (m41, m42, m43)
 --- @field forward Vector3: The forward direction of this matrix (m31, m32, m33)
@@ -27,8 +27,8 @@ end
 ---
 --- @field scale Vector3: Gets the scaling factor of this matrix
 --- @field rotation Quaternion: Gets the rotation factor of this matrix
---- @field transposed Matrix: Gets a copy of this matrix with the components transposed
---- @field inverse Matrix: Gets a copy of this matrix with the components inverted
+--- @field transposed Matrix4: Gets a copy of this matrix with the components transposed
+--- @field inverse Matrix4: Gets a copy of this matrix with the components inverted
 --- @field m11 number
 --- @field m12 number
 --- @field m13 number
@@ -46,21 +46,21 @@ end
 --- @field m43 number
 --- @field m44 number
 ---
---- @operator call: Matrix
---- @operator add: Matrix
---- @operator sub: Matrix
---- @operator mul: Matrix
---- @operator div: Matrix
---- @operator unm: Matrix
+--- @operator call: Matrix4
+--- @operator add: Matrix4
+--- @operator sub: Matrix4
+--- @operator mul: Matrix4
+--- @operator div: Matrix4
+--- @operator unm: Matrix4
 --- @operator len: number
-local Matrix = CStruct("matrix", [[
+local Matrix4 = CStruct("matrix4", [[
     float m11, m12, m13, m14,
           m21, m22, m23, m24,
           m31, m32, m33, m34,
           m41, m42, m43, m44;
 ]])
 
-function Matrix:new(...)
+function Matrix4:new(...)
     for i=1, 16 do
         self[i] = select(i, ...) or 0
     end
@@ -77,7 +77,7 @@ local numberIndices = {
     "m41", "m42", "m43", "m44",
 }
 
-function Matrix:__index(key)
+function Matrix4:__index(key)
     if numberIndices[key] then
         return self[numberIndices[key]]
     end
@@ -107,7 +107,7 @@ function Matrix:__index(key)
 
     if key == "rotation" then
         local scale = self.scale
-        local mat = Matrix(
+        local mat = Matrix4(
             self.m11 / scale.x, self.m12 / scale.x, self.m13 / scale.x, 0,
             self.m21 / scale.y, self.m22 / scale.y, self.m23 / scale.y, 0,
             self.m31 / scale.z, self.m32 / scale.z, self.m33 / scale.z, 0,
@@ -125,10 +125,10 @@ function Matrix:__index(key)
         return self:clone():invert()
     end
 
-    return Matrix[key]
+    return Matrix4[key]
 end
 
-function Matrix:__newindex(key, value)
+function Matrix4:__newindex(key, value)
     if numberIndices[key] then
         self[numberIndices[key]] = value
         return
@@ -142,29 +142,29 @@ function Matrix:__newindex(key, value)
     rawset(self, key, value)
 end
 
-function Matrix:__add(value)
+function Matrix4:__add(value)
     return self:clone():add(value)
 end
 
-function Matrix:__sub(value)
+function Matrix4:__sub(value)
     return self:clone():subtract(value)
 end
 
-function Matrix:__mul(value)
+function Matrix4:__mul(value)
     self, value = commutative_reorder(self, value)
     return self:clone():multiply(value)
 end
 
-function Matrix:__div(value)
+function Matrix4:__div(value)
     self, value = commutative_reorder(self, value)
     return self:clone():divide(value)
 end
 
-function Matrix:__unm(value)
+function Matrix4:__unm(value)
     return self:clone():negate(value)
 end
 
-function Matrix:__eq(other)
+function Matrix4:__eq(other)
     for i=1, 16 do
         if self[i] ~= other[i] then
             return false
@@ -174,11 +174,11 @@ function Matrix:__eq(other)
     return true
 end
 
-function Matrix:__len()
+function Matrix4:__len()
     return 16
 end
 
-function Matrix:__tostring()
+function Matrix4:__tostring()
     return ("Matrix(\n\t%03f, %03f, %03f, %03f,\n\t%03f, %03f, %03f, %03f,\n\t%03f, %03f, %03f, %03f,\n\t%03f, %03f, %03f, %03f\n)"):format(self:split())
 end
 
@@ -188,9 +188,9 @@ end
 
 
 --- Peforms an addition operation on this matrix (`self + other`)
---- @param other Matrix | number: The right hand operand
---- @return Matrix: This matrix
-function Matrix:add(other)
+--- @param other Matrix4 | number: The right hand operand
+--- @return Matrix4: This matrix
+function Matrix4:add(other)
     for i=1, 16 do
         self[i] = self[i] + other[i]
     end
@@ -200,9 +200,9 @@ end
 
 
 --- Peforms a subtraction operation on this matrix (`self - other`)
---- @param other Matrix | number: The right hand operand
---- @return Matrix: This matrix
-function Matrix:subtract(other)
+--- @param other Matrix4 | number: The right hand operand
+--- @return Matrix4: This matrix
+function Matrix4:subtract(other)
     for i=1, 16 do
         self[i] = self[i] - other[i]
     end
@@ -212,9 +212,9 @@ end
 
 
 --- Peforms a multiplication operation on this matrix (`self * other`)
---- @param other Matrix | number: The right hand operand
---- @return Matrix: This matrix
-function Matrix:multiply(other)
+--- @param other Matrix4 | number: The right hand operand
+--- @return Matrix4: This matrix
+function Matrix4:multiply(other)
     if type(other) == "number" then
         for i=1, 16 do
             self[i] = self[i] * other
@@ -245,9 +245,9 @@ end
 
 
 --- Peforms a division operation on this matrix (`self / other`)
---- @param other Matrix | number: The right hand operand
---- @return Matrix: This matrix
-function Matrix:divide(other)
+--- @param other Matrix4 | number: The right hand operand
+--- @return Matrix4: This matrix
+function Matrix4:divide(other)
     if type(other) == "number"then
         self:multiply(1 / other)
     else
@@ -261,8 +261,8 @@ end
 
 
 --- Negates all components of this matrix
---- @return Matrix: This matrix
-function Matrix:negate()
+--- @return Matrix4: This matrix
+function Matrix4:negate()
     for i=1, 16 do
         self[i] = -self[i]
     end
@@ -272,8 +272,8 @@ end
 
 
 --- Swap the rows and colums of this matrix
---- @return Matrix: This matrix
-function Matrix:transpose()
+--- @return Matrix4: This matrix
+function Matrix4:transpose()
     -- Calling the raw constructor just assigns the arguments to the matrix
     self:new(
         self.m11,
@@ -302,8 +302,8 @@ end
 
 
 --- Invert all components of this matrix
---- @return Matrix: This matrix
-function Matrix:invert()
+--- @return Matrix4: This matrix
+function Matrix4:invert()
     -- Determinants
     local det1 = self.m11 * self.m22 - self.m12 * self.m21;
     local det2 = self.m11 * self.m23 - self.m13 * self.m21;
@@ -345,7 +345,7 @@ end
 
 --- Checks if the translation, scale and rotation can be extracted from this matrix
 --- @return boolean: `true` if this matrix can be decomposed, `false` otherwise
-function Matrix:isDecomposable()
+function Matrix4:isDecomposable()
     local scale = self.scale
     return scale.x ~= 0 and scale.y ~= 0 and scale.z ~= 0
 end
@@ -353,21 +353,21 @@ end
 
 --- Extracts the translation, scale and rotation of this matrix
 --- @return Vector3 Translation, Vector3 Scale, Quaternion Rotation
-function Matrix:decompose()
+function Matrix4:decompose()
     return self.translation, self.scale, self.rotation;
 end
 
 
 --- Creates a new matrix with the same component values of this one
---- @return Matrix: The new matrix
-function Matrix:clone()
-    return Matrix(self:split())
+--- @return Matrix4: The new matrix
+function Matrix4:clone()
+    return Matrix4(self:split())
 end
 
 
 --- Deconstruct this matrix into individual values
 --- @return number m11, number m12, number m13, number m14, number m21, number m22, number m23, number m24, number m31, number m32, number m33, number m34, number m41, number m42, number m43, number m44
-function Matrix:split()
+function Matrix4:split()
 	return self.m11, self.m12, self.m13, self.m14,
            self.m21, self.m22, self.m23, self.m24,
            self.m31, self.m32, self.m33, self.m34,
@@ -380,9 +380,9 @@ end
 
 
 --- Creates an identity matrix
---- @return Matrix
-function Matrix.Identity()
-    return Matrix(
+--- @return Matrix4
+function Matrix4.Identity()
+    return Matrix4(
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
@@ -393,9 +393,9 @@ end
 
 --- Converts a Matrix3 to a Matrix4
 ---@param mat Matrix3: The Matrix3 to convert from
----@return Matrix: The resulting Matrix4
-function Matrix.CreateFromMatrix3(mat)
-    return Matrix(
+---@return Matrix4: The resulting Matrix4
+function Matrix4.CreateFromMatrix3(mat)
+    return Matrix4(
         mat.m11, mat.m12, mat.m13, 0,
         mat.m21, mat.m22, mat.m23, 0,
         mat.m31, mat.m32, mat.m33, 0,
@@ -408,12 +408,12 @@ end
 --- @param position Vector3: The world position
 --- @param forward Vector3: The forward direction
 --- @param up Vector3: The up direction
---- @return Matrix: The resulting world matrix
-function Matrix.CreateWorld(position, forward, up)
+--- @return Matrix4: The resulting world matrix
+function Matrix4.CreateWorld(position, forward, up)
     local right = Vector3.Cross(forward, up)
     local up = Vector3.Cross(right, forward)
 
-    return Matrix(
+    return Matrix4(
         right.x,
         right.y,
         right.z,
@@ -437,10 +437,10 @@ end
 --- Creates a matrix rotated by an `angle` around an `axis`
 --- @param axis Vector3: The axis of rotation
 --- @param angle number: The angle of rotation
---- @return Matrix: Result
-function Matrix.CreateFromAxisAngle(axis, angle)
+--- @return Matrix4: Result
+function Matrix4.CreateFromAxisAngle(axis, angle)
 	local quat = Quaternion.CreateFromAxisAngle(axis, angle)
-    return Matrix.CreateFromQuaternion(quat)
+    return Matrix4.CreateFromQuaternion(quat)
 end
 
 
@@ -448,17 +448,17 @@ end
 --- @param yaw number: Yaw around the Y axis
 --- @param pitch number: Pitch around the X axis
 --- @param roll number: Roll around the Z axis
---- @return Matrix: Result
-function Matrix.CreateFromYawPitchRoll(yaw, pitch, roll)
+--- @return Matrix4: Result
+function Matrix4.CreateFromYawPitchRoll(yaw, pitch, roll)
     local quat = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll)
-    return Matrix.CreateFromQuaternion(quat)
+    return Matrix4.CreateFromQuaternion(quat)
 end
 
 
 --- Creates a rotation matrix from a Quaternion
 --- @param quat Quaternion: The Quaternion representing the rotation
---- @return Matrix: Result
-function Matrix.CreateFromQuaternion(quat)
+--- @return Matrix4: Result
+function Matrix4.CreateFromQuaternion(quat)
     local squareX = quat.x * quat.x;
 	local squareY = quat.y * quat.y;
 	local squareZ = quat.z * quat.z;
@@ -469,7 +469,7 @@ function Matrix.CreateFromQuaternion(quat)
 	local num2 = quat.y * quat.z;
 	local num = quat.x * quat.w;
 
-    return Matrix(
+    return Matrix4(
         1 - (2 * (squareY + squareZ)),
         2 * (num6 + num5),
 	    2 * (num4 - num3),
@@ -494,13 +494,13 @@ end
 --- @param position Vector3: The view position
 --- @param direction Vector3: The view direction
 --- @param up Vector3: A vector pointing up from view's position
---- @return Matrix: Result
-function Matrix.CreateLookAtDirection(position, direction, up)
+--- @return Matrix4: Result
+function Matrix4.CreateLookAtDirection(position, direction, up)
     local forward = -direction
     local right = Vector3.Cross(up, forward):normalize()
     local up = Vector3.Cross(forward, right)
 
-    return Matrix(
+    return Matrix4(
         right.x,
         up.x,
         forward.x,
@@ -525,9 +525,9 @@ end
 --- @param position Vector3: The view position
 --- @param target Vector3: The view target
 --- @param up Vector3: A vector pointing up from view's position
---- @return Matrix: Result
-function Matrix.CreateLookAt(position, target, up)
-    return Matrix.CreateLookAtDirection(position, (target - position):normalize(), up)
+--- @return Matrix4: Result
+function Matrix4.CreateLookAt(position, target, up)
+    return Matrix4.CreateLookAtDirection(position, (target - position):normalize(), up)
 end
 
 
@@ -536,8 +536,8 @@ end
 --- @param cameraPosition Vector3: The view position
 --- @param cameraUp Vector3: A vector pointing up from view's position
 --- @param cameraForward Vector3: A vector pointing forward from view's position
---- @return Matrix: Result
-function Matrix.CreateBillboard(objectPosition, cameraPosition, cameraUp, cameraForward)
+--- @return Matrix4: Result
+function Matrix4.CreateBillboard(objectPosition, cameraPosition, cameraUp, cameraForward)
     local forward = (objectPosition - cameraPosition):normalize()
 
     if forward:isNan() then
@@ -547,7 +547,7 @@ function Matrix.CreateBillboard(objectPosition, cameraPosition, cameraUp, camera
     local right = Vector3.Cross(cameraUp, forward)
     local up = Vector3.Cross(forward, right)
 
-    return Matrix(
+    return Matrix4(
         right.x,
         right.y,
         right.z,
@@ -574,8 +574,8 @@ end
 --- @param rotateAxis Vector3: Axis of billboard rotation
 --- @param cameraForward Vector3: A vector pointing forward from view's position
 --- @param objectForward Vector3: A vector pointing forward from billboard's position
---- @return Matrix: Result
-function Matrix.CreateConstrainedBillboard(objectPosition, cameraPosition, rotateAxis, cameraForward, objectForward)
+--- @return Matrix4: Result
+function Matrix4.CreateConstrainedBillboard(objectPosition, cameraPosition, rotateAxis, cameraForward, objectForward)
 	local forward, right
 	local direction = (objectPosition - cameraPosition):normalize()
 
@@ -602,7 +602,7 @@ function Matrix.CreateConstrainedBillboard(objectPosition, cameraPosition, rotat
 	    forward = Vector3.Cross(right, rotateAxis)
     end
 
-    return Matrix(
+    return Matrix4(
         right.x,
         right.y,
         right.z,
@@ -628,9 +628,9 @@ end
 --- @param height number: Height of the view volume
 --- @param near number: Near plane depth
 --- @param far number: Far plane depth
---- @return Matrix: Result
-function Matrix.CreateOrthographic(width, height, near, far)
-    local mat = Matrix.Identity()
+--- @return Matrix4: Result
+function Matrix4.CreateOrthographic(width, height, near, far)
+    local mat = Matrix4.Identity()
 
     mat.m11 = 2 / width
     mat.m22 = 2 / height
@@ -648,9 +648,9 @@ end
 --- @param top number: Near plane's upper Y value
 --- @param near number: Near plane depth
 --- @param far number: Far plane depth
---- @return Matrix: Result
-function Matrix.CreateOrthographicOffCenter(left, right, bottom, top, near, far)
-    local mat = Matrix.Identity()
+--- @return Matrix4: Result
+function Matrix4.CreateOrthographicOffCenter(left, right, bottom, top, near, far)
+    local mat = Matrix4.Identity()
 
     mat.m11 = 2 / (right - left)
     mat.m22 = 2 / (top - bottom)
@@ -668,10 +668,10 @@ end
 --- @param height number: Height of the view volume
 --- @param near number: Near plane distance
 --- @param far number: Far plane distance
---- @return Matrix: Result
-function Matrix.CreatePerspective(width, height, near, far)
+--- @return Matrix4: Result
+function Matrix4.CreatePerspective(width, height, near, far)
     local negFarRange = far == huge and -1 or far / (near - far)
-    local mat = Matrix()
+    local mat = Matrix4()
 
     mat.m11 = (2 * near) / width
     mat.m22 = (2 * near) / height
@@ -690,9 +690,9 @@ end
 --- @param top number: Near plane's upper Y value
 --- @param near number: Near plane distance
 --- @param far number: Far plane distance
---- @return Matrix: Result
-function Matrix.CreatePerspectiveOffCenter(left, right, bottom, top, near, far)
-    local mat = Matrix()
+--- @return Matrix4: Result
+function Matrix4.CreatePerspectiveOffCenter(left, right, bottom, top, near, far)
+    local mat = Matrix4()
 
     mat.m11 = (2 * near) / (right - left);
 	mat.m22 = (2 * near) / (top - bottom);
@@ -711,12 +711,12 @@ end
 --- @param aspectRatio number: Aspect ratio (i.e `width / height`) of the view volume
 --- @param near number: Near plane distance
 --- @param far number: Far plane distance. `math.huge` is also acceptable
---- @return Matrix: Result
-function Matrix.CreatePerspectiveFOV(fov, aspectRatio, near, far)
+--- @return Matrix4: Result
+function Matrix4.CreatePerspectiveFOV(fov, aspectRatio, near, far)
     local yScale = 1 / tan(fov * 0.5)
     local xScale = yScale / aspectRatio
     local negFarRange = far == huge and -1 or far / (near - far)
-    local mat = Matrix()
+    local mat = Matrix4()
 
     mat.m11 = xScale
     mat.m22 = yScale
@@ -730,9 +730,9 @@ end
 
 --- Creates a scaling matrix
 --- @param scale Vector3: The scale value on each axis
---- @return Matrix: Result
-function Matrix.CreateScale(scale)
-    local mat = Matrix.Identity()
+--- @return Matrix4: Result
+function Matrix4.CreateScale(scale)
+    local mat = Matrix4.Identity()
 
     mat.m11 = scale.width
     mat.m22 = scale.height
@@ -744,9 +744,9 @@ end
 
 --- Creates a translation matrix
 --- @param position Vector3: The translation coordinates
---- @return Matrix: Result
-function Matrix.CreateTranslation(position)
-    local mat = Matrix.Identity()
+--- @return Matrix4: Result
+function Matrix4.CreateTranslation(position)
+    local mat = Matrix4.Identity()
 
     mat.m41 = position.x
     mat.m42 = position.y
@@ -760,13 +760,13 @@ end
 --- @param rotation Quaternion: The rotation factor
 --- @param scale Vector3: The scaling factor
 --- @param translation Vector3: The translation coordinates
---- @return Matrix: Result
-function Matrix.CreateTransformationMatrix(rotation, scale, translation)
-    local matRot = Matrix.CreateFromQuaternion(rotation)
-    local matScale = Matrix.CreateScale(scale)
-    local matTranslation = Matrix.CreateTranslation(translation)
+--- @return Matrix4: Result
+function Matrix4.CreateTransformationMatrix(rotation, scale, translation)
+    local matRot = Matrix4.CreateFromQuaternion(rotation)
+    local matScale = Matrix4.CreateScale(scale)
+    local matTranslation = Matrix4.CreateTranslation(translation)
 
     return matRot:multiply(matScale):multiply(matTranslation)
 end
 
-return Matrix
+return Matrix4

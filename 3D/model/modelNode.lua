@@ -5,11 +5,11 @@ local Object = require "engine.3rdparty.classic.classic"
 ---
 --- @field model Model
 --- @field name string
---- @field localMatrix Matrix
+--- @field localMatrix Matrix4
 --- @field parent ModelNode?
 --- @field children ModelNode[]
 ---
----@overload fun(model: Model, name: string, localMatrix: Matrix): ModelNode
+---@overload fun(model: Model, name: string, localMatrix: Matrix4): ModelNode
 local Node = Object:extend("ModelNode")
 
 function Node:new(model, name, localMatrix)
@@ -22,7 +22,7 @@ end
 
 
 --- @param topmostNode ModelNode|string|nil
---- @return Matrix
+--- @return Matrix4
 function Node:getGlobalMatrix(topmostNode)
     local top = topmostNode
     local globalMatrix = self.localMatrix:clone()

@@ -1,7 +1,7 @@
 local PointLight    = require "engine.3D.lights.pointLight"
 local Model         = require "engine.3D.model.model"
 local BaseRederer   = require "engine.3D.renderers.baseRenderer"
-local Matrix        = require "engine.math.matrix"
+local Matrix4       = require "engine.math.matrix4"
 local Vector3       = require "engine.math.vector3"
 local CameraFrustum = require "engine.misc.cameraFrustum"
 local Utils         = require "engine.misc.utils"
@@ -97,12 +97,12 @@ function DeferredRenderer:renderMeshes()
         self.lightPassMaterial.shader:trySendUniform("u_deferredInput", unpack(self.gbuffer))
 
         if light:is(PointLight) then ---@cast light PointLight
-            local transform = Matrix.CreateScale(Vector3(light:getLightRadius())) * Matrix.CreateTranslation(light.position) * self.camera.viewPerspectiveMatrix
+            local transform = Matrix4.CreateScale(Vector3(light:getLightRadius())) * Matrix4.CreateTranslation(light.position) * self.camera.viewPerspectiveMatrix
 
             self.lightPassMaterial.shader:sendUniform("u_volumeTransform", transform)
             volume:draw()
         else
-            self.lightPassMaterial.shader:sendUniform("u_volumeTransform", Matrix.CreateOrthographicOffCenter(0, self.screensize.width, self.screensize.height, 0, 0, 1))
+            self.lightPassMaterial.shader:sendUniform("u_volumeTransform", Matrix4.CreateOrthographicOffCenter(0, self.screensize.width, self.screensize.height, 0, 0, 1))
             lg.draw(self.dummySquare)
         end
 

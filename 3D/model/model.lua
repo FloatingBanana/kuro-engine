@@ -11,7 +11,7 @@ local Object         = require "engine.3rdparty.classic.classic"
 
 
 --- @alias ModelLoadingOptions {materials: table<string, BaseMaterial>, contentLoader: ContentLoader, triangulate: boolean, flipUVs: boolean, removeUnusedMaterials: boolean, optimizeGraph: boolean}
---- @alias BoneInfo {id: integer, offset: Matrix}
+--- @alias BoneInfo {id: integer, offset: Matrix4}
 
 --- @class Model: Object
 ---

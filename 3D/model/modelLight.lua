@@ -17,7 +17,7 @@ local ModelNode = require "engine.3D.model.modelNode"
 ---
 --- @field areaLightSize Vector2
 ---
---- @overload fun(model: Model, name: string, localMatrix: Matrix, aiLightData: table): ModelLight
+--- @overload fun(model: Model, name: string, localMatrix: Matrix4, aiLightData: table): ModelLight
 local Camera = ModelNode:extend("ModelLight")
 
 

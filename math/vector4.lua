@@ -248,7 +248,7 @@ end
 
 
 --- Peforms a multiplication operation on this vector (`self * other`)
---- @param other Vector4 | Matrix | number: The right hand operand
+--- @param other Vector4 | Matrix4 | number: The right hand operand
 --- @return Vector4: This vector
 function Vector4:multiply(other)
     if type(other) == "number" then
@@ -256,7 +256,7 @@ function Vector4:multiply(other)
         self.y = self.y * other
         self.z = self.z * other
         self.w = self.w * other
-    elseif other.typename == "matrix" then
+    elseif other.typename == "matrix4" then
         local x = self.x * other.m11 + self.y * other.m21 + self.z * other.m31 + self.w * other.m41
         local y = self.x * other.m12 + self.y * other.m22 + self.z * other.m32 + self.w * other.m42
         local z = self.x * other.m13 + self.y * other.m23 + self.z * other.m33 + self.w * other.m43

@@ -1,8 +1,8 @@
 local ShaderEffect = require "engine.misc.shaderEffect"
-local Vector3 = require "engine.math.vector3"
-local Matrix  = require "engine.math.matrix"
-local Utils   = require "engine.misc.utils"
-local Vector2 = require "engine.math.vector2"
+local Vector3      = require "engine.math.vector3"
+local Matrix4      = require "engine.math.matrix4"
+local Utils        = require "engine.misc.utils"
+local Vector2      = require "engine.math.vector2"
 
 local Cmap = {}
 
@@ -25,20 +25,20 @@ Cmap.cubeStrip = {
 Cmap.cubeMesh = love.graphics.newMesh({{"VertexPosition", "float", 3}}, Cmap.cubeStrip, "strip", "static")
 
 Cmap.cubeSides = {
-    {dir = Vector3( 1, 0, 0), up = Vector3(0,-1, 0), viewMatrix = Matrix()},
-    {dir = Vector3(-1, 0, 0), up = Vector3(0,-1, 0), viewMatrix = Matrix()},
-    {dir = Vector3( 0, 1, 0), up = Vector3(0, 0, 1), viewMatrix = Matrix()},
-    {dir = Vector3( 0,-1, 0), up = Vector3(0, 0,-1), viewMatrix = Matrix()},
-    {dir = Vector3( 0, 0, 1), up = Vector3(0,-1, 0), viewMatrix = Matrix()},
-    {dir = Vector3( 0, 0,-1), up = Vector3(0,-1, 0), viewMatrix = Matrix()},
+    {dir = Vector3( 1, 0, 0), up = Vector3(0,-1, 0), viewMatrix = Matrix4()},
+    {dir = Vector3(-1, 0, 0), up = Vector3(0,-1, 0), viewMatrix = Matrix4()},
+    {dir = Vector3( 0, 1, 0), up = Vector3(0, 0, 1), viewMatrix = Matrix4()},
+    {dir = Vector3( 0,-1, 0), up = Vector3(0, 0,-1), viewMatrix = Matrix4()},
+    {dir = Vector3( 0, 0, 1), up = Vector3(0,-1, 0), viewMatrix = Matrix4()},
+    {dir = Vector3( 0, 0,-1), up = Vector3(0,-1, 0), viewMatrix = Matrix4()},
 }
 
 for i, side in ipairs(Cmap.cubeSides) do
-    side.viewMatrix = Matrix.CreateLookAtDirection(Vector3(0), side.dir, side.up)
+    side.viewMatrix = Matrix4.CreateLookAtDirection(Vector3(0), side.dir, side.up)
 end
 
 
-local projectionMatrix = Matrix.CreatePerspectiveFOV(math.pi*0.5, 1, 0.1, 10)
+local projectionMatrix = Matrix4.CreatePerspectiveFOV(math.pi*0.5, 1, 0.1, 10)
 
 local vertShaderCode = [[
 uniform mat4 u_viewProj;

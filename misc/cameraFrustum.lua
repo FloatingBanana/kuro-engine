@@ -24,7 +24,7 @@ function CameraFrustum:new()
 end
 
 
----@param viewProj Matrix
+---@param viewProj Matrix4
 ---@return self
 function CameraFrustum:updatePlanes(viewProj)
     self.nearPlane   = Vector4( viewProj.m13 + viewProj.m14, viewProj.m23 + viewProj.m24, viewProj.m33 + viewProj.m34, viewProj.m43 + viewProj.m44):normalize()
@@ -39,7 +39,7 @@ end
 
 
 ---@param bounding BoundingBox
----@param worldMatrix Matrix?
+---@param worldMatrix Matrix4?
 ---@return boolean
 function CameraFrustum:testIntersection(bounding, worldMatrix)
     local min, max = bounding.min, bounding.max

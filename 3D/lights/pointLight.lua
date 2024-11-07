@@ -1,4 +1,4 @@
-local Matrix = require "engine.math.matrix"
+local Matrix4 = require "engine.math.matrix4"
 local Vector3 = require "engine.math.vector3"
 local BaseLight = require "engine.3D.lights.baseLight"
 local CameraFrustum = require "engine.misc.cameraFrustum"
@@ -62,14 +62,14 @@ end
 ---@param meshparts MeshPartConfig[]
 function PointLight:drawShadows(shader, meshparts)
     self.farPlane = self:getLightRadius()
-    local proj = Matrix.CreatePerspectiveFOV(math.pi/2, 1, self.nearPlane, self.farPlane)
+    local proj = Matrix4.CreatePerspectiveFOV(math.pi/2, 1, self.nearPlane, self.farPlane)
 
     shader:sendUniform("light.position", self.position)
     shader:sendUniform("light.farPlane", self.farPlane)
 
     
     for i = 1, 6 do
-        local viewProj = Matrix.CreateLookAtDirection(self.position, dirs[i].dir, dirs[i].up):multiply(proj)
+        local viewProj = Matrix4.CreateLookAtDirection(self.position, dirs[i].dir, dirs[i].up):multiply(proj)
         canvasTable.depthstencil[1] = self.shadowMap
         canvasTable.depthstencil.face = i
         

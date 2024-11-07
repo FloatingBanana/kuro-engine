@@ -340,7 +340,7 @@ end
 
 
 --- Creates a quaternion from a Matrix
---- @param mat Matrix: The rotation matrix
+--- @param mat Matrix4: The rotation matrix
 --- @return Quaternion: Result
 function Quaternion.CreateFromRotationMatrix(mat)
     local scale = mat.m11 + mat.m22 + mat.m33;

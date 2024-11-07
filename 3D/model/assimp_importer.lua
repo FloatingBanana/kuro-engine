@@ -1,4 +1,4 @@
-local Matrix      = require "engine.math.matrix"
+local Matrix4     = require "engine.math.matrix4"
 local Vector3     = require "engine.math.vector3"
 local Vector2     = require "engine.math.vector2"
 local Quaternion  = require "engine.math.quaternion"
@@ -127,7 +127,7 @@ local function readString(aiString)
 end
 
 local function readMatrix4x4(mat)
-    return Matrix(
+    return Matrix4(
         mat.a1, mat.b1, mat.c1, mat.d1,
         mat.a2, mat.b2, mat.c2, mat.d2,
         mat.a3, mat.b3, mat.c3, mat.d3,
@@ -429,7 +429,7 @@ local function importer(path, triangulate, flipUVs, removeUnusedMaterials, optim
         if armature and armature[parentNode.name] and not armature[node.name] then
             armature[node.name] = {
                 id = armatureBoneIDs[armatureName],
-                offset = Matrix.Identity()
+                offset = Matrix4.Identity()
             }
             armatureBoneIDs[armatureName] = armatureBoneIDs[armatureName] + 1
         end
