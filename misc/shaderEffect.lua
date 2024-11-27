@@ -2,6 +2,7 @@ local Object  = require "engine.3rdparty.classic.classic"
 local Vector3 = require "engine.math.vector3"
 local Matrix3 = require "engine.math.matrix3"
 local Utils   = require "engine.misc.utils"
+local ffi     = require "ffi"
 
 local globalCache = {}
 
@@ -87,26 +88,48 @@ end
 
 
 
-local function convertValue(value)
-    if Utils.isType(value, "cstruct") then
-        return value:toFlatTable()
+local uData = love.data.newByteData(4*16)
+local ptrCache = {}
+
+---@param ctype ffi.ctype*
+---@param count integer
+local function getArrayPtr(ctype, count)
+    local size = ffi.sizeof(ctype) * count
+
+    if uData:getSize() < size then
+        uData:release()
+        uData = love.data.newByteData(size)
+        ptrCache = {}
     end
-    return value
+
+    local ptr = ptrCache[ctype] or ffi.cast(ctype.."*", uData:getFFIPointer())
+    ptrCache[ctype] = ptr
+
+    return ptr, size
 end
+
 
 ---@param name string
 ---@param ... any
+---@overload fun(self: ShaderEffect, name: string, matLayout: love.MatrixLayout, ...)
 function ShaderEffect:sendUniform(name, ...)
     local argcount = select("#", ...)
+    local matLayout = select(1, ...)
+    local firstIndex = (type(matLayout) == "string" and 2 or 1)
+    local first = select(firstIndex, ...)
 
-    if argcount == 1 then
-        if Utils.isType(..., "matrix") then
-            self.shader:send(name, "column", convertValue(...))
-        else
-            self.shader:send(name, convertValue(...))
+    if Utils.isType(first, "cstruct") then
+        local ptr, size = getArrayPtr(first.typename, argcount - firstIndex + 1)
+
+        for i = firstIndex, argcount do
+            ptr[i - firstIndex] = select(i, ...)
         end
-    elseif argcount == 2 and Utils.isType(select(1, ...), "string") then
-        self.shader:send(name, select(1, ...), convertValue(select(2, ...)))
+
+        if firstIndex == 2 then
+            self.shader:send(name, matLayout, uData, 0, size)
+        else
+            self.shader:send(name, uData, 0, size)
+        end
     else
         self.shader:send(name, ...)
     end
@@ -117,6 +140,7 @@ end
 ---@param name string
 ---@param ... any
 ---@return boolean
+---@overload fun(self: ShaderEffect, name: string, matLayout: love.MatrixLayout, ...): boolean
 function ShaderEffect:trySendUniform(name, ...)
     if self:hasUniform(name) then
         self:sendUniform(name,...)
