@@ -37,7 +37,7 @@ function Animator:new(animation, armature, modelOriginalGlobalMatrix)
     self.finalQuaternionsPtr = ffi.cast("quaternion*", self.finalQuaternions:getFFIPointer())
 
     self.finalMatrices = love.data.newByteData(ffi.sizeof("matrix4") * MAX_BONES)
-    self.finalMatricesPtr = ffi.cast("matrix*", self.finalMatrices:getFFIPointer())
+    self.finalMatricesPtr = ffi.cast("matrix4*", self.finalMatrices:getFFIPointer())
 
     for i=0, MAX_BONES-1 do
         self.finalQuaternionsPtr[i*2]   = Quaternion.Identity()
