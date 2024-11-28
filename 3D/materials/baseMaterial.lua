@@ -2,7 +2,7 @@ local Object  = require "engine.3rdparty.classic.classic"
 local Vector2 = require "engine.math.vector2"
 local Utils   = require "engine.misc.utils"
 
---- @alias MaterialDefinition table<string, {uniform: string, value: any}>
+--- @alias MaterialDefinition table<string, {uniform: string, value: any, isArray: boolean}>
 
 --- @class BaseMaterial: Object
 ---
@@ -80,9 +80,15 @@ end
 ---@param shader ShaderEffect
 ---@overload fun()
 function Material:apply(shader)
+    shader = shader or self.shader
+
     for name, attr in pairs(rawget(self, "__attrs")) do
         if attr.value then
-            (shader or self.shader):trySendUniform(attr.uniform, attr.value)
+            if attr.isArray then
+                shader:trySendUniform(attr.uniform, unpack(attr.value))
+            else
+                shader:trySendUniform(attr.uniform, attr.value)
+            end
         end
     end
 end
