@@ -45,7 +45,11 @@ uniform mat4 u_viewProj;
 out vec3 v_localPos;
 
 vec4 position(mat4 transformProjection, vec4 position) {
-    v_localPos = position.xyz * vec3(1,-1,1);
+    v_localPos = position.xyz;
+
+#ifdef INVERT_Y
+    v_localPos.y *= -1.0;
+#endif
     
     return u_viewProj * position;
 }
@@ -65,7 +69,7 @@ vec4 effect(EFFECTARGS) {
 
     return vec4(pixel, 1.0);
 }
-]])
+]], {"INVERT_Y"})
 
 
 local irradianceMapShader = ShaderEffect(vertShaderCode, [[
