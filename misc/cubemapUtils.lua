@@ -128,7 +128,7 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 ---@param format love.PixelFormat?
 ---@return love.Canvas
 function Cmap.equirectangularMapToCubeMap(eqMap, format)
-    local cubeCanvas = love.graphics.newCanvas(eqMap:getHeight(), eqMap:getHeight(), {type = "cube", format = format or "rg11b10f", mipmaps = "auto"})
+    local cubeCanvas = love.graphics.newCanvas(eqMap:getHeight(), eqMap:getHeight(), {type = "cube", format = format or eqMap:getFormat(), mipmaps = "auto"})
     cubeCanvas:setMipmapFilter("linear")
 
     equirectangularMapToCubeMapShader:use()
