@@ -13,7 +13,7 @@ struct MaterialInput {
 	float emissiveIntensity;
 	float transparency;
 
-	samplerCube irradianceMap;
+	vec3[9] irradianceSH;
 	samplerCube environmentRadianceMap;
 };
 
@@ -59,7 +59,7 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput 
 
 
 #	if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-		result = CalculateAmbientPBRLighting(light, matInput.irradianceMap, matInput.environmentRadianceMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
+		result = CalculateAmbientPBRLighting(light, matInput.irradianceSH, matInput.environmentRadianceMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
 #	else
 		vec3 lightDir = light.type == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
 		result = CalculateDirectPBRLighting(light, lightDir, viewFragDirection, normal, albedo, roughness, metallic);

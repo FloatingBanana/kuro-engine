@@ -1,11 +1,5 @@
 #pragma include "engine/shaders/3D/misc/incl_lights.glsl"
-
-struct PBRFragment {
-    vec3 albedo;
-    float metallic;
-    float roughness;
-    float ambientOcclusion;
-};
+#pragma include "engine/shaders/include/incl_sphericalHarmonics.glsl"
 
 
 vec3 BaseFresnelReflection(vec3 albedo, float metallic) {
@@ -75,7 +69,7 @@ vec3 CalculateDirectPBRLighting(LightData light, vec3 lightDirection, vec3 viewF
 }
 
 
-vec3 CalculateAmbientPBRLighting(LightData light, samplerCube irradianceMap, samplerCube environmentRadianceMap, sampler2D brdfLUT, vec3 viewFragDirection, vec3 normal, vec3 albedo, float roughness, float metallic, float ao) {
+vec3 CalculateAmbientPBRLighting(LightData light, vec3[9] irradianceSH, samplerCube environmentRadianceMap, sampler2D brdfLUT, vec3 viewFragDirection, vec3 normal, vec3 albedo, float roughness, float metallic, float ao) {
     vec3 N = normal;
     vec3 V = viewFragDirection;
     vec3 F0 = BaseFresnelReflection(albedo, metallic);
@@ -88,7 +82,7 @@ vec3 CalculateAmbientPBRLighting(LightData light, samplerCube irradianceMap, sam
     vec3 kS = F;
     vec3 kD = (vec3(1.0) - kS) * (1.0 - metallic);
     
-    vec3 irradiance = texture(irradianceMap, N).rgb;
+    vec3 irradiance = SH9Evaluate(irradianceSH, N.xzy);
     vec3 diffuse = irradiance * albedo;
 
     vec3 prefilteredColor = textureLod(environmentRadianceMap, R, roughness * MAX_REFLECTION_LOD).rgb;
