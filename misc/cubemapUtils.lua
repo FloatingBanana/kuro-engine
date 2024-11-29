@@ -84,8 +84,6 @@ vec4 effect(EFFECTARGS) {
 
 
 local environmentRadianceShader = ShaderEffect(vertShaderCode, [[
-#define ENVIRONMENT_RADIANCE_SAMPLE_COUNT 32
-
 #pragma language glsl3
 #pragma include "engine/shaders/3D/misc/incl_IBLCalculation.glsl"
 
@@ -173,9 +171,10 @@ end
 
 
 ---@param envMap love.Texture
+---@param size Vector2
 ---@return love.Canvas
-function Cmap.getIrradianceMap(envMap)
-    local irrMap = love.graphics.newCanvas(envMap:getWidth()/4, envMap:getHeight()/4, {type = "cube", format = "rg11b10f"})
+function Cmap.getIrradianceMap(envMap, size)
+    local irrMap = love.graphics.newCanvas(size.width, size.height, {type = "cube", format = "rg11b10f"})
 
     irradianceMapShader:use()
     irradianceMapShader:sendUniform("u_envMap", envMap)
@@ -199,12 +198,15 @@ end
 
 
 ---@param envMap love.Texture
+---@param size Vector2
+---@param sampleCount integer?
 ---@return love.Canvas
-function Cmap.environmentRadianceMap(envMap)
-    local radianceMap = love.graphics.newCanvas(128, 128, {type = "cube", mipmaps = "manual"})
+function Cmap.environmentRadianceMap(envMap, size, sampleCount)
+    local radianceMap = love.graphics.newCanvas(size.width, size.height, {type = "cube", mipmaps = "manual", format = "rg11b10f"})
     radianceMap:setMipmapFilter("linear")
     radianceMap:generateMipmaps()
 
+    environmentRadianceShader:define("ENVIRONMENT_RADIANCE_SAMPLE_COUNT", sampleCount or 1024)
     environmentRadianceShader:use()
     environmentRadianceShader:sendUniform("u_envMap", envMap)
     love.graphics.setMeshCullMode("front")
@@ -213,7 +215,6 @@ function Cmap.environmentRadianceMap(envMap)
 
     local maxMipLevel = 5
     for mip = 0, maxMipLevel-1 do
-        local mipSize = 128 * (0.5 ^ mip)
         local roughness = mip / (maxMipLevel - 1)
 
         for i, dir in ipairs(Cmap.cubeSides) do
