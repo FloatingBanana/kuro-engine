@@ -1,5 +1,5 @@
 local Object  = require "engine.3rdparty.classic.classic"
-local Matrix4 = require "engine.math.matrix4"
+local Matrix3 = require "engine.math.matrix3"
 
 
 ---@class BoundingBox: Object
@@ -78,11 +78,10 @@ function BoundingBox:getMinMaxTransformed(mat)
     local trCenter = self.center:transform(mat)
 
     local abs = math.abs
-    local absMat = Matrix4(
-        abs(mat.m11), abs(mat.m12), abs(mat.m13), 0,
-        abs(mat.m21), abs(mat.m22), abs(mat.m23), 0,
-        abs(mat.m31), abs(mat.m32), abs(mat.m33), 0,
-        0,            0,            0,            1
+    local absMat = Matrix3(
+        abs(mat.m11), abs(mat.m12), abs(mat.m13),
+        abs(mat.m21), abs(mat.m22), abs(mat.m23),
+        abs(mat.m31), abs(mat.m32), abs(mat.m33)
     )
 
     local trSize = self.size:transform(absMat):multiply(0.5)
