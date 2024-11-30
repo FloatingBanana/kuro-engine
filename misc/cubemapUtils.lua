@@ -58,7 +58,7 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
 local equirectangularMapToCubeMapShader = ShaderEffect(vertShaderCode, [[
 #pragma language glsl3
-#pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
 
 uniform sampler2D u_equirectangularMap;
 in vec3 v_localPos;
@@ -76,7 +76,7 @@ local irradianceMapShader = ShaderEffect(vertShaderCode, [[
 #define IRRADIANCE_SAMPLE_DELTA 0.025
 
 #pragma language glsl3
-#pragma include "engine/shaders/3D/misc/incl_IBLCalculation.glsl"
+#pragma include "engine/shaders/include/incl_IBLCalculation.glsl"
 
 uniform samplerCube u_envMap;
 in vec3 v_localPos;
@@ -89,7 +89,7 @@ vec4 effect(EFFECTARGS) {
 
 local environmentRadianceShader = ShaderEffect(vertShaderCode, [[
 #pragma language glsl3
-#pragma include "engine/shaders/3D/misc/incl_IBLCalculation.glsl"
+#pragma include "engine/shaders/include/incl_IBLCalculation.glsl"
 
 in vec3 v_localPos;
 uniform samplerCube u_envMap;
@@ -104,7 +104,7 @@ local calculateBRDF_LUTShader = ShaderEffect [[
 #define BRDF_SAMPLE_COUNT 1024
 
 #pragma language glsl3
-#pragma include "engine/shaders/3D/misc/incl_IBLCalculation.glsl"
+#pragma include "engine/shaders/include/incl_IBLCalculation.glsl"
 
 vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
     vec2 brdf = integrateBRDF(texcoords.x, 1.0 - texcoords.y);
@@ -114,7 +114,7 @@ vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
 
 local cubeMapToEquirectangularMapShader = ShaderEffect [[
 #pragma language glsl3
-#pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
 
 uniform samplerCube u_cubeMap;
 

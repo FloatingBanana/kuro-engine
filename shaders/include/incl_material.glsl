@@ -1,9 +1,9 @@
 #pragma language glsl3
 
-#pragma include "engine/shaders/incl_utils.glsl"
-#pragma include "engine/shaders/incl_commonBuffers.glsl"
-#pragma include "engine/shaders/3D/misc/incl_lights.glsl"
-#pragma include "engine/shaders/3D/misc/incl_shadowCalculation.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_commonBuffers.glsl"
+#pragma include "engine/shaders/include/incl_lights.glsl"
+#pragma include "engine/shaders/include/incl_shadowCalculation.glsl"
 
 #define ISLIGHT(t) (CURRENT_LIGHT_TYPE == t)
 

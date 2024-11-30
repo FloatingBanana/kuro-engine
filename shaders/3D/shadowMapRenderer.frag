@@ -1,5 +1,5 @@
 #pragma language glsl3
-#pragma include "engine/shaders/3D/misc/incl_lights.glsl"
+#pragma include "engine/shaders/include/incl_lights.glsl"
 
 uniform LightData light;
 uniform int u_lightType;

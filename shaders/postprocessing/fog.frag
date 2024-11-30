@@ -1,6 +1,6 @@
 #pragma language glsl3
-#pragma include "engine/shaders/incl_utils.glsl"
-#pragma include "engine/shaders/incl_commonBuffers.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_commonBuffers.glsl"
 
 uniform vec2 u_minMaxDistance;
 uniform vec3 u_fogColor;

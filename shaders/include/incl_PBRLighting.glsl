@@ -1,4 +1,4 @@
-#pragma include "engine/shaders/3D/misc/incl_lights.glsl"
+#pragma include "engine/shaders/include/incl_lights.glsl"
 #pragma include "engine/shaders/include/incl_sphericalHarmonics.glsl"
 
 

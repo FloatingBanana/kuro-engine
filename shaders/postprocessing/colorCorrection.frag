@@ -1,5 +1,5 @@
 #pragma language glsl3
-#pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
 
 #define SATURATE(v) clamp(v, 0.0, 1.0)
 

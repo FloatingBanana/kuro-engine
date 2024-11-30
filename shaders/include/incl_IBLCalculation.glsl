@@ -1,6 +1,6 @@
 #pragma language glsl3
 
-#pragma include "engine/shaders/3D/misc/incl_PBRLighting.glsl"
+#pragma include "engine/shaders/include/incl_PBRLighting.glsl"
 
 vec2 Hammersley(uint i, uint N) {
     // Van Der Corput sequence

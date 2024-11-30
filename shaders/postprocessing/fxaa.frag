@@ -1,5 +1,5 @@
 #pragma language glsl3
-#pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
 
 // https://github.com/kosua20/Rendu/blob/master/resources/common/shaders/screens/fxaa.frag
 

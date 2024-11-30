@@ -1,7 +1,7 @@
 #pragma language glsl3
 
-#pragma include "engine/shaders/incl_utils.glsl"
-#pragma include "engine/shaders/incl_commonBuffers.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_commonBuffers.glsl"
 
 const float depthMultiplier = 1.0;
 const float depthBias = 1.0;

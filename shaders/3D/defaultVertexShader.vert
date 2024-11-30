@@ -1,8 +1,8 @@
 #pragma language glsl3
-#pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
 #pragma include "engine/shaders/include/incl_meshSkinning.glsl"
 #pragma include "engine/shaders/include/incl_dualQuaternion.glsl"
-#pragma include "engine/shaders/incl_commonBuffers.glsl"
+#pragma include "engine/shaders/include/incl_commonBuffers.glsl"
 
 
 in vec2 VertexTexCoords;

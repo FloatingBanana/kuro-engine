@@ -12,12 +12,12 @@ struct MaterialInput {
 	float transparency;
 };
 
-#pragma include "engine/shaders/3D/material.glsl"
-#pragma include "engine/shaders/incl_utils.glsl"
-#pragma include "engine/shaders/incl_commonBuffers.glsl"
+#pragma include "engine/shaders/include/incl_material.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_commonBuffers.glsl"
 #pragma include "engine/shaders/include/incl_dither.glsl"
-#pragma include "engine/shaders/3D/misc/incl_lights.glsl"
-#pragma include "engine/shaders/3D/misc/incl_PhongLighting.glsl"
+#pragma include "engine/shaders/include/incl_lights.glsl"
+#pragma include "engine/shaders/include/incl_PhongLighting.glsl"
 
 
 void materialPrepass(MaterialInput matInput) {

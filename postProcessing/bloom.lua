@@ -4,7 +4,7 @@ local lg = love.graphics
 
 local brightFilterShader = [[
 #pragma language glsl3
-#pragma include "engine/shaders/incl_utils.glsl"
+#pragma include "engine/shaders/include/incl_utils.glsl"
 
 uniform float u_treshold;
 
