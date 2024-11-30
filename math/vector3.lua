@@ -1,5 +1,6 @@
 local Lume    = require "engine.3rdparty.lume"
 local Vector2 = require "engine.math.vector2"
+local Utils   = require "engine.misc.utils"
 local CStruct = require "engine.misc.cstruct"
 local abs, sqrt, floor, ceil, min, max = math.abs, math.sqrt, math.floor, math.ceil, math.min, math.max
 
@@ -292,10 +293,10 @@ end
 
 
 --- Transform this vector by a matrix or quaternion
---- @param value Matrix4 | Quaternion: The transformation matrix or quaternion
+--- @param value Matrix3 | Matrix4 | Quaternion: The transformation matrix or quaternion
 --- @return Vector3: This vector
 function Vector3:transform(value)
-    if value.typename == "quaternion" then
+    if Utils.isType(value, "quaternion") then
         local x = 2 * (value.y * self.z - value.z * self.y);
         local y = 2 * (value.z * self.x - value.x * self.z);
         local z = 2 * (value.x * self.y - value.y * self.x);
@@ -303,13 +304,22 @@ function Vector3:transform(value)
         self.x = self.x + x * value.w + (value.y * z - value.z * y);
         self.y = self.y + y * value.w + (value.z * x - value.x * z);
         self.z = self.z + z * value.w + (value.x * y - value.y * x);
-    else
-        -- Matrix
+
+    elseif Utils.isType(value, "matrix3") then
+        local x = (self.x * value.m11) + (self.y * value.m21) + (self.z * value.m31);
+        local y = (self.x * value.m12) + (self.y * value.m22) + (self.z * value.m32);
+        local z = (self.x * value.m13) + (self.y * value.m23) + (self.z * value.m33);
+
+        self:new(x, y, z)
+
+    elseif Utils.isType(value, "matrix4") then
         local x = (self.x * value.m11) + (self.y * value.m21) + (self.z * value.m31) + value.m41;
         local y = (self.x * value.m12) + (self.y * value.m22) + (self.z * value.m32) + value.m42;
         local z = (self.x * value.m13) + (self.y * value.m23) + (self.z * value.m33) + value.m43;
 
         self:new(x, y, z)
+    else
+        error("Unsupported transformation type")
     end
 
     return self
