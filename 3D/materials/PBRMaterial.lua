@@ -58,7 +58,7 @@ function PBRMaterial:loadMaterialData(matData, model)
     if matData.tex_metallicroughness then
         self:_setupTexturePromise("metallicRoughnessMap", matData.tex_metallicroughness, model.contentLoader:getImage(matData.tex_metallicroughness.path, {mipmaps = true, linear = true}))
     else
-        self.metallicRoughnessMap = Utils.newColorImage(Vector2(1), {matData.metallic, matData.roughness, 0, 0})
+        self.metallicRoughnessMap = Utils.newColorImage(Vector2(1), {0, matData.roughness, matData.metallic, 0})
     end
 
     if matData.tex_normals then
