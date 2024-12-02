@@ -255,8 +255,8 @@ function ShaderEffect:sendMeshConfigUniforms(config)
     end
 
     if config.animator then
-        self:trySendUniform("uBoneQuaternions", config.animator.finalQuaternions)
-        self:trySendUniform("uBoneScaling", config.animator.finalScaling)
+        self:trySendUniform("uBoneQuaternions", unpack(config.animator.finalQuaternions))
+        self:trySendUniform("uBoneScaling", unpack(config.animator.finalScaling))
         self:trySendUniform("uHasAnimation", true)
     else
         self:trySendUniform("uHasAnimation", false)

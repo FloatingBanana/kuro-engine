@@ -1,7 +1,7 @@
 local Vector3    = require "engine.math.vector3"
 local Quaternion = require "engine.math.quaternion"
 local Object     = require "engine.3rdparty.classic.classic"
-local ffi        = require "ffi"
+local newtable   = require "table.new"
 
 local MAX_BONES = 20
 
@@ -12,12 +12,12 @@ local MAX_BONES = 20
 --- @field public isPlaying boolean
 --- @field public duration number
 --- @field public fps integer
---- @field public finalQuaternions love.ByteData
+--- @field public finalQuaternions Quaternion[]
+--- @field public finalScaling Vector3[]
 ---
 --- @field private animation ModelAnimation
 --- @field private armature ModelArmature
 --- @field private armatureToModelMatrix Matrix4
---- @field private finalQuaternionsPtr ffi.cdata*
 ---
 --- @overload fun(animation: ModelAnimation, armature: ModelArmature, modelOriginalGlobalMatrix: Matrix4): ModelAnimator
 local Animator = Object:extend("ModelAnimator")
@@ -33,16 +33,13 @@ function Animator:new(animation, armature, modelOriginalGlobalMatrix)
     self.armature = armature
     self.armatureToModelMatrix = armature:getGlobalMatrix() * modelOriginalGlobalMatrix.inverse
 
-    self.finalQuaternions = love.data.newByteData(ffi.sizeof("quaternion") * MAX_BONES*2)
-    self.finalQuaternionsPtr = ffi.cast("quaternion*", self.finalQuaternions:getFFIPointer())
+    self.finalQuaternions = newtable(MAX_BONES*2, 0)
+    self.finalScaling = newtable(MAX_BONES, 0)
 
-    self.finalScaling = love.data.newByteData(ffi.sizeof("vector3") * MAX_BONES)
-    self.finalScalingPtr = ffi.cast("vector3*", self.finalScaling:getFFIPointer())
-
-    for i=0, MAX_BONES-1 do
-        self.finalQuaternionsPtr[i*2]   = Quaternion.Identity()
-        self.finalQuaternionsPtr[i*2+1] = Quaternion()
-        self.finalScalingPtr[i] = Vector3(1)
+    for i=1, MAX_BONES do
+        self.finalQuaternions[i*2-1] = Quaternion.Identity()
+        self.finalQuaternions[i*2]   = Quaternion()
+        self.finalScaling[i]         = Vector3(1)
     end
 end
 
@@ -53,7 +50,7 @@ function Animator:update(dt)
     end
 
     for name, bone in pairs(self.armature.rootBones) do
-        self.animation:updateBonesDQS(self.time, self.finalQuaternionsPtr, self.finalScalingPtr, bone, self.armatureToModelMatrix)
+        self.animation:updateBonesDQS(self.time, self.finalQuaternions, self.finalScaling, bone, self.armatureToModelMatrix)
     end
 end
 

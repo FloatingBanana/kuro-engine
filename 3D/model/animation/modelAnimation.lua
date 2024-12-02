@@ -41,11 +41,11 @@ end
 
 
 --- @param time number
---- @param dqListPtr ffi.cdata*
---- @param scaleListsPtr ffi.cdata*
+--- @param dqList Quaternion[]
+--- @param scaleLists Vector3[]
 --- @param bone ModelBone
 --- @param parentTransform Matrix4
-function Anim:updateBonesDQS(time, dqListPtr, scaleListsPtr, bone, parentTransform)
+function Anim:updateBonesDQS(time, dqList, scaleLists, bone, parentTransform)
     local transform = bone.localMatrix
     local animNode = self.animNodes[bone.name]
 
@@ -57,20 +57,21 @@ function Anim:updateBonesDQS(time, dqListPtr, scaleListsPtr, bone, parentTransfo
     local globalTransform = transform * parentTransform
     local finalBoneTransform = bone.offset * globalTransform
     local translation, scale, rotation = finalBoneTransform:decompose()
+    local id = bone.id+1
 
-    dqListPtr[bone.id*2]   = rotation
-    dqListPtr[bone.id*2+1] = Quaternion.CreateDualQuaternionTranslation(rotation, translation)
-    scaleListsPtr[bone.id] = scale
+    dqList[id*2-1] = rotation
+    dqList[id*2]   = Quaternion.CreateDualQuaternionTranslation(rotation, translation)
+    scaleLists[id] = scale
 
     for i, child in ipairs(bone.children) do
         ---@cast child ModelBone
-        self:updateBonesDQS(time, dqListPtr, scaleListsPtr, child, globalTransform)
+        self:updateBonesDQS(time, dqList, scaleLists, child, globalTransform)
     end
 end
 
 
 --- @param time number
---- @param matrixList ffi.cdata*
+--- @param matrixList Matrix4
 --- @param bone ModelBone
 --- @param parentTransform Matrix4
 function Anim:updateBonesLBS(time, matrixList, bone, parentTransform)
@@ -85,7 +86,7 @@ function Anim:updateBonesLBS(time, matrixList, bone, parentTransform)
     local globalTransform = transform * parentTransform
 
     if bone then
-        matrixList[bone.id] = bone.offset * globalTransform
+        matrixList[bone.id+1] = bone.offset * globalTransform
     end
 
     for i, child in ipairs(bone.children) do
