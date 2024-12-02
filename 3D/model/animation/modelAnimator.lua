@@ -1,4 +1,4 @@
-local Matrix4    = require "engine.math.matrix4"
+local Vector3    = require "engine.math.vector3"
 local Quaternion = require "engine.math.quaternion"
 local Object     = require "engine.3rdparty.classic.classic"
 local ffi        = require "ffi"
@@ -36,13 +36,13 @@ function Animator:new(animation, armature, modelOriginalGlobalMatrix)
     self.finalQuaternions = love.data.newByteData(ffi.sizeof("quaternion") * MAX_BONES*2)
     self.finalQuaternionsPtr = ffi.cast("quaternion*", self.finalQuaternions:getFFIPointer())
 
-    self.finalMatrices = love.data.newByteData(ffi.sizeof("matrix4") * MAX_BONES)
-    self.finalMatricesPtr = ffi.cast("matrix4*", self.finalMatrices:getFFIPointer())
+    self.finalScaling = love.data.newByteData(ffi.sizeof("vector3") * MAX_BONES)
+    self.finalScalingPtr = ffi.cast("vector3*", self.finalScaling:getFFIPointer())
 
     for i=0, MAX_BONES-1 do
         self.finalQuaternionsPtr[i*2]   = Quaternion.Identity()
         self.finalQuaternionsPtr[i*2+1] = Quaternion()
-        self.finalMatricesPtr[i] = Matrix4.Identity()
+        self.finalScalingPtr[i] = Vector3(1)
     end
 end
 
@@ -53,7 +53,7 @@ function Animator:update(dt)
     end
 
     for name, bone in pairs(self.armature.rootBones) do
-        self.animation:updateBonesDQS(self.time, self.finalQuaternionsPtr, self.finalMatricesPtr, bone, self.armatureToModelMatrix)
+        self.animation:updateBonesDQS(self.time, self.finalQuaternionsPtr, self.finalScalingPtr, bone, self.armatureToModelMatrix)
     end
 end
 

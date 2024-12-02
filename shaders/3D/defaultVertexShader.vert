@@ -20,12 +20,12 @@ uniform mat4 u_volumeTransform;
 
 vec4 position(mat4 transformProjection, vec4 position) {
     DualQuaternion dqSkinning = uHasAnimation ? GetDualQuaternionSkinning(uBoneQuaternions, VertexBoneIDs, VertexWeights) : dq_identity();
-    mat4 scaleSkinning = uHasAnimation ? GetLinearBlendingSkinningMatrix(uBoneMatrices, VertexBoneIDs, VertexWeights) : mat4(1.0);
+    vec3 scaleSkinning = uHasAnimation ? GetScalingSkinning(uBoneScaling, VertexBoneIDs, VertexWeights) : vec3(1.0);
 
-    vec4 worldPos = uWorldMatrix * scaleSkinning * vec4(dq_transform(dqSkinning, position.xyz), 1.0);
+    vec4 worldPos = uWorldMatrix * vec4(scaleSkinning * dq_transform(dqSkinning, position.xyz), 1.0);
     vec4 screen = uViewProjMatrix * worldPos;
-    vec3 normal = dq_rotate(dqSkinning, (scaleSkinning * vec4(VertexNormal, 0.0)).xyz);
-    vec3 tangent = dq_rotate(dqSkinning, (scaleSkinning * vec4(VertexTangent, 0.0)).xyz);
+    vec3 normal = dq_rotate(dqSkinning, VertexNormal);
+    vec3 tangent = dq_rotate(dqSkinning, VertexTangent);
 
 #   if CURRENT_RENDER_PASS == RENDER_PASS_DEPTH_PREPASS
         screen.z += 0.00001;

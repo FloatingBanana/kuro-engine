@@ -42,10 +42,10 @@ end
 
 --- @param time number
 --- @param dqListPtr ffi.cdata*
---- @param scaleMatricesPtr ffi.cdata*
+--- @param scaleListsPtr ffi.cdata*
 --- @param bone ModelBone
 --- @param parentTransform Matrix4
-function Anim:updateBonesDQS(time, dqListPtr, scaleMatricesPtr, bone, parentTransform)
+function Anim:updateBonesDQS(time, dqListPtr, scaleListsPtr, bone, parentTransform)
     local transform = bone.localMatrix
     local animNode = self.animNodes[bone.name]
 
@@ -58,13 +58,13 @@ function Anim:updateBonesDQS(time, dqListPtr, scaleMatricesPtr, bone, parentTran
     local finalBoneTransform = bone.offset * globalTransform
     local translation, scale, rotation = finalBoneTransform:decompose()
 
-    dqListPtr[bone.id*2]      = rotation
-    dqListPtr[bone.id*2+1]    = Quaternion.CreateDualQuaternionTranslation(rotation, translation)
-    scaleMatricesPtr[bone.id] = Matrix4.CreateScale(scale)
+    dqListPtr[bone.id*2]   = rotation
+    dqListPtr[bone.id*2+1] = Quaternion.CreateDualQuaternionTranslation(rotation, translation)
+    scaleListsPtr[bone.id] = scale
 
     for i, child in ipairs(bone.children) do
         ---@cast child ModelBone
-        self:updateBonesDQS(time, dqListPtr, scaleMatricesPtr, child, globalTransform)
+        self:updateBonesDQS(time, dqListPtr, scaleListsPtr, child, globalTransform)
     end
 end
 

@@ -12,7 +12,7 @@ uniform mat4 uInvProjMatrix;
 uniform mat4 uInvViewProjMatrix;
 
 uniform bool uHasAnimation;
-uniform mat4 uBoneMatrices[MAX_BONE_COUNT];
+uniform vec3 uBoneScaling[MAX_BONE_COUNT];
 uniform vec4 uBoneQuaternions[MAX_BONE_COUNT*2];
 
 uniform vec3 uViewPosition;
