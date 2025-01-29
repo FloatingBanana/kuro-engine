@@ -99,10 +99,10 @@ function DeferredRenderer:renderMeshes()
         if light:is(PointLight) then ---@cast light PointLight
             local transform = Matrix4.CreateScale(Vector3(light:getLightRadius())) * Matrix4.CreateTranslation(light.position) * self.camera.viewPerspectiveMatrix
 
-            self.lightPassMaterial.shader:sendUniform("u_volumeTransform", transform)
+            self.lightPassMaterial.shader:sendUniform("uWorldMatrix", "column", transform)
             volume:draw()
         else
-            self.lightPassMaterial.shader:sendUniform("u_volumeTransform", Matrix4.CreateOrthographicOffCenter(0, self.screensize.width, self.screensize.height, 0, 0, 1))
+            self.lightPassMaterial.shader:sendUniform("uWorldMatrix", "column", Matrix4.CreateOrthographicOffCenter(0, self.screensize.width, self.screensize.height, 0, 0, 1))
             lg.draw(self.dummySquare)
         end
 

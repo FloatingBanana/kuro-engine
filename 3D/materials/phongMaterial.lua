@@ -3,7 +3,7 @@ local ShaderEffect = require "engine.misc.shaderEffect"
 local Vector2      = require "engine.math.vector2"
 local Utils        = require "engine.misc.utils"
 
-local phongShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/phongMaterialShader.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_FORWARD"})
+local phongShader = ShaderEffect("engine/shaders/3D/phongMaterialShader.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_FORWARD"})
 
 
 --- @class PhongMaterial: BaseMaterial

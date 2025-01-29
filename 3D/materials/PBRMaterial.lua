@@ -4,7 +4,7 @@ local Utils        = require "engine.misc.utils"
 local Vector2      = require "engine.math.vector2"
 
 
-local pbrShader = ShaderEffect("engine/shaders/3D/defaultVertexShader.vert", "engine/shaders/3D/PBRMaterialShader.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_FORWARD"})
+local pbrShader = ShaderEffect("engine/shaders/3D/PBRMaterialShader.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_FORWARD"})
 
 --- @class PBRMaterial: BaseMaterial
 ---

@@ -4,8 +4,12 @@
 #pragma include "engine/shaders/include/incl_commonBuffers.glsl"
 #pragma include "engine/shaders/include/incl_lights.glsl"
 #pragma include "engine/shaders/include/incl_shadowCalculation.glsl"
+#pragma include "engine/shaders/include/incl_meshSkinning.glsl"
+#pragma include "engine/shaders/include/incl_dualQuaternion.glsl"
 
 #define ISLIGHT(t) (CURRENT_LIGHT_TYPE == t)
+#define ISRENDERPASS(p) (CURRENT_RENDER_PASS == p)
+
 
 #ifndef MATERIAL_DATA_CHANNELS
 #   define MATERIAL_DATA_CHANNELS 8
@@ -33,15 +37,25 @@
 
 // #define MATERIAL_DISABLE_SHADOWS
 
+#ifdef VERTEX
+#   define MAT_VARYING out
+#   define discard // Ugh...
+#else
+#   define MAT_VARYING in
+#endif
 
-in vec2 v_texCoords;
-in vec3 v_fragPos;
-in mat3 v_tbnMatrix;
+
+MAT_VARYING vec3 v_fragPos;
+MAT_VARYING vec3 v_normal;
+MAT_VARYING vec2 v_texCoords;
+MAT_VARYING mat3 v_tbnMatrix;
 
 
 struct FragmentData {
     vec3 position;
+    vec3 normal;
     vec2 uv;
+    vec2 screenPosition;
     vec2 screenUV;
     mat3 tbnMatrix;
 };
@@ -50,12 +64,12 @@ struct DefaultMaterialInput {
     int dummy;
 };
 
-void MATERIAL_DEPTH_PASS(MATERIAL_INPUT_STRUCT materialInput);
+void MATERIAL_DEPTH_PASS(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput);
 void MATERIAL_GBUFFER_PASS(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput, out vec4 data[MATERIAL_DATA_CHANNELS]);
 vec4 MATERIAL_LIGHT_PASS(FragmentData fragData, LightData light, MATERIAL_INPUT_STRUCT materialInput, vec4 data[MATERIAL_DATA_CHANNELS]);
 
 
-void defaultDepthPass(MATERIAL_INPUT_STRUCT materialInput) {}
+void defaultDepthPass(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput) {}
 void defaultGBufferPass(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput, out vec4 data[MATERIAL_DATA_CHANNELS]) {}
 vec4 defaultLightPass(FragmentData fragData, LightData light, MATERIAL_INPUT_STRUCT materialInput, vec4 data[MATERIAL_DATA_CHANNELS]) {return vec4(0,0,0,1);}
 
@@ -76,17 +90,73 @@ float _getShadowOcclusion(LightData light, vec3 fragPos, vec3 viewPos) {
 #   endif
 }
 
+FragmentData _getFragmentData(vec2 fragCoord) {
+    FragmentData fragData;
+    fragData.position = v_fragPos;
+    fragData.normal = v_normal;
+    fragData.uv = v_texCoords;
+    fragData.tbnMatrix = v_tbnMatrix;
+    fragData.screenPosition = fragCoord;
+    fragData.screenUV = fragCoord / love_ScreenSize.xy;
 
-
-#if CURRENT_RENDER_PASS == RENDER_PASS_DEPTH_PREPASS
-uniform MATERIAL_INPUT_STRUCT u_input;
-
-void effect() {
-    MATERIAL_DEPTH_PASS(u_input);
+    return fragData;
 }
 
 
-#elif CURRENT_RENDER_PASS == RENDER_PASS_FORWARD
+
+
+#ifdef VERTEX
+in vec2 VertexTexCoords;
+in vec3 VertexNormal;
+in vec3 VertexTangent;
+in vec4 VertexBoneIDs;
+in vec4 VertexWeights;
+
+
+vec4 position(mat4 transformProjection, vec4 position) {
+    DualQuaternion dqSkinning = uHasAnimation ? GetDualQuaternionSkinning(uBoneQuaternions, VertexBoneIDs, VertexWeights) : dq_identity();
+    vec3 scaleSkinning = uHasAnimation ? GetScalingSkinning(uBoneScaling, VertexBoneIDs, VertexWeights) : vec3(1.0);
+
+    vec4 worldPos = uWorldMatrix * vec4(scaleSkinning * dq_transform(dqSkinning, position.xyz), 1.0);
+    vec4 screen = uViewProjMatrix * worldPos;
+    vec3 normal = dq_rotate(dqSkinning, VertexNormal);
+    vec3 tangent = dq_rotate(dqSkinning, VertexTangent);
+
+    v_fragPos = worldPos.xyz;
+    v_tbnMatrix = GetTBNMatrix(uWorldMatrix, normal, tangent);
+    v_texCoords = VertexTexCoords;
+    v_normal  = uInverseTransposedWorldMatrix * normal;
+
+#   if ISRENDERPASS(RENDER_PASS_DEFERRED_LIGHTPASS)
+        screen = uWorldMatrix * position;
+#   elif ISRENDERPASS(RENDER_PASS_DEPTH_PREPASS)
+        screen.z += 0.00001;
+		screen.y *= -1.0;
+#   endif
+
+
+    screen.y *= uIsCanvasActive ? -1.0 : 1.0; // LÖVE flips meshes upside down when drawing to a canvas, we need to flip them back
+
+    return screen;
+}
+#endif // VERTEX
+
+
+
+
+
+#if defined(PIXEL) && ISRENDERPASS(RENDER_PASS_DEPTH_PREPASS)
+uniform MATERIAL_INPUT_STRUCT u_input;
+
+void effect() {
+    MATERIAL_DEPTH_PASS(_getFragmentData(gl_FragCoord.xy), u_input);
+}
+#endif // RENDER_PASS_DEPTH_PREPASS
+
+
+
+
+#if defined(PIXEL) && ISRENDERPASS(RENDER_PASS_FORWARD)
 uniform LightData u_light;
 uniform MATERIAL_INPUT_STRUCT u_input;
 uniform sampler2D u_ambientOcclusion;
@@ -94,49 +164,43 @@ uniform sampler2D u_ambientOcclusion;
 out vec4 oFragColor;
 
 void effect() {
-	FragmentData fragData;
-	fragData.screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
-    fragData.position = v_fragPos;
-    fragData.uv = v_texCoords;
-    fragData.tbnMatrix = v_tbnMatrix;
+	FragmentData fragData = _getFragmentData(gl_FragCoord.xy);
 
     vec4 inData[MATERIAL_DATA_CHANNELS];
     MATERIAL_GBUFFER_PASS(fragData, u_input, inData);
 
     float visibility = 1.0;
-    if (ISLIGHT(LIGHT_TYPE_AMBIENT)) {
+#   if ISLIGHT(LIGHT_TYPE_AMBIENT)
         visibility = texture(u_ambientOcclusion, fragData.screenUV).r;
-    }
-    else {
+#   else
         visibility = 1.0 - _getShadowOcclusion(u_light, v_fragPos, uViewPosition);
-    }
+#   endif
 
 	oFragColor = MATERIAL_LIGHT_PASS(fragData, u_light, u_input, inData) * visibility;
 }
+#endif // RENDER_PASS_FORWARD
 
 
 
 
 
 
-
-#elif CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED
+#if defined(PIXEL) && ISRENDERPASS(RENDER_PASS_DEFERRED)
 uniform MATERIAL_INPUT_STRUCT u_input;
 out vec4 oDeferredOutputs[MATERIAL_DATA_CHANNELS];
 
 void effect() {
-    FragmentData fragData;
-    fragData.position = v_fragPos;
-    fragData.uv = v_texCoords;
-    fragData.tbnMatrix = v_tbnMatrix;
+    FragmentData fragData = _getFragmentData(gl_FragCoord.xy);
 
-
-	MATERIAL_DEPTH_PASS(u_input);
+	MATERIAL_DEPTH_PASS(fragData, u_input);
     MATERIAL_GBUFFER_PASS(fragData, u_input, oDeferredOutputs);
 }
+#endif // RENDER_PASS_DEFERRED
 
 
-#elif CURRENT_RENDER_PASS == RENDER_PASS_DEFERRED_LIGHTPASS
+
+
+#if defined(PIXEL) && ISRENDERPASS(RENDER_PASS_DEFERRED_LIGHTPASS)
 uniform sampler2D u_deferredInput[MATERIAL_DATA_CHANNELS];
 uniform sampler2D u_ambientOcclusion;
 uniform MATERIAL_INPUT_STRUCT u_input;
@@ -145,8 +209,7 @@ uniform LightData u_light;
 out vec4 oFragColor;
 
 void effect() {
-    FragmentData fragData;
-	fragData.screenUV = love_PixelCoord.xy / love_ScreenSize.xy;
+    FragmentData fragData = _getFragmentData(gl_FragCoord.xy);
     fragData.position = ReconstructPosition(fragData.screenUV, uDepthBuffer, uInvViewProjMatrix);
 
     vec4 inData[MATERIAL_DATA_CHANNELS];
@@ -178,13 +241,12 @@ void effect() {
 
 
     float visibility = 1.0;
-    if (ISLIGHT(LIGHT_TYPE_AMBIENT)) {
+#   if ISLIGHT(LIGHT_TYPE_AMBIENT)
         visibility = texture(u_ambientOcclusion, fragData.screenUV).r;
-    }
-    else {
+#   else
         visibility = 1.0 - _getShadowOcclusion(u_light, fragData.position, uViewPosition);
-    }
+#   endif
     
     oFragColor = MATERIAL_LIGHT_PASS(fragData, u_light, u_input, inData) * visibility;
 }
-#endif
+#endif // RENDER_PASS_DEFERRED_LIGHTPASS

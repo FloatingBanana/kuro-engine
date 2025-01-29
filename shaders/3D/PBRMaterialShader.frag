@@ -1,3 +1,5 @@
+#pragma language glsl3
+
 #define MATERIAL_DATA_CHANNELS 3
 #define MATERIAL_INPUT_STRUCT MaterialInput
 
@@ -27,8 +29,8 @@ struct MaterialInput {
 #pragma include "engine/shaders/include/incl_PBRLighting.glsl"
 
 
-void materialPrepass(MaterialInput matInput) {
-	if (Dither8(gl_FragCoord.xy, matInput.transparency))
+void materialPrepass(FragmentData fragData, MaterialInput matInput) {
+	if (Dither8(fragData.screenPosition.xy, matInput.transparency))
 		discard;
 }
 
