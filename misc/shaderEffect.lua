@@ -142,8 +142,8 @@ end
 ---@return boolean
 ---@overload fun(self: ShaderEffect, name: string, matLayout: love.MatrixLayout, ...): boolean
 function ShaderEffect:trySendUniform(name, ...)
-    if self:hasUniform(name) then
-        self:sendUniform(name,...)
+    if self:hasUniform(name) and ... then
+        self:sendUniform(name, ...)
         return true
     end
     return false
