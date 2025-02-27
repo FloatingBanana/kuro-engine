@@ -2,7 +2,7 @@ local Object = require "engine.3rdparty.classic.classic"
 
 -- https://web.archive.org/web/20220127124628/https://orlandoaguilar.github.io/sh/spherical/harmonics/irradiance/map/2017/02/12/SphericalHarmonics.html#expand
 
----@class SH9: CStruct
+---@class SH9: Object
 ---
 ---@field coefficients number[]
 ---

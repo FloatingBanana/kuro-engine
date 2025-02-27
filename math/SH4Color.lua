@@ -8,7 +8,7 @@ local sin, cos, sqrt = math.sin, math.cos, math.sqrt
 -- https://github.com/TheRealMJP/LowResRendering/blob/master/SampleFramework11/v1.01/Graphics/SH.cpp
 
 
----@class SH4Color: CStruct
+---@class SH4Color: Object
 ---
 ---@field coefficients Vector3[]
 ---
