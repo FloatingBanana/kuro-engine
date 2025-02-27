@@ -69,15 +69,14 @@ function ForwardRenderer:renderMeshes()
     lg.setMeshCullMode("back")
     lg.setBlendMode("add", "alphamultiply")
 
-    while self.meshParts:peek() do
-        local config = self.meshParts:pop() --[[@as MeshPartConfig]]
+    for c, config in ipairs(self.meshParts) do
         local material = config.material
         local shader = material.shader
 
         if frustum:testIntersection(config.meshPart.aabb, config.worldMatrix) then
             material:setRenderPass("forward")
 
-            for i, light in ipairs(self.lights) do
+            for l, light in ipairs(self.lights) do
                 if not light.enabled then goto continue end
 
                 material:setLight(light)
@@ -95,8 +94,6 @@ function ForwardRenderer:renderMeshes()
                 ::continue::
             end
         end
-
-        self:recycleConfigTable(config)
     end
 
 

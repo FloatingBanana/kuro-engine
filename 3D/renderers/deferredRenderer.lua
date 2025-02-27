@@ -109,10 +109,6 @@ function DeferredRenderer:renderMeshes()
         ::continue::
     end
 
-    while self.meshParts:peek() do
-        self:recycleConfigTable(self.meshParts:pop())
-    end
-
     lg.setShader()
     lg.setMeshCullMode("none")
     lg.setBlendMode("alpha", "alphamultiply")

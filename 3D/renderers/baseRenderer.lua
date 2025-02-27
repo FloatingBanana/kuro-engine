@@ -58,13 +58,20 @@ function Renderer:pushMeshPart(meshPart)
 end
 
 
----@protected
 ---@param config MeshPartConfig
-function Renderer:recycleConfigTable(config)
-    config.animator = nil
-    config.meshPart = nil
-    config.material = nil
-    configPool:push(config)
+function Renderer:removeMeshPart(config)
+    table.remove(self.meshParts, Lume.find(self.meshParts, config))
+end
+
+
+function Renderer:clearMeshParts()
+    while self.meshParts:peek() do
+        local config = self.meshParts:pop()
+        config.animator = nil
+        config.meshPart = nil
+        config.material = nil
+        configPool:push(config)
+    end
 end
 
 
@@ -127,8 +134,6 @@ function Renderer:render()
     if self.skyBoxTexture then
         self:_renderSkyBox()
     end
-
-    assert(#self.meshParts == 0, "Failed to consume all queued meshes")
 
     love.graphics.pop()
     love.graphics.push("all")
