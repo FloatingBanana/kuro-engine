@@ -4,7 +4,15 @@ local Object = require "engine.3rdparty.classic.classic"
 
 ---@class SH9: Object
 ---
----@field coefficients number[]
+---@field [1] number
+---@field [2] number
+---@field [3] number
+---@field [4] number
+---@field [5] number
+---@field [6] number
+---@field [7] number
+---@field [8] number
+---@field [9] number
 ---
 ---@operator add: SH9
 ---@operator mul: SH9
@@ -13,10 +21,8 @@ local Object = require "engine.3rdparty.classic.classic"
 local SH = Object:extend("SH9")
 
 function SH:new(...)
-    self.coefficients = {}
-
 	for i = 1, 9 do
-		self.coefficients[i] = select(i, ...) or 0
+		self[i] = select(i, ...) or 0
 	end
 end
 
@@ -51,11 +57,11 @@ end
 function SH:multiply(other)
 	if type(other) == "number" then
 		for i = 1, 9 do
-			self.coefficients[i] = self.coefficients[i] * other
+			self[i] = self[i] * other
 		end
 	else
 		for i = 1, 9 do
-			self.coefficients[i] = self.coefficients[i] * other.coefficients[i]
+			self[i] = self[i] * other[i]
 		end
 	end
 
@@ -68,11 +74,11 @@ end
 function SH:add(other)
 	if type(other) == "number" then
 		for i = 1, 9 do
-			self.coefficients[i] = self.coefficients[i] + other
+			self[i] = self[i] + other
 		end
 	else
 		for i = 1, 9 do
-			self.coefficients[i] = self.coefficients[i] + other.coefficients[i]
+			self[i] = self[i] + other[i]
 		end
 	end
 
@@ -83,15 +89,15 @@ end
 ---@return number, number, number, number, number, number, number, number, number
 function SH:split()
 	return
-		self.coefficients[1],
-		self.coefficients[2],
-		self.coefficients[3],
-		self.coefficients[4],
-		self.coefficients[5],
-		self.coefficients[6],
-		self.coefficients[7],
-		self.coefficients[8],
-		self.coefficients[9]
+		self[1],
+		self[2],
+		self[3],
+		self[4],
+		self[5],
+		self[6],
+		self[7],
+		self[8],
+		self[9]
 end
 
 

@@ -8,9 +8,12 @@ local sin, cos, sqrt = math.sin, math.cos, math.sqrt
 -- https://github.com/TheRealMJP/LowResRendering/blob/master/SampleFramework11/v1.01/Graphics/SH.cpp
 
 
----@class SH4Color: Object
+---@class (exact) SH4Color: Object
 ---
----@field coefficients Vector3[]
+---@field [1] Vector3
+---@field [2] Vector3
+---@field [3] Vector3
+---@field [4] Vector3
 ---
 ---@operator add: SH4Color
 ---@operator mul: SH4Color
@@ -19,10 +22,8 @@ local sin, cos, sqrt = math.sin, math.cos, math.sqrt
 local SH = Object:extend("SH4Color")
 
 function SH:new(...)
-    self.coefficients = {}
-
 	for i = 1, 4 do
-		self.coefficients[i] = select(i, ...) or Vector3(0)
+		self[i] = select(i, ...) or Vector3(0)
 	end
 end
 
@@ -57,11 +58,11 @@ end
 function SH:multiply(other)
 	if type(other) == "number" or Utils.isType(other, Vector3) then
 		for i = 1, 4 do
-			self.coefficients[i] = self.coefficients[i]:multiply(other)
+			self[i] = self[i]:multiply(other)
 		end
 	else
 		for i = 1, 4 do
-			self.coefficients[i] = self.coefficients[i]:multiply(other.coefficients[i])
+			self[i] = self[i]:multiply(other[i])
 		end
 	end
 
@@ -74,11 +75,11 @@ end
 function SH:add(other)
 	if type(other) == "number" or Utils.isType(other, Vector3) then
 		for i = 1, 4 do
-			self.coefficients[i] = self.coefficients[i]:add(other)
+			self[i] = self[i]:add(other)
 		end
 	else
 		for i = 1, 4 do
-			self.coefficients[i] = self.coefficients[i]:add(other.coefficients[i])
+			self[i] = self[i]:add(other[i])
 		end
 	end
 
@@ -89,10 +90,10 @@ end
 ---@return Vector3, Vector3, Vector3, Vector3
 function SH:split()
 	return
-		self.coefficients[1],
-		self.coefficients[2],
-		self.coefficients[3],
-		self.coefficients[4]
+		self[1],
+		self[2],
+		self[3],
+		self[4]
 end
 
 

@@ -8,21 +8,27 @@ local sin, cos, sqrt = math.sin, math.cos, math.sqrt
 -- https://github.com/TheRealMJP/LowResRendering/blob/master/SampleFramework11/v1.01/Graphics/SH.cpp
 
 
----@class SH9Color: Object
+---@class (exact) SH9Color: Object
 ---
----@field coefficients Vector3[]
 ---
 ---@operator add: SH9Color
 ---@operator mul: SH9Color
+---@field [1] Vector3
+---@field [2] Vector3
+---@field [3] Vector3
+---@field [4] Vector3
+---@field [5] Vector3
+---@field [6] Vector3
+---@field [7] Vector3
+---@field [8] Vector3
+---@field [9] Vector3
 ---
 ---@overload fun(...: Vector3): SH9Color
 local SH = Object:extend("SH9Color")
 
 function SH:new(...)
-    self.coefficients = {}
-
 	for i = 1, 9 do
-		self.coefficients[i] = select(i, ...) or Vector3(0)
+		self[i] = select(i, ...) or Vector3(0)
 	end
 end
 
@@ -57,11 +63,11 @@ end
 function SH:multiply(other)
 	if type(other) == "number" or Utils.isType(other, Vector3) then
 		for i = 1, 9 do
-			self.coefficients[i] = self.coefficients[i]:multiply(other)
+			self[i] = self[i]:multiply(other)
 		end
 	else
 		for i = 1, 9 do
-			self.coefficients[i] = self.coefficients[i]:multiply(other.coefficients[i])
+			self[i] = self[i]:multiply(other[i])
 		end
 	end
 
@@ -74,11 +80,11 @@ end
 function SH:add(other)
 	if type(other) == "number" or Utils.isType(other, Vector3) then
 		for i = 1, 9 do
-			self.coefficients[i] = self.coefficients[i]:add(other)
+			self[i] = self[i]:add(other)
 		end
 	else
 		for i = 1, 9 do
-			self.coefficients[i] = self.coefficients[i]:add(other.coefficients[i])
+			self[i] = self[i]:add(other[i])
 		end
 	end
 
@@ -89,15 +95,15 @@ end
 ---@return Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3, Vector3
 function SH:split()
 	return
-		self.coefficients[1],
-		self.coefficients[2],
-		self.coefficients[3],
-		self.coefficients[4],
-		self.coefficients[5],
-		self.coefficients[6],
-		self.coefficients[7],
-		self.coefficients[8],
-		self.coefficients[9]
+		self[1],
+		self[2],
+		self[3],
+		self[4],
+		self[5],
+		self[6],
+		self[7],
+		self[8],
+		self[9]
 end
 
 
