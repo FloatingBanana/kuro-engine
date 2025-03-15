@@ -410,8 +410,8 @@ end
 --- @param up Vector3: The up direction
 --- @return Matrix4: The resulting world matrix
 function Matrix4.CreateWorld(position, forward, up)
-    local right = Vector3.Cross(forward, up)
-    local up = Vector3.Cross(right, forward)
+    local right = Vector3.Cross(up, forward):normalize()
+    local up = Vector3.Cross(forward, right)
 
     return Matrix4(
         right.x,
