@@ -2,6 +2,8 @@ local Material     = require "engine.3D.materials.baseMaterial"
 local ShaderEffect = require "engine.misc.shaderEffect"
 local Utils        = require "engine.misc.utils"
 local Vector2      = require "engine.math.vector2"
+local Matrix4      = require "engine.math.matrix4"
+local Vector3      = require "engine.math.vector3"
 
 
 local pbrShader = ShaderEffect("engine/shaders/3D/PBRMaterialShader.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_FORWARD"})
@@ -19,7 +21,7 @@ local pbrShader = ShaderEffect("engine/shaders/3D/PBRMaterialShader.frag", {CURR
 --- @overload fun(irradianceSH: Vector3[], environmentRadianceMap: love.Texture): PBRMaterial
 local PBRMaterial = Material:extend("PBRMaterial")
 
-function PBRMaterial:new(irradianceSHCoeffs, environmentRadianceMap)
+function PBRMaterial:new(environmentRadianceMap)
     local attributes = {
         albedoMap            = {uniform = "u_input.albedoMap",            value = Material.DefaultColorTex},
         emissiveMap          = {uniform = "u_input.emissiveMap",          value = Material.DefaultZeroTex},
@@ -29,8 +31,11 @@ function PBRMaterial:new(irradianceSHCoeffs, environmentRadianceMap)
         transparency         = {uniform = "u_input.transparency",         value = 0},
 
         -- Ambient
-        irradianceSH           = {uniform = "u_input.irradianceSH",           value = irradianceSHCoeffs or {}, isArray = true},
-        environmentRadianceMap = {uniform = "u_input.environmentRadianceMap", value = environmentRadianceMap or Material.DefaultColorCubeTex},
+        environmentRadianceMap = {uniform = "u_input.environmentRadianceMap",    value = environmentRadianceMap or Material.DefaultColorCubeTex},
+
+        irradianceVolumeProbeBuffer  = {uniform = "u_input.irradianceVolume.probeBuffer",   value = Material.DefaultZeroTex},
+        irradianceVolumeInvTransform = {uniform = "u_input.irradianceVolume.invTransform",  value = Matrix4.Identity()},
+        irradianceVolumeGridSize     = {uniform = "u_input.irradianceVolume.gridSize",      value = Vector3(0,0,0)},
     }
 
     Material.new(self, attributes, pbrShader)
@@ -85,7 +90,7 @@ end
 
 
 ---@type love.PixelFormat[]
-PBRMaterial.GBufferLayout = {"rgba16", "rgba8", "rg11b10f"}
+PBRMaterial.GBufferLayout = {"rgba16", "rgba8", "rg11b10f", "rg11b10f"}
 
 
 return PBRMaterial
