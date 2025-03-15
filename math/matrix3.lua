@@ -313,6 +313,28 @@ function Matrix3.Identity()
 end
 
 
+---Creates a rotation matrix pointing to a direction
+---@param forward Vector3
+---@param up Vector3
+---@return Matrix3
+function Matrix3.CreateFromDirection(forward, up)
+    local right = Vector3.Cross(up, forward):normalize()
+    up = Vector3.Cross(forward, right)
+
+    return Matrix3(
+        right.x,
+        right.y,
+        right.z,
+        up.x,
+        up.y,
+        up.z,
+        forward.x,
+        forward.y,
+        forward.z
+    )
+end
+
+
 --- Creates a matrix rotated by an `angle` around an `axis`
 --- @param axis Vector3: The axis of rotation
 --- @param angle number: The angle of rotation
