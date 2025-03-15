@@ -81,8 +81,27 @@ function Matrix3:__index(key)
     if key == "down"     then return self.up:negate()      end
     if key == "left"     then return self.right:negate()   end
 
+    if key == "scale" then
+        local xs = (self.m11 * self.m12 * self.m13 < 0) and -1 or 1
+        local ys = (self.m21 * self.m22 * self.m23 < 0) and -1 or 1
+        local zs = (self.m31 * self.m32 * self.m33 < 0) and -1 or 1
+
+        return Vector3(
+            xs * math.sqrt(self.m11 * self.m11 + self.m12 * self.m12 + self.m13 * self.m13),
+            ys * math.sqrt(self.m21 * self.m21 + self.m22 * self.m22 + self.m23 * self.m23),
+            zs * math.sqrt(self.m31 * self.m31 + self.m32 * self.m32 + self.m33 * self.m33)
+        )
+    end
+
     if key == "rotation" then
-        return Quaternion.CreateFromDirection(self.forward, self.up);
+        local scale = self.scale
+        local mat = Matrix3(
+            self.m11 / scale.x, self.m12 / scale.x, self.m13 / scale.x,
+            self.m21 / scale.y, self.m22 / scale.y, self.m23 / scale.y,
+            self.m31 / scale.z, self.m32 / scale.z, self.m33 / scale.z
+        )
+
+        return Quaternion.CreateFromRotationMatrix(mat);
     end
 
     if key == "transposed" then
