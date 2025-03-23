@@ -99,6 +99,14 @@ function IrradianceVolume:bakeFromEnvironmentMap(envMap)
 end
 
 
+---@param color Vector3
+function IrradianceVolume:bakeFromSolidColor(color)
+    self:mapProbes(function(probe, index)
+        return SH9Color(color, color, color, color, color, color, color, color, color)
+    end)
+end
+
+
 
 ---@return integer
 function IrradianceVolume:getProbeCount()
