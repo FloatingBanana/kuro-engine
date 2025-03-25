@@ -62,12 +62,13 @@ end
 
 
 --- @param renderer BaseRenderer
-function SSAO:onPreRender(renderer)
+function SSAO:onPreRender(renderer, camera)
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.clear()
     self.shader:use()
 
     self.shader:sendRendererUniforms(renderer)
+    self.shader:sendCameraUniforms(camera)
     love.graphics.draw(self.dummySquare)
 
     gaussianBlurShader:use()

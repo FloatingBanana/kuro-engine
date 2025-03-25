@@ -21,7 +21,7 @@ function ChromaticAberration:new(screenSize, offset)
 end
 
 
-function ChromaticAberration:onPostRender(renderer, canvas)
+function ChromaticAberration:onPostRender(renderer, camera, canvas)
     love.graphics.setCanvas(self.effectCanvas)
     love.graphics.setShader(self.shader)
     love.graphics.draw(canvas)

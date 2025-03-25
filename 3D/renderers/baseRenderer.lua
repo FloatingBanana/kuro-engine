@@ -17,18 +17,16 @@ local configPool = Stack()
 --- @field public depthCanvas love.Canvas
 --- @field public skyBoxTexture love.Texture
 --- @field public ambientOcclusion love.Texture
---- @field public camera Camera3D
 --- @field public postProcessingEffects BasePostProcessingEffect[]
 --- @field protected meshParts Stack
 --- @field protected lights BaseLight[]
 ---
---- @overload fun(screenSize: Vector2, camera: Camera3D): BaseRenderer
+--- @overload fun(screenSize: Vector2): BaseRenderer
 local Renderer = Object:extend("BaseRenderer")
 Renderer.BRDF_LUT = CubemapUtils.getBRDF_LUT()
 
-function Renderer:new(screensize, camera)
+function Renderer:new(screensize)
     self.screensize = screensize
-    self.camera = camera
     self.postProcessingEffects = {}
     self.meshParts = Stack()
     self.lights = {}
@@ -99,14 +97,16 @@ function Renderer:removePostProcessingEffect(effect)
 end
 
 
-function Renderer:renderMeshes()
+---@param camera Camera3D
+function Renderer:renderMeshes(camera)
     error("Not implemented")
 end
 
 
 ---@private
-function Renderer:_renderSkyBox()
-    local view = self.camera.viewMatrix
+---@param camera Camera3D
+function Renderer:_renderSkyBox(camera)
+    local view = camera.viewMatrix
     view.m41, view.m42, view.m43 = 0, 0, 0
 
     love.graphics.setCanvas({self.resultCanvas, depthstencil = self.depthCanvas})
@@ -114,25 +114,26 @@ function Renderer:_renderSkyBox()
     love.graphics.setDepthMode("lequal", false)
 
     skyboxShader:use()
-    skyboxShader:sendUniform("u_viewProj", "column", view:multiply(self.camera.perspectiveMatrix))
+    skyboxShader:sendUniform("u_viewProj", "column", view:multiply(camera.perspectiveMatrix))
     skyboxShader:sendUniform("u_skyTex", self.skyBoxTexture)
 
     love.graphics.draw(CubemapUtils.cubeMesh)
 end
 
 
+---@param camera Camera3D
 ---@return love.Canvas
-function Renderer:render()
+function Renderer:render(camera)
     love.graphics.push("all")
 
     for i, light in ipairs(self.lights) do
         light:generateShadowMap(self.meshParts)
     end
 
-    self:renderMeshes()
+    self:renderMeshes(camera)
 
     if self.skyBoxTexture then
-        self:_renderSkyBox()
+        self:_renderSkyBox(camera)
     end
 
     love.graphics.pop()

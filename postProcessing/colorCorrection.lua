@@ -33,7 +33,7 @@ function ColorCorrection:new(screenSize, contrast, brightness, exposure, saturat
 end
 
 
-function ColorCorrection:onPostRender(renderer, canvas)
+function ColorCorrection:onPostRender(renderer, camera, canvas)
     love.graphics.setCanvas(self.canvas)
     love.graphics.setShader(self.shader)
     love.graphics.draw(canvas)

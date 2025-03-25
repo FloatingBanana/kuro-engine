@@ -29,12 +29,13 @@ function Fog:new(screenSize, min, max, color)
 end
 
 
-function Fog:onPostRender(renderer, canvas)
+function Fog:onPostRender(renderer, camera, canvas)
     love.graphics.setCanvas(self.fogCanvas)
     self.shader:use()
 
     self.shader:sendCommonUniforms()
     self.shader:sendRendererUniforms(renderer)
+    self.shader:sendCameraUniforms(camera)
     love.graphics.draw(canvas)
 
     return self.fogCanvas

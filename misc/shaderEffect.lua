@@ -238,8 +238,6 @@ function ShaderEffect:sendRendererUniforms(renderer)
 	self:trySendUniform("uColorBuffer", renderer.resultCanvas)
 	self:trySendUniform("uBRDF_LUT", renderer.BRDF_LUT)
 
-    self:sendCameraUniforms(renderer.camera)
-
     return self
 end
 

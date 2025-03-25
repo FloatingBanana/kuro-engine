@@ -10,16 +10,16 @@ local frustum = CameraFrustum()
 local ForwardRenderer = BaseRederer:extend("ForwardRenderer")
 
 
-function ForwardRenderer:new(screensize, camera)
-    BaseRederer.new(self, screensize, camera)
+function ForwardRenderer:new(screensize)
+    BaseRederer.new(self, screensize)
 end
 
 
-function ForwardRenderer:renderMeshes()
+function ForwardRenderer:renderMeshes(camera)
     lg.setCanvas({depthstencil = self.depthCanvas})
     lg.clear()
 
-    frustum:updatePlanes(self.camera.viewPerspectiveMatrix)
+    frustum:updatePlanes(camera.viewPerspectiveMatrix)
 
     --------------------
     -- Depth pre-pass --
@@ -85,6 +85,7 @@ function ForwardRenderer:renderMeshes()
                 shader:trySendUniform("u_ambientOcclusion", self.ambientOcclusion)
                 shader:sendCommonUniforms()
                 shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
+                shader:sendCameraUniforms(camera)
                 shader:sendMeshConfigUniforms(config)
 
 

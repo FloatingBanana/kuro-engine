@@ -37,7 +37,7 @@ function HDR:new(screenSize, exposure)
 end
 
 
-function HDR:onPostRender(renderer, canvas)
+function HDR:onPostRender(renderer, camera, canvas)
     hdrShader:use()
     hdrShader:sendUniform("u_exposure", self.exposure)
 

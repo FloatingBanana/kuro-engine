@@ -15,7 +15,6 @@ local camera = Camera3D(Vector3(0), Quaternion.Identity(), math.rad(90), Vector2
 ---
 ---@field public transform Matrix4
 ---@field public gridSize Vector3
----@field public renderer ForwardRenderer
 ---@field public probes SH9Color[]
 ---@field public probeBuffer love.Image
 ---
@@ -64,9 +63,6 @@ function IrradianceVolume:bake(renderer, nearDistance, farDistance)
     camera.farPlane = nearDistance
     camera.nearPlane = farDistance
 
-    local rendererCam = renderer.camera
-    renderer.camera = camera
-
     self:mapProbes(function(probe, index)
         local cell = self:getCell(index)
         local sidesData = {}
@@ -76,7 +72,7 @@ function IrradianceVolume:bake(renderer, nearDistance, farDistance)
         for s, side in ipairs(CubemapUtils.cubeSides) do
             camera.rotation = Quaternion.CreateFromRotationMatrix(Matrix3.CreateFromDirection(side.dir, side.up))
 
-            sidesData[s] = self.renderer:render():newImageData(1)
+            sidesData[s] = renderer:render(camera):newImageData(1)
         end
 
         local envMap = love.graphics.newCubeImage(sidesData, {linear = true})
@@ -84,8 +80,6 @@ function IrradianceVolume:bake(renderer, nearDistance, farDistance)
 
         return SH9Color.CreateFromCubeMap(irrMap)
     end)
-
-    renderer.camera = rendererCam
 end
 
 

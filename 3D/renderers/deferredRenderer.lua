@@ -36,7 +36,7 @@ function DeferredRenderer:new(screensize, camera, lightPassMaterial)
 end
 
 
-function DeferredRenderer:renderMeshes()
+function DeferredRenderer:renderMeshes(camera)
     --------------
     -- G-Buffer --
     --------------
@@ -49,10 +49,11 @@ function DeferredRenderer:renderMeshes()
     lg.setBlendMode("replace", "premultiplied")
     lg.setMeshCullMode("back")
 
-    frustum:updatePlanes(self.camera.viewPerspectiveMatrix)
+    frustum:updatePlanes(camera.viewPerspectiveMatrix)
     self.lightPassMaterial:setRenderPass("gbuffer")
     self.lightPassMaterial.shader:sendCommonUniforms()
     self.lightPassMaterial.shader:sendRendererUniforms(self)
+    self.lightPassMaterial.shader:sendCameraUniforms(camera)
     self.lightPassMaterial.shader:use()
 
     for i, config in ipairs(self.meshParts) do
@@ -91,13 +92,14 @@ function DeferredRenderer:renderMeshes()
         self.lightPassMaterial.shader:use()
         self.lightPassMaterial.shader:sendCommonUniforms()
         self.lightPassMaterial.shader:sendRendererUniforms(self)
+        self.lightPassMaterial.shader:sendCameraUniforms(camera)
         self.lightPassMaterial.shader:trySendUniform("u_ambientOcclusion", self.ambientOcclusion)
         self.lightPassMaterial:apply()
 
         self.lightPassMaterial.shader:trySendUniform("u_deferredInput", unpack(self.gbuffer))
 
         if light:is(PointLight) then ---@cast light PointLight
-            local transform = Matrix4.CreateScale(Vector3(light:getLightRadius())) * Matrix4.CreateTranslation(light.position) * self.camera.viewPerspectiveMatrix
+            local transform = Matrix4.CreateScale(Vector3(light:getLightRadius())) * Matrix4.CreateTranslation(light.position) * camera.viewPerspectiveMatrix
 
             self.lightPassMaterial.shader:sendUniform("uWorldMatrix", "column", transform)
             volume:draw()

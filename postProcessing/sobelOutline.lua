@@ -22,9 +22,10 @@ function SobelOutline:new(screenSize, thickness, color)
 end
 
 
-function SobelOutline:onPostRender(renderer, canvas)
+function SobelOutline:onPostRender(renderer, camera, canvas)
     sobelShader:use()
     sobelShader:sendRendererUniforms(renderer)
+    sobelShader:sendCameraUniforms(camera)
     sobelShader:sendUniform("u_thickness", self.thickness)
     sobelShader:sendUniform("u_outlineColor", self.color)
 
