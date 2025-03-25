@@ -1,6 +1,5 @@
 local Object          = require "engine.3rdparty.classic.classic"
 local Vector2         = require "engine.math.vector2"
-local ForwardRenderer = require "engine.3D.renderers.forwardRenderer"
 local Camera3D        = require "engine.misc.camera3d"
 local Vector3         = require "engine.math.vector3"
 local Quaternion      = require "engine.math.quaternion"
@@ -15,22 +14,17 @@ local camera = Camera3D(Vector3(0), Quaternion.Identity(), math.rad(90), Vector2
 ---@class IrradianceVolume: Object
 ---
 ---@field public transform Matrix4
----@field public resolution integer
 ---@field public gridSize Vector3
----@field public nearFarDistance Vector2
 ---@field public renderer ForwardRenderer
 ---@field public probes SH9Color[]
 ---@field public probeBuffer love.Image
 ---
----@overload fun(transform: Matrix4, resolution: integer, gridSize: Vector3, nearFarDistance: Vector2): IrradianceVolume
+---@overload fun(transform: Matrix4, gridSize: Vector3): IrradianceVolume
 local IrradianceVolume = Object:extend("IrradianceVolume")
 
-function IrradianceVolume:new(transform, resolution, gridSize, nearFarDistance)
+function IrradianceVolume:new(transform, gridSize)
     self.transform = transform
-    self.resolution = resolution
     self.gridSize = gridSize
-    self.nearFarDistance = nearFarDistance
-    self.renderer = ForwardRenderer(Vector2(resolution), camera)
     self.probes = {}
     self.probeBuffer = nil
 
@@ -63,9 +57,15 @@ function IrradianceVolume:mapProbes(f)
 end
 
 
-function IrradianceVolume:bake()
-    camera.farPlane = self.nearFarDistance.min
-    camera.nearPlane = self.nearFarDistance.max
+---@param renderer BaseRenderer
+---@param nearDistance number
+---@param farDistance number
+function IrradianceVolume:bake(renderer, nearDistance, farDistance)
+    camera.farPlane = nearDistance
+    camera.nearPlane = farDistance
+
+    local rendererCam = renderer.camera
+    renderer.camera = camera
 
     self:mapProbes(function(probe, index)
         local cell = self:getCell(index)
@@ -80,18 +80,18 @@ function IrradianceVolume:bake()
         end
 
         local envMap = love.graphics.newCubeImage(sidesData, {linear = true})
-        local irrMap = CubemapUtils.getIrradianceMap(envMap, Vector2(self.resolution))
+        local irrMap = CubemapUtils.getIrradianceMap(envMap, Vector2(envMap:getPixelDimensions()))
 
         return SH9Color.CreateFromCubeMap(irrMap)
     end)
 
-    self.renderer:clearMeshParts()
+    renderer.camera = rendererCam
 end
 
 
 ---@param envMap love.Texture
 function IrradianceVolume:bakeFromEnvironmentMap(envMap)
-    local irrMap = CubemapUtils.getIrradianceMap(envMap, Vector2(self.resolution))
+    local irrMap = CubemapUtils.getIrradianceMap(envMap, Vector2(envMap:getPixelDimensions()))
 
     self:mapProbes(function(probe, index)
         return SH9Color.CreateFromCubeMap(irrMap)
