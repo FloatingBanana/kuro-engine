@@ -141,7 +141,7 @@ function Renderer:render(camera)
 
     local result = self.resultCanvas
     for i, effect in ipairs(self.postProcessingEffects) do
-        result = effect:onPostRender(self, result)
+        result = effect:onPostRender(self, camera, result)
     end
 
     love.graphics.pop()

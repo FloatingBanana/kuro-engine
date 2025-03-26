@@ -6,7 +6,7 @@ local frustum = CameraFrustum()
 
 --- @class ForwardRenderer: BaseRenderer
 ---
---- @overload fun(screenSize: Vector2, camera: Camera3D): ForwardRenderer
+--- @overload fun(screenSize: Vector2): ForwardRenderer
 local ForwardRenderer = BaseRederer:extend("ForwardRenderer")
 
 
@@ -42,6 +42,7 @@ function ForwardRenderer:renderMeshes(camera)
             config.material.shader:sendMeshConfigUniforms(config)
             config.material.shader:sendCommonUniforms()
             config.material.shader:sendRendererUniforms(self)
+            config.material.shader:sendCameraUniforms(camera)
 
             config.material:apply()
             lg.draw(config.meshPart.buffer)
@@ -56,7 +57,7 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setBlendMode("alpha", "alphamultiply")
 
     for i, effect in ipairs(self.postProcessingEffects) do
-        effect:onPreRender(self)
+        effect:onPreRender(self, camera)
     end
 
     ---------------

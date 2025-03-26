@@ -19,12 +19,12 @@ local frustum = CameraFrustum()
 --- @field public gbuffer love.Canvas[]
 --- @field public lightPassMaterial BaseMaterial
 ---
---- @overload fun(screensize: Vector2, camera: Camera3D, lightPassMaterial: BaseMaterial): DeferredRenderer
+--- @overload fun(screensize: Vector2, lightPassMaterial: BaseMaterial): DeferredRenderer
 local DeferredRenderer = BaseRederer:extend("DeferredRenderer")
 
 
-function DeferredRenderer:new(screensize, camera, lightPassMaterial)
-    BaseRederer.new(self, screensize, camera)
+function DeferredRenderer:new(screensize, lightPassMaterial)
+    BaseRederer.new(self, screensize)
 
     self.dummySquare = Utils.newSquareMesh(screensize)
     self.lightPassMaterial = lightPassMaterial
@@ -76,7 +76,7 @@ function DeferredRenderer:renderMeshes(camera)
     lg.setBlendMode("alpha", "alphamultiply")
 
     for i, effect in ipairs(self.postProcessingEffects) do
-        effect:onPreRender(self)
+        effect:onPreRender(self, camera)
     end
 
     lg.setBlendMode("add", "alphamultiply")
