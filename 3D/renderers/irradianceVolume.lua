@@ -48,7 +48,7 @@ function IrradianceVolume:mapProbes(f)
         end
     end
 
-    self.probeBuffer = love.graphics.newImage(bufferData, {linear = true})
+    self.probeBuffer = love.graphics.newImage(bufferData, {linear = true, mipmaps = false})
     self.probeBuffer:setWrap("clampzero", "clampzero")
     self.probeBuffer:setFilter("nearest", "nearest")
 
