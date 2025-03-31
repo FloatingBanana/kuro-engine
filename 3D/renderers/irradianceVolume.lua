@@ -96,7 +96,13 @@ end
 ---@param color Vector3
 function IrradianceVolume:bakeFromSolidColor(color)
     self:mapProbes(function(probe, index)
-        return SH9Color(color, color, color, color, color, color, color, color, color)
+        return
+            (SH9Color.ProjectDirection(Vector3(1,0,0):multiply(color)) +
+            SH9Color.ProjectDirection(Vector3(0,1,0):multiply(color)) +
+            SH9Color.ProjectDirection(Vector3(0,0,1):multiply(color)) +
+            SH9Color.ProjectDirection(Vector3(-1,0,0):multiply(color)) +
+            SH9Color.ProjectDirection(Vector3(0,-1,0):multiply(color)) +
+            SH9Color.ProjectDirection(Vector3(0,0,-1):multiply(color))):multiply(1/6)
     end)
 end
 
