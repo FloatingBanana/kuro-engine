@@ -18,10 +18,9 @@ local pbrShader = ShaderEffect("engine/shaders/3D/PBRMaterialShader.frag", {CURR
 --- @field transparency number
 ---
 --- @overload fun(): PBRMaterial
---- @overload fun(irradianceSH: Vector3[], environmentRadianceMap: love.Texture): PBRMaterial
 local PBRMaterial = Material:extend("PBRMaterial")
 
-function PBRMaterial:new(environmentRadianceMap)
+function PBRMaterial:new()
     local attributes = {
         albedoMap            = {uniform = "u_input.albedoMap",            value = Material.DefaultColorTex},
         emissiveMap          = {uniform = "u_input.emissiveMap",          value = Material.DefaultZeroTex},
@@ -31,8 +30,7 @@ function PBRMaterial:new(environmentRadianceMap)
         transparency         = {uniform = "u_input.transparency",         value = 0},
 
         -- Ambient
-        environmentRadianceMap = {uniform = "u_input.environmentRadianceMap",    value = environmentRadianceMap or Material.DefaultColorCubeTex},
-
+        environmentRadianceMap       = {uniform = "u_input.environmentRadianceMap",         value = Material.DefaultColorCubeTex},
         irradianceVolumeProbeBuffer  = {uniform = "u_input.irradianceVolume.probeBuffer",   value = Material.DefaultZeroTex},
         irradianceVolumeInvTransform = {uniform = "u_input.irradianceVolume.invTransform",  value = Matrix4.Identity()},
         irradianceVolumeGridSize     = {uniform = "u_input.irradianceVolume.gridSize",      value = Vector3(0,0,0)},

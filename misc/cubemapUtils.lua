@@ -98,7 +98,7 @@ uniform float u_roughness;
 vec4 effect(EFFECTARGS) {
     return vec4(CalculateEnvironmentRadiance(u_envMap, normalize(v_localPos), u_roughness), 1.0);
 }
-]])
+]], {"INVERT_Y"})
 
 local calculateBRDF_LUTShader = ShaderEffect [[
 #define BRDF_SAMPLE_COUNT 1024
