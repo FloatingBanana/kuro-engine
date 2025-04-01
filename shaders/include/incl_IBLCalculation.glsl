@@ -127,7 +127,6 @@ vec3 CalculateIrradiance(samplerCube environment, vec3 normal) {
 #endif
 
 vec3 CalculateEnvironmentRadiance(samplerCube environment, vec3 N, float roughness) {
-    vec3 R = N;
     vec3 V = N;
 
     float resolution = textureSize(environment, 0).x;
@@ -143,10 +142,10 @@ vec3 CalculateEnvironmentRadiance(samplerCube environment, vec3 N, float roughne
 
         float NdotL = max(dot(N, L), 0.0);
         if (NdotL > 0.0) {
-            float HdotV = max(dot(H, V), 0.0);
+            float VdotH = max(dot(V, H), 0.0);
             float NdotH = max(dot(N, H), 0.0);
             float D = DistributionGGX(NdotH, roughness);
-            float pdf = (D * NdotH / (4.0 * HdotV)) + 0.0001;
+            float pdf = D * NdotH / (4.0 * VdotH);
 
             float saSample = 1.0 / (float(ENVIRONMENT_RADIANCE_SAMPLE_COUNT) * pdf);
             float mipLevel = (roughness == 0.0) ? 0.0 : 0.5 * log2(saSample / saTexel);
