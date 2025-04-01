@@ -74,6 +74,8 @@ function IrradianceVolume:bake(renderer, nearDistance, farDistance)
 
             sidesData[s] = renderer:render(camera):newImageData(1)
         end
+        -- For some reason the y+ and y- faces are swiched on rendering, idk why...
+        sidesData[3], sidesData[4] = sidesData[4], sidesData[3]
 
         local envMap = love.graphics.newCubeImage(sidesData, {linear = true})
         local irrMap = CubemapUtils.getIrradianceMap(envMap, Vector2(envMap:getPixelDimensions()))
