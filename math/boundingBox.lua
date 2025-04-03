@@ -1,4 +1,3 @@
-local Object  = require "engine.3rdparty.classic.classic"
 local CStruct = require "engine.misc.cstruct"
 local Matrix3 = require "engine.math.matrix3"
 local Vector3 = require "engine.math.vector3"
@@ -103,6 +102,33 @@ end
 ---@return Vector3, Vector3
 function BoundingBox:split()
     return self.min, self.max
+end
+
+
+
+function BoundingBox.CreateFromCenterSize(center, size)
+    local halfSize = size / 2
+    return BoundingBox(center - halfSize, center + halfSize)
+end
+
+
+function BoundingBox.CreateFromPoints(...)
+    local min = Vector3(math.huge)
+    local max = Vector3(-math.huge)
+
+    for i=1, select("#", ...) do
+        local point = select(i, ...)
+
+        min.x = math.min(min.x, point.x)
+        min.y = math.min(min.y, point.y)
+        min.z = math.min(min.z, point.z)
+
+        max.x = math.min(max.x, point.x)
+        max.y = math.min(max.y, point.y)
+        max.z = math.min(max.z, point.z)
+    end
+
+    return BoundingBox(min, max)
 end
 
 
