@@ -1,8 +1,10 @@
 local Object  = require "engine.3rdparty.classic.classic"
+local CStruct = require "engine.misc.cstruct"
 local Matrix3 = require "engine.math.matrix3"
+local Vector3 = require "engine.math.vector3"
 
 
----@class BoundingBox: Object
+---@class BoundingBox: CStruct
 ---
 ---@field public min Vector3
 ---@field public max Vector3
@@ -10,7 +12,9 @@ local Matrix3 = require "engine.math.matrix3"
 ---@field public center Vector3
 ---
 ---@overload fun(min: Vector3, max: Vector3): BoundingBox
-local BoundingBox = Object:extend("BoundingBox")
+local BoundingBox = CStruct("BoundingBox", [[
+    vector3 min, max;
+]])
 
 function BoundingBox:new(min, max)
     self.min = min
@@ -93,6 +97,12 @@ end
 ---@return BoundingBox
 function BoundingBox:clone()
     return BoundingBox(self.min, self.max)
+end
+
+
+---@return Vector3, Vector3
+function BoundingBox:split()
+    return self.min, self.max
 end
 
 
