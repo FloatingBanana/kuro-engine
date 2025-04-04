@@ -33,7 +33,7 @@ end
 --- @operator sub: Quaternion
 --- @operator mul: Quaternion
 --- @operator div: Quaternion
-local Quaternion = CStruct("quaternion", [[
+local Quaternion = CStruct("Quaternion", [[
 	float x, y, z, w;
 ]])
 

@@ -12,7 +12,7 @@ local Vector3 = require "engine.math.vector3"
 ---
 ---@overload fun(min: Vector3, max: Vector3): BoundingBox
 local BoundingBox = CStruct("BoundingBox", [[
-    vector3 min, max;
+    Vector3 min, max;
 ]])
 
 function BoundingBox:new(min, max)

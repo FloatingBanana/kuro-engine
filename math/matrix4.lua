@@ -53,7 +53,7 @@ end
 --- @operator div: Matrix4
 --- @operator unm: Matrix4
 --- @operator len: number
-local Matrix4 = CStruct("matrix4", [[
+local Matrix4 = CStruct("Matrix4", [[
     float m11, m12, m13, m14,
           m21, m22, m23, m24,
           m31, m32, m33, m34,

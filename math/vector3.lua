@@ -44,7 +44,7 @@ end
 --- @operator mul: Vector3
 --- @operator div: Vector3
 --- @operator unm: Vector3
-local Vector3 = CStruct("vector3", [[
+local Vector3 = CStruct("Vector3", [[
     float x, y, z;
 ]])
 
@@ -296,7 +296,7 @@ end
 --- @param value Matrix3 | Matrix4 | Quaternion: The transformation matrix or quaternion
 --- @return Vector3: This vector
 function Vector3:transform(value)
-    if Utils.isType(value, "quaternion") then
+    if Utils.isType(value, "Quaternion") then
         local x = 2 * (value.y * self.z - value.z * self.y);
         local y = 2 * (value.z * self.x - value.x * self.z);
         local z = 2 * (value.x * self.y - value.y * self.x);
@@ -305,14 +305,14 @@ function Vector3:transform(value)
         self.y = self.y + y * value.w + (value.z * x - value.x * z);
         self.z = self.z + z * value.w + (value.x * y - value.y * x);
 
-    elseif Utils.isType(value, "matrix3") then
+    elseif Utils.isType(value, "Matrix3") then
         local x = (self.x * value.m11) + (self.y * value.m21) + (self.z * value.m31);
         local y = (self.x * value.m12) + (self.y * value.m22) + (self.z * value.m32);
         local z = (self.x * value.m13) + (self.y * value.m23) + (self.z * value.m33);
 
         self:new(x, y, z)
 
-    elseif Utils.isType(value, "matrix4") then
+    elseif Utils.isType(value, "Matrix4") then
         local x = (self.x * value.m11) + (self.y * value.m21) + (self.z * value.m31) + value.m41;
         local y = (self.x * value.m12) + (self.y * value.m22) + (self.z * value.m32) + value.m42;
         local z = (self.x * value.m13) + (self.y * value.m23) + (self.z * value.m33) + value.m43;

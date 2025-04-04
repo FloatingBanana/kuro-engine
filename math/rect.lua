@@ -13,8 +13,8 @@ local CStruct = require "engine.misc.cstruct"
 ---
 --- @overload fun(pos: Vector2, size: Vector2): Rect
 local Rect = CStruct("Rect", [[
-    vector2 position;
-    vector2 size;
+    Vector2 position;
+    Vector2 size;
 ]])
 
 function Rect:new(pos, size)

@@ -38,7 +38,7 @@ end
 --- @operator mul:Vector2
 --- @operator div:Vector2
 --- @operator unm:Vector2
-local Vector2 = CStruct("vector2", [[
+local Vector2 = CStruct("Vector2", [[
     float x, y;
 ]])
 

@@ -57,7 +57,7 @@ end
 --- @operator mul: Vector4
 --- @operator div: Vector4
 --- @operator unm: Vector4
-local Vector4 = CStruct("vector4", [[
+local Vector4 = CStruct("Vector4", [[
     float x, y, z, w;
 ]])
 
@@ -256,7 +256,7 @@ function Vector4:multiply(other)
         self.y = self.y * other
         self.z = self.z * other
         self.w = self.w * other
-    elseif other.typename == "matrix4" then
+    elseif other.typename == "Matrix4" then
         local x = self.x * other.m11 + self.y * other.m21 + self.z * other.m31 + self.w * other.m41
         local y = self.x * other.m12 + self.y * other.m22 + self.z * other.m32 + self.w * other.m42
         local z = self.x * other.m13 + self.y * other.m23 + self.z * other.m33 + self.w * other.m43

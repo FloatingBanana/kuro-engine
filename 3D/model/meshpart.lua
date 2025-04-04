@@ -17,10 +17,10 @@ if jitEnabled then
 
     ffi.cdef [[
         struct vertex {
-            vector3 position;
-            vector2 uv;
-            vector3 normal;
-            vector3 tangent;
+            Vector3 position;
+            Vector2 uv;
+            Vector3 normal;
+            Vector3 tangent;
             float boneIds[4];
             float weights[4];
         }
