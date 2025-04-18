@@ -766,7 +766,7 @@ function Matrix4.CreateTransformationMatrix(rotation, scale, translation)
     local matScale = Matrix4.CreateScale(scale)
     local matTranslation = Matrix4.CreateTranslation(translation)
 
-    return matRot:multiply(matScale):multiply(matTranslation)
+    return matScale:multiply(matRot):multiply(matTranslation)
 end
 
 return Matrix4
