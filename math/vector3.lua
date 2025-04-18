@@ -353,8 +353,8 @@ end
 --- @param maxDepth number: The greatest depht value allowed
 --- @return Vector3: This vector
 function Vector3:screenToWorld(screenMatrix, screenSize, minDepth, maxDepth)
-    self.x = self.x / screenSize.width * 2 - 1
-	self.y = -self.y / screenSize.height * 2 - 1
+    self.x = (self.x / screenSize.width) * 2 - 1
+	self.y = -(self.y / screenSize.height * 2 - 1)
 	self.z = (self.z - minDepth) / (maxDepth - minDepth) * 2 - 1
 
     local mat = screenMatrix.inverse
