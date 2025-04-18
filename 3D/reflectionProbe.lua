@@ -42,8 +42,14 @@ function ReflectionProbe:bake(renderer, nearDistance, farDistance)
     -- For some reason the y+ and y- faces are swiched on rendering, idk why...
     sidesData[3], sidesData[4] = sidesData[4], sidesData[3]
 
-    self.environmentMap = love.graphics.newCubeImage(sidesData, {mipmaps = true})
-    self.reflectionMap = CubemapUtils.environmentRadianceMap(self.environmentMap, Vector2(self.environmentMap:getPixelDimensions()), 32)
+    self:bakeFromEnvironmentMap(love.graphics.newCubeImage(sidesData, {mipmaps = true}))
+end
+
+
+---@param envMap love.Texture
+function ReflectionProbe:bakeFromEnvironmentMap(envMap)
+    self.environmentMap = envMap
+    self.reflectionMap = CubemapUtils.environmentRadianceMap(envMap, Vector2(envMap:getPixelDimensions()), 32)
 end
 
 return ReflectionProbe
