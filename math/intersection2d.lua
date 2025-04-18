@@ -5,7 +5,7 @@ local Inter2d = {}
 -- Point --
 -----------
 function Inter2d.point_AABB(point,   topleft,bottomright)
-    return point > topleft and point < bottomright
+    return Inter2d.AABB_AABB(topleft, bottomright, point, point)
 end
 
 function Inter2d.point_circle(point,   circlePos,circleRadius)
@@ -39,7 +39,9 @@ end
 -- AABB --
 ----------
 function Inter2d.AABB_AABB(topleft1,bottomright1,   topleft2,bottomright2)
-    return topleft1 < bottomright2 and topleft2 < bottomright1
+    return
+        topleft1.x < bottomright2.x and topleft2.x < bottomright1.x and
+        topleft1.y < bottomright2.y and topleft2.x < bottomright1.x
 end
 
 function Inter2d.AABB_circle(topleft,bottomright,   circlePos,circleRadius)
