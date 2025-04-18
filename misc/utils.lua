@@ -251,6 +251,61 @@ function Utils.newSquareMesh(size)
 end
 
 
+---@param size Vector3
+---@param segments integer
+---@param rings integer
+---@return love.Mesh
+function Utils.newSphereMesh(size, segments, rings)
+	local verts = {}
+	local indices = {}
+	local radius = size / 2
+
+	table.insert(verts, {0,radius.y,0,.5,0,0,1,0})
+
+	for s=0, segments-1 do
+		local angle1 = s * (2 * math.pi) / segments;
+
+		for r=0, rings-1 do
+			local angle2 = (r + 1) * math.pi / (rings + 1);
+
+            local nx = math.sin(angle2) * math.cos(angle1);
+            local ny = math.cos(angle2);
+            local nz = math.sin(angle2) * math.sin(angle1);
+
+
+			local id1 = 2 + r * rings + s
+			local id2 = 2 + r * rings + ((s + 1) % segments)
+			local id3 = 2 + (r + 1) * rings + s
+			local id4 = 2 + (r + 1) * rings + ((s + 1) % segments)
+
+			if r+1 == rings then
+				id3 = 2 + rings * segments
+				id4 = id3
+			end
+
+			verts[id1] = {nx*radius.x, ny*radius.y, nz*radius.z, 1 - r / segments, s / rings, nx, ny, nz}
+			Lume.push(indices, id1, id2, id3, id2, id4, id3)
+
+			if r == 0 then
+				Lume.push(indices, id1, 1, id2)
+			end
+		end
+	end
+
+	table.insert(verts, {0,-radius.y,0,.5,1,0,-1,0})
+
+	local vertFormat = {
+		{"VertexPosition", "float", 3},
+		{"VertexTexCoords", "float", 2},
+		{"VertexNormal", "float", 3}
+	}
+
+	local mesh =love.graphics.newMesh(vertFormat, verts, "triangles", "static")
+	mesh:setVertexMap(indices)
+	return mesh
+end
+
+
 
 ---@param ... number[]
 ---@return love.Image
