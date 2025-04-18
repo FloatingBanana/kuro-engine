@@ -76,6 +76,20 @@ function BoundingBox:testIntersection(box)
 end
 
 
+---@param box BoundingBox
+---@return BoundingBox
+function BoundingBox:getIntersectionBox(box)
+    return BoundingBox(Vector3.Max(self.min, box.min), Vector3.Min(self.max, box.max))
+end
+
+
+---@return number
+function BoundingBox:getVolume()
+    local size = self.size
+    return size.x * size.y * size.z
+end
+
+
 ---@param mat Matrix4
 ---@return Vector3, Vector3
 function BoundingBox:getMinMaxTransformed(mat)
