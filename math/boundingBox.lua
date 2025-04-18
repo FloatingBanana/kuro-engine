@@ -1,6 +1,7 @@
 local CStruct = require "engine.misc.cstruct"
 local Matrix3 = require "engine.math.matrix3"
 local Vector3 = require "engine.math.vector3"
+local Inter3d = require "engine.math.intersection3d"
 
 
 ---@class BoundingBox: CStruct
@@ -71,7 +72,7 @@ end
 ---@param box BoundingBox
 ---@return boolean
 function BoundingBox:testIntersection(box)
-    return self.min < box.max and box.min < self.max
+    return Inter3d.AABB_AABB(self.min, self.max, box.min, box.max)
 end
 
 
