@@ -25,6 +25,7 @@ end
 --- @field normalized Quaternion: Gets a new, normalized version of this quaternion
 --- @field conjugated Quaternion: Gets a new, conjugated version of this quaternion
 --- @field inverted Quaternion: Gets a new quaternion facing the opposite direction of this one
+--- @field euler Vector3: Get the angles of this quaternion in radians (pitch, yaw, roll)
 --- @field length number: The magnitude of this quaternion
 --- @field lengthSquared number: The squared magnitude of this quaternion
 ---
@@ -60,6 +61,24 @@ function Quaternion:__index(key)
 
 	if key == "inverse" then
 		return self:clone():invert()
+	end
+
+	if key == "euler" then
+		local q2sqr = self.y * self.y
+    	local t0 = -2.0 * (q2sqr + self.z * self.z) + 1.0
+    	local t1 =  2.0 * (self.x * self.y + self.w * self.z)
+    	local t2 = -2.0 * (self.x * self.z - self.w * self.y)
+    	local t3 =  2.0 * (self.y * self.z + self.w * self.x)
+    	local t4 = -2.0 * (self.x * self.x + q2sqr) + 1.0
+
+    	t2 = t2 >  1.0 and  1.0 or t2
+    	t2 = t2 < -1.0 and -1.0 or t2
+
+		return Vector3(
+    		math.asin(t2),
+    		math.atan2(t3, t4),
+    		math.atan2(t1, t0)
+		)
 	end
 
 	if key == "lengthSquared" then
