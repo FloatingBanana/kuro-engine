@@ -4,7 +4,6 @@ local Utils   = require "engine.misc.utils"
 local CStruct = require "engine.misc.cstruct"
 local abs, sqrt, floor, ceil, min, max = math.abs, math.sqrt, math.floor, math.ceil, math.min, math.max
 
-local double_epsilon = 4.94065645841247E-324
 
 -- See [engine/vector2.lua] for explanation
 local function commutative_reorder(object, number)
@@ -89,9 +88,9 @@ function Vector3:__index(key)
         local ax1, ax2, ax3 = key:sub(1,1), key:sub(2,2), key:sub(3,3)
 
         if #key == 2 then
-            return Vector2(ax1, ax2)
+            return Vector2(self[ax1], self[ax2])
         elseif #key == 3 then
-            return Vector3(ax1, ax2, ax3)
+            return Vector3(self[ax1], self[ax2], self[ax3])
         end
     end
 

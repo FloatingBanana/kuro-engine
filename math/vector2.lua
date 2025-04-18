@@ -83,7 +83,7 @@ function Vector2:__index(key)
 
     if not key:match("[^xy]") then
         local ax1, ax2 = key:sub(1,1), key:sub(2,2)
-        return Vector2(ax1, ax2)
+        return Vector2(self[ax1], self[ax2])
     end
 
     return Vector2[key]
