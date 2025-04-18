@@ -1,6 +1,7 @@
 local Vector3    = require "engine.math.vector3"
 local Quaternion = require "engine.math.quaternion"
 local CStruct    = require "engine.misc.cstruct"
+local cos, sin   = math.cos, math.sin
 
 -- See [engine/vector2.lua] for explanation
 local function commutative_reorder(object, number)
@@ -359,8 +360,24 @@ end
 --- @param angle number: The angle of rotation
 --- @return Matrix3: Result
 function Matrix3.CreateFromAxisAngle(axis, angle)
-	local quat = Quaternion.CreateFromAxisAngle(axis, angle)
-    return Matrix3.CreateFromQuaternion(quat)
+	local sinAngle = sin(angle)
+    local cosAngle = cos(angle)
+    local oneMinusCos = 1 - cosAngle
+    local mat = Matrix3.Identity()
+
+    mat.m11 = axis.x * axis.x * oneMinusCos + cosAngle
+    mat.m12 = axis.x * axis.y * oneMinusCos - axis.z * sinAngle
+    mat.m13 = axis.x * axis.z * oneMinusCos + axis.y * sinAngle
+
+    mat.m21 = axis.y * axis.x * oneMinusCos + axis.z * sinAngle
+    mat.m22 = axis.y * axis.y * oneMinusCos + cosAngle
+    mat.m23 = axis.y * axis.z * oneMinusCos - axis.x * sinAngle
+
+    mat.m31 = axis.z * axis.x * oneMinusCos - axis.y * sinAngle
+    mat.m32 = axis.z * axis.y * oneMinusCos + axis.x * sinAngle
+    mat.m33 = axis.z * axis.z * oneMinusCos + cosAngle
+
+    return mat
 end
 
 
@@ -370,8 +387,27 @@ end
 --- @param roll number: Roll around the Z axis
 --- @return Matrix3: Result
 function Matrix3.CreateFromYawPitchRoll(yaw, pitch, roll)
-    local quat = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll)
-    return Matrix3.CreateFromQuaternion(quat)
+    local sinYaw = sin(yaw)
+    local sinPitch = sin(pitch)
+    local sinRoll = sin(roll)
+    local cosYaw = cos(yaw)
+    local cosPitch = cos(pitch)
+    local cosRoll = cos(roll)
+    local mat = Matrix3.Identity()
+
+    mat.m11 = cosYaw * cosPitch
+    mat.m12 = cosYaw * sinPitch * sinRoll - sinYaw * cosRoll
+    mat.m13 = cosYaw * sinPitch * cosRoll + sinYaw * sinRoll
+
+    mat.m21 = sinYaw * cosPitch
+    mat.m22 = sinYaw * sinPitch * sinRoll + cosYaw * cosRoll
+    mat.m23 = sinYaw * sinPitch * cosRoll - cosYaw * sinRoll
+
+    mat.m31 = -sinPitch
+    mat.m32 = cosPitch * sinRoll
+    mat.m33 = cosPitch * cosRoll
+
+    return mat
 end
 
 
@@ -379,27 +415,30 @@ end
 --- @param quat Quaternion: The Quaternion representing the rotation
 --- @return Matrix3: Result
 function Matrix3.CreateFromQuaternion(quat)
-    local squareX = quat.x * quat.x;
-	local squareY = quat.y * quat.y;
-	local squareZ = quat.z * quat.z;
-	local num6 = quat.x * quat.y;
-	local num5 = quat.z * quat.w;
-	local num4 = quat.z * quat.x;
-	local num3 = quat.y * quat.w;
-	local num2 = quat.y * quat.z;
-	local num = quat.x * quat.w;
+    local xx = quat.x * quat.x;
+	local yy = quat.y * quat.y;
+	local zz = quat.z * quat.z;
+	local xy = quat.x * quat.y;
+	local zw = quat.z * quat.w;
+	local zx = quat.z * quat.x;
+	local yw = quat.y * quat.w;
+	local yz = quat.y * quat.z;
+	local xw = quat.x * quat.w;
+    local mat = Matrix3.Identity()
 
-    return Matrix3(
-        1 - (2 * (squareY + squareZ)),
-        2 * (num6 + num5),
-	    2 * (num4 - num3),
-	    2 * (num6 - num5),
-	    1 - (2 * (squareZ + squareX)),
-	    2 * (num2 + num),
-	    2 * (num4 + num3),
-	    2 * (num2 - num),
-	    1 - (2 * (squareY + squareX))
-    )
+    mat.m11 = 1 - (2 * (yy + zz))
+    mat.m12 = 2 * (xy + zw)
+	mat.m13 = 2 * (zx - yw)
+
+	mat.m21 = 2 * (xy - zw)
+	mat.m22 = 1 - (2 * (zz + xx))
+	mat.m23 = 2 * (yz + xw)
+
+    mat.m31 = 2 * (zx + yw)
+	mat.m32 = 2 * (yz - xw)
+	mat.m33 = 1 - (2 * (yy + xx))
+
+    return mat
 end
 
 
