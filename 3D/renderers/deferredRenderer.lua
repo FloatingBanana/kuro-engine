@@ -1,5 +1,4 @@
 local PointLight    = require "engine.3D.lights.pointLight"
-local Model         = require "engine.3D.model.model"
 local BaseRederer   = require "engine.3D.renderers.baseRenderer"
 local Matrix4       = require "engine.math.matrix4"
 local Vector3       = require "engine.math.vector3"
@@ -8,7 +7,7 @@ local Utils         = require "engine.misc.utils"
 local lg            = love.graphics
 
 
-local volume = Model("engine/3D/renderers/lightvolume.fbx", {triangulate = true, optimizeGraph = true, removeUnusedMaterials = true}).meshes.Sphere.parts[1]
+local volume = Utils.newSphereMesh(Vector3(1), 32, 32)
 local frustum = CameraFrustum()
 
 ---@alias GBuffer {uniform: string, buffer: love.Canvas}[]
@@ -102,7 +101,7 @@ function DeferredRenderer:renderMeshes(camera)
             local transform = Matrix4.CreateScale(Vector3(light:getLightRadius())) * Matrix4.CreateTranslation(light.position) * camera.viewPerspectiveMatrix
 
             self.lightPassMaterial.shader:sendUniform("uWorldMatrix", "column", transform)
-            volume:draw()
+            lg.draw(volume)
         else
             self.lightPassMaterial.shader:sendUniform("uWorldMatrix", "column", Matrix4.CreateOrthographicOffCenter(0, self.screensize.width, self.screensize.height, 0, 0, 1))
             lg.draw(self.dummySquare)
