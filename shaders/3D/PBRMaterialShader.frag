@@ -71,7 +71,7 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput 
 
 
 #	if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-		result = CalculateAmbientPBRLighting(light, irradiance, matInput.environmentRadianceMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
+		result = CalculateAmbientPBRLighting(irradiance, matInput.environmentRadianceMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
 #	else
 		vec3 lightDir = light.type == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
 		result = CalculateDirectPBRLighting(light, lightDir, viewFragDirection, normal, albedo, roughness, metallic);
