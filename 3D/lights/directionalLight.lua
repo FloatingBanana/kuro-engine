@@ -51,7 +51,7 @@ end
 ---@param meshparts MeshPartConfig[]
 function Dirlight:drawShadows(shader, meshparts)
     local viewMatrix = Matrix4.CreateLookAtDirection(self.position, -self.direction, Vector3(0,1,0))
-    local projMatrix = Matrix4.CreateOrthographicOffCenter(-self.projectionSize, self.projectionSize, self.projectionSize, -self.projectionSize, self.nearPlane, self.farPlane)
+    local projMatrix = Matrix4.CreateOrthographicOffCenter(-self.projectionSize, self.projectionSize, -self.projectionSize, self.projectionSize, self.nearPlane, self.farPlane)
 
     self.viewProjMatrix = viewMatrix:multiply(projMatrix)
     canvasTable.depthstencil = self.shadowMap
@@ -59,7 +59,6 @@ function Dirlight:drawShadows(shader, meshparts)
     love.graphics.setCanvas(canvasTable)
     love.graphics.clear()
 
-    shader:sendUniform("light.direction", -self.direction)
     shader:sendUniform("uViewProjMatrix", "column", self.viewProjMatrix)
     frustum:updatePlanes(self.viewProjMatrix)
 

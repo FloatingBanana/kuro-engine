@@ -76,15 +76,15 @@ vec4 defaultLightPass(FragmentData fragData, LightData light, MATERIAL_INPUT_STR
 
 
 
-float _getShadowOcclusion(LightData light, vec3 fragPos, vec3 viewPos) {
-    vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragPos, 1.0);
+float _getShadowOcclusion(LightData light, FragmentData fragData, vec3 viewPos) {
+    vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragData.position, 1.0);
 
 #	if defined(MATERIAL_DISABLE_SHADOWS)
 		return 0.0;
 #   elif ISLIGHT(LIGHT_TYPE_DIRECTIONAL) || ISLIGHT(LIGHT_TYPE_SPOT)
-        return ShadowCalculation(light.shadowMap, lightSpaceFragPos);
+        return ShadowCalculation(light.shadowMap, lightSpaceFragPos, light.direction, fragData.normal);
 #   elif ISLIGHT(LIGHT_TYPE_POINT)
-		return ShadowCalculation(light.position, light.farPlane, light.pointShadowMap, viewPos, fragPos);
+		return ShadowCalculation(light.position, light.farPlane, light.pointShadowMap, viewPos, fragData.position);
 #   else
         return 0.0;
 #   endif
@@ -173,7 +173,7 @@ void effect() {
 #   if ISLIGHT(LIGHT_TYPE_AMBIENT)
         visibility = texture(u_ambientOcclusion, fragData.screenUV).r;
 #   else
-        visibility = 1.0 - _getShadowOcclusion(u_light, v_fragPos, uViewPosition);
+        visibility = 1.0 - _getShadowOcclusion(u_light, fragData, uViewPosition);
 #   endif
 
 	oFragColor = MATERIAL_LIGHT_PASS(fragData, u_light, u_input, inData) * visibility;
@@ -227,7 +227,7 @@ void effect() {
         inData[3] = texture(u_deferredInput[3], fragData.screenUV);
 #   endif
 #   if MATERIAL_DATA_CHANNELS >= 5
-        inData[4] = texture(u_deferredInput[4], fragData.screenUV);
+        inData[4] = texture(u_deferredInput[4], fragData.screenUV); 
 #   endif
 #   if MATERIAL_DATA_CHANNELS >= 6
         inData[5] = texture(u_deferredInput[5], fragData.screenUV);
@@ -244,7 +244,7 @@ void effect() {
 #   if ISLIGHT(LIGHT_TYPE_AMBIENT)
         visibility = texture(u_ambientOcclusion, fragData.screenUV).r;
 #   else
-        visibility = 1.0 - _getShadowOcclusion(u_light, fragData.position, uViewPosition);
+        visibility = 1.0 - _getShadowOcclusion(u_light, fragData, uViewPosition);
 #   endif
     
     oFragColor = MATERIAL_LIGHT_PASS(fragData, u_light, u_input, inData) * visibility;

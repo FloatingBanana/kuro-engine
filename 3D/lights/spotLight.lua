@@ -54,7 +54,7 @@ end
 ---@param meshparts MeshPartConfig[]
 function Spotlight:drawShadows(shader, meshparts)
     local viewMatrix = Matrix4.CreateLookAtDirection(self.position, self.direction, Vector3(0,1,0))
-    local projMatrix = Matrix4.CreatePerspectiveFOV(self.outerAngle * 2, -1, self.nearPlane, self.farPlane)
+    local projMatrix = Matrix4.CreatePerspectiveFOV(self.outerAngle * 2, 1, self.nearPlane, self.farPlane)
 
     self.viewProjMatrix = viewMatrix:multiply(projMatrix)
     canvasTable.depthstencil = self.shadowMap
@@ -63,7 +63,6 @@ function Spotlight:drawShadows(shader, meshparts)
     love.graphics.clear()
 
     shader:sendUniform("uViewProjMatrix", "column", self.viewProjMatrix)
-    shader:sendUniform("light.position", self.direction)
     frustum:updatePlanes(self.viewProjMatrix)
 
     for i, config in ipairs(meshparts) do
