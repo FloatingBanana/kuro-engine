@@ -11,6 +11,7 @@ local Utils   = require "engine.misc.utils"
 --- @field DefaultOneTex love.Image
 --- @field DefaultZeroTex love.Image
 --- @field DefaultColorCubeTex love.Image
+--- @field DefaultZeroCubeTex love.Image
 ---
 --- @field public shader ShaderEffect
 ---
@@ -21,11 +22,13 @@ local Material = Object:extend("BaseMaterial")
 
 
 local defaultColorTexData = love.data.decode("data", "base64", "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAQSURBVBhXY/gPhBDwn+E/ABvyA/1Bas9NAAAAAElFTkSuQmCC")
+local defaultZeroData = love.image.newImageData(1,1)
 Material.DefaultColorTex = love.graphics.newImage(defaultColorTexData, {linear = true})
 Material.DefaultNormalTex = Utils.newColorImage(Vector2(1), {.5,.5,1,1})
 Material.DefaultZeroTex = Utils.newColorImage(Vector2(1), {0,0,0,1})
 Material.DefaultOneTex = Utils.newColorImage(Vector2(1), {1,1,1,1})
 Material.DefaultColorCubeTex = love.graphics.newCubeImage({defaultColorTexData, defaultColorTexData, defaultColorTexData, defaultColorTexData, defaultColorTexData, defaultColorTexData}, {linear = true})
+Material.DefaultZeroCubeTex = love.graphics.newCubeImage({defaultZeroData, defaultZeroData, defaultZeroData, defaultZeroData, defaultZeroData, defaultZeroData}, {linear = true})
 
 Material.DefaultColorTex:setWrap("repeat")
 Material.DefaultColorTex:setFilter("nearest", "nearest")

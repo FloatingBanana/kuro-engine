@@ -1,5 +1,6 @@
 #pragma include "engine/shaders/include/incl_lights.glsl"
-#pragma include "engine/shaders/include/incl_sphericalHarmonics.glsl"
+#pragma include "engine/shaders/include/incl_irradianceVolume.glsl"
+#pragma include "engine/shaders/include/incl_reflectionProbe.glsl"
 
 
 vec3 BaseFresnelReflection(vec3 albedo, float metallic) {
@@ -69,24 +70,22 @@ vec3 CalculateDirectPBRLighting(LightData light, vec3 lightDirection, vec3 viewF
 }
 
 
-vec3 CalculateAmbientPBRLighting(vec3 irradiance, samplerCube environmentRadianceMap, sampler2D brdfLUT, vec3 viewFragDirection, vec3 normal, vec3 albedo, float roughness, float metallic, float ao) {
+vec3 CalculateAmbientPBRLighting(IrradianceVolume irradianceVolume, ReflectionProbeOBB reflectionProbe, sampler2D brdfLUT, vec3 viewPos, vec3 fragPos, vec3 normal, vec3 albedo, float roughness, float metallic, float ao) {
     vec3 N = normal;
-    vec3 V = viewFragDirection;
-    vec3 F0 = BaseFresnelReflection(albedo, metallic);
-
-    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 V = normalize(fragPos - viewPos);
     float NdotV = max(dot(N, V), 0.0);
-    vec3 R = reflect(-V, N);
-    
+
+    vec3 F0 = BaseFresnelReflection(albedo, metallic);
     vec3 F = FresnelSchlickRoughness(NdotV, F0, roughness);
     vec3 kS = F;
     vec3 kD = (vec3(1.0) - kS) * (1.0 - metallic);
     
+	vec3 irradiance = IrrV_getIrradiance(irradianceVolume, fragPos, normal);
     vec3 diffuse = irradiance * albedo;
 
-    vec3 prefilteredColor = textureLod(environmentRadianceMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+	vec3 reflection = CalculateReflectionProbeColor(reflectionProbe, viewPos, fragPos, normal, roughness);
     vec2 envBRDF = texture(brdfLUT, vec2(NdotV, roughness)).rg;
-    vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+    vec3 specular = reflection * (F * envBRDF.x + envBRDF.y);
 
     return (kD * diffuse + specular) * ao;
 }

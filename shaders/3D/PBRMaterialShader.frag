@@ -12,8 +12,6 @@
 #pragma include "engine/shaders/include/incl_dither.glsl"
 #pragma include "engine/shaders/include/incl_lights.glsl"
 #pragma include "engine/shaders/include/incl_PBRLighting.glsl"
-#pragma include "engine/shaders/include/incl_sphericalHarmonics.glsl"
-#pragma include "engine/shaders/include/incl_irradianceVolume.glsl"
 
 
 
@@ -26,9 +24,7 @@ struct MaterialInput {
 	float transparency;
 
 	IrradianceVolume irradianceVolume;
-
-	SH9Color irradianceSH;
-	samplerCube environmentRadianceMap;
+	ReflectionProbeOBB reflectionProbe;
 };
 
 
@@ -46,12 +42,12 @@ void materialGBufferPass(FragmentData fragData, MaterialInput matInput, out vec4
 	vec3 albedo = texture(matInput.albedoMap, fragData.uv).rgb;
     vec4 metallicRoughness = texture(matInput.metallicRoughnessMap, fragData.uv);
 
-	vec3 irradiance = IrrV_getIrradiance(matInput.irradianceVolume, fragData.position, normal);
+	vec3 ambient = CalculateAmbientPBRLighting(matInput.irradianceVolume, matInput.reflectionProbe, uBRDF_LUT, uViewPosition, fragData.position, normal, albedo, metallicRoughness.g, metallicRoughness.b, 1);
 
 	data[0] = vec4(EncodeNormal(normal), metallicRoughness.b, metallicRoughness.g);
 	data[1] = vec4(albedo, 1.0);
 	data[2] = vec4(texture(matInput.emissiveMap, fragData.uv).rgb * matInput.emissiveIntensity, 1.0);
-	data[3] = vec4(irradiance, 1.0);
+	data[3] = vec4(ambient, 1.0);
 }
 
 
@@ -66,12 +62,12 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput 
 	vec3 albedo     = data[1].rgb;
 	float ao        = data[1].a;
 	vec3 emissive   = data[2].rgb;
-	vec3 irradiance = data[3].rgb;
+	vec3 ambient    = data[3].rgb;
 	vec3 result     = vec3(0.0);
 
 
 #	if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-		result = CalculateAmbientPBRLighting(irradiance, matInput.environmentRadianceMap, uBRDF_LUT, viewFragDirection, normal, albedo, roughness, metallic, ao);
+		result = ambient;
 #	else
 		vec3 lightDir = light.type == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
 		result = CalculateDirectPBRLighting(light, lightDir, viewFragDirection, normal, albedo, roughness, metallic);

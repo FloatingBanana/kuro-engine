@@ -10,15 +10,15 @@ local camera = Camera3D(Vector3(0), Quaternion.Identity(), math.rad(90), Vector2
 
 ---@class ReflectionProbe: Object
 ---
----@field public position Vector3
+---@field public transform Matrix4
 ---@field public environmentMap love.Texture
 ---@field public reflectionMap love.Texture
 ---
----@overload fun(position: Vector3): ReflectionProbe
+---@overload fun(transfom: Matrix4): ReflectionProbe
 local ReflectionProbe = Object:extend("ReflectionProbe")
 
-function ReflectionProbe:new(position)
-    self.position = position
+function ReflectionProbe:new(transform)
+    self.transform = transform
 
     self.environmentMap = nil
     self.reflectionMap = nil
@@ -27,15 +27,14 @@ end
 
 ---@param renderer BaseRenderer
 function ReflectionProbe:bake(renderer, nearDistance, farDistance)
-    camera.position = self.position
+    camera.position = self.transform.translation
     camera.nearPlane = nearDistance
     camera.farPlane = farDistance
     local sidesData = {}
 
 
     for s, side in ipairs(CubemapUtils.cubeSides) do
-        camera.rotation = Quaternion.CreateFromRotationMatrix(Matrix3.CreateFromDirection(side.dir, side.up))
-        -- camera.rotation = side.viewMatrix.rotation:invert()
+        camera.rotation = Quaternion.CreateFromRotationMatrix(Matrix3.CreateFromDirection(side.dir, side.up)) * self.transform.rotation
 
         sidesData[s] = renderer:render(camera):newImageData(1)
     end

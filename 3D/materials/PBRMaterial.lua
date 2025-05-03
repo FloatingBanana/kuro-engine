@@ -30,7 +30,10 @@ function PBRMaterial:new()
         transparency         = {uniform = "u_input.transparency",         value = 0},
 
         -- Ambient
-        environmentRadianceMap       = {uniform = "u_input.environmentRadianceMap",         value = Material.DefaultColorCubeTex},
+        reflectionProbeTexture       = {uniform = "u_input.reflectionProbe.texture",        value = Material.DefaultZeroCubeTex},
+        reflectionProbeInvTransform  = {uniform = "u_input.reflectionProbe.invTransform",   value = Matrix4.Identity()},
+        reflectionProbePosition      = {uniform = "u_input.reflectionProbe.position",       value = Vector3(0,0,0)},
+
         irradianceVolumeProbeBuffer  = {uniform = "u_input.irradianceVolume.probeBuffer",   value = Material.DefaultZeroTex},
         irradianceVolumeInvTransform = {uniform = "u_input.irradianceVolume.invTransform",  value = Matrix4.Identity()},
         irradianceVolumeGridSize     = {uniform = "u_input.irradianceVolume.gridSize",      value = Vector3(0,0,0)},
