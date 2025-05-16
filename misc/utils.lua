@@ -251,6 +251,13 @@ function Utils.newSquareMesh(size)
 end
 
 
+local vertexFormat3D = {
+	{"VertexPosition", "float", 3},
+	{"VertexTexCoords", "float", 2},
+	{"VertexNormal", "float", 3}
+}
+
+
 ---@param size Vector3
 ---@param segments integer
 ---@param rings integer
@@ -294,13 +301,7 @@ function Utils.newSphereMesh(size, segments, rings)
 
 	table.insert(verts, {0,-radius.y,0,.5,1,0,-1,0})
 
-	local vertFormat = {
-		{"VertexPosition", "float", 3},
-		{"VertexTexCoords", "float", 2},
-		{"VertexNormal", "float", 3}
-	}
-
-	local mesh =love.graphics.newMesh(vertFormat, verts, "triangles", "static")
+	local mesh = love.graphics.newMesh(vertexFormat3D, verts, "triangles", "static")
 	mesh:setVertexMap(indices)
 	return mesh
 end
