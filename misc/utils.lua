@@ -308,6 +308,35 @@ end
 
 
 
+function Utils.newConeMesh(size, segments)
+	local verts = {}
+	local indices = {}
+	local radius = size / 2
+
+	table.insert(verts, {0,0,0,.5,0,0,1,0})
+
+	for s=0, segments-1 do
+		local angle = s * (2 * math.pi) / segments;
+		local nx = math.cos(angle);
+		local ny = math.sin(angle);
+
+		local id1 = 2 + s
+		local id2 = 2 + ((s + 1) % segments)
+
+		Lume.push(indices, id1, 1, id2)
+		Lume.push(indices, id1, id2, 2 + segments)
+		verts[id1] = {nx*radius.x, ny*radius.y, radius.z, s / segments, 0, nx, ny, 0.5}
+	end
+
+	table.insert(verts, {0,0,radius.z,.5,.5,-1,0,0})
+
+	local mesh = love.graphics.newMesh(vertexFormat3D, verts, "triangles", "static")
+	mesh:setVertexMap(indices)
+	return mesh
+end
+
+
+
 ---@param ... number[]
 ---@return love.Image
 function Utils.newGradient(...)
