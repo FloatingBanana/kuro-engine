@@ -37,14 +37,22 @@ end
 
 ---@param f fun(probe: SH9Color, index: integer): SH9Color
 function IrradianceVolume:mapProbes(f)
-    local bufferData = love.image.newImageData(self:getProbeCount(), 9, "rgba16f")
+    local width = math.ceil(math.sqrt(self:getProbeCount()))
+    local height = math.ceil(self:getProbeCount() / width)
+
+    local bufferData = love.image.newImageData(width*3, height*3, "rg11b10f")
 
     for p=1, self:getProbeCount() do
         local probe = f(self.probes[p], p)
         self.probes[p] = probe
 
-        for c=1, 9 do
-            bufferData:setPixel(p-1, c-1, probe[c]:toFlatTable())
+        local mx = (p-1) % width
+        local my = math.floor((p-1) / width)
+
+        for bx=0, 2 do
+            for by=0, 2 do
+                bufferData:setPixel(mx*3+bx, my*3+by, probe[by*3+bx+1]:toFlatTable())
+            end
         end
     end
 

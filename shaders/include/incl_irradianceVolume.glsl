@@ -27,8 +27,13 @@ int IrrV_getIndex(IrradianceVolume volume, ivec3 cell) {
 SH9Color IrrV_getProbe(IrradianceVolume volume, int index) {
     SH9Color probe;
 
-    for (int i=0; i < 9; i++) {
-        probe.coefficients[i] = texelFetch(volume.probeBuffer, ivec2(index, i), 0).rgb;
+    int mwidth = textureSize(volume.probeBuffer, 0).x / 3;
+    ivec2 mapPos = ivec2(index % mwidth, index / mwidth) * 3;
+
+    for (int bx=0; bx < 3; bx++) {
+        for (int by=0; by < 3; by++) {
+            probe.coefficients[by * 3 + bx] = texelFetch(volume.probeBuffer, mapPos + ivec2(bx, by), 0).rgb;
+        }
     }
 
     return probe;
