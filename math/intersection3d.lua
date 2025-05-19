@@ -17,13 +17,14 @@ end
 ---------
 -- Ray --
 ---------
-function Inter3d.ray_sphere(rayPos,rayDir,   circlePos,circleRadius)
-    local circleDir = circlePos - rayPos
-    local proj = Vector3.Dot(circleDir, rayDir) * rayDir
-    local dist = Vector3.Distance(circleDir, proj)
+function Inter3d.ray_sphere(rayPos,rayDir,   spherePos,sphereRadius)
+    local L = spherePos - rayPos
+    local proj = Vector3.Dot(L, rayDir) * rayDir
+    local dist2 = Vector3.DistanceSquared(L, proj)
+    local radius2 = sphereRadius * sphereRadius
 
-    if dist <= circleRadius then
-        local m = math.sqrt(circleRadius*circleRadius - dist*dist)
+    if dist2 <= radius2 then
+        local m = math.sqrt(radius2 - dist2)
 
         local p1 = rayPos + proj - m * rayDir
         local p2 = rayPos + proj + m * rayDir
