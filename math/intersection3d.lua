@@ -47,7 +47,7 @@ function Inter3d.ray_plane(rayPos,rayDir,   planePos,planeNormal)
 end
 
 
-function Inter3d.ray_AABB(rayPos, rayDir,   topleft,bottomright)
+function Inter3d.ray_AABB(rayPos,rayDir,   topleft,bottomright)
     local tmin = (topleft - rayPos) / rayDir
     local tmax = (bottomright - rayPos) / rayDir
 
@@ -58,7 +58,7 @@ function Inter3d.ray_AABB(rayPos, rayDir,   topleft,bottomright)
     local tNear = math.max(tmin.x, math.max(tmin.y, tmin.z))
     local tFar  = math.min(tmax.x, math.min(tmax.y, tmax.z))
 
-    return tNear <= tFar and tFar >= 0, tNear, tFar
+    return tNear <= tFar and tFar >= 0, rayPos + rayDir * tNear, rayPos + rayDir * tFar
 end
 
 
