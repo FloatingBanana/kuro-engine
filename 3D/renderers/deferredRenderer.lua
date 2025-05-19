@@ -1,20 +1,21 @@
-local PointLight    = require "engine.3D.lights.pointLight"
 local BaseRederer   = require "engine.3D.renderers.baseRenderer"
 local Matrix4       = require "engine.math.matrix4"
 local Vector3       = require "engine.math.vector3"
 local CameraFrustum = require "engine.misc.cameraFrustum"
 local Utils         = require "engine.misc.utils"
+local Vector2       = require "engine.math.vector2"
 local lg            = love.graphics
 
 
-local volume = Utils.newSphereMesh(Vector3(1), 32, 32)
+local sphereVolume = Utils.newSphereMesh(Vector3(1), 32, 32)
+local coneVolume = Utils.newConeMesh(Vector3(1), 32)
+local squareVolume = Utils.newSquareMesh(Vector2(1))
 local frustum = CameraFrustum()
 
 ---@alias GBuffer {uniform: string, buffer: love.Canvas}[]
 
 --- @class DeferredRenderer: BaseRenderer
 ---
---- @field private dummySquare love.Mesh
 --- @field public gbuffer love.Canvas[]
 --- @field public lightPassMaterial BaseMaterial
 ---
@@ -25,7 +26,6 @@ local DeferredRenderer = BaseRederer:extend("DeferredRenderer")
 function DeferredRenderer:new(screensize, lightPassMaterial)
     BaseRederer.new(self, screensize)
 
-    self.dummySquare = Utils.newSquareMesh(screensize)
     self.lightPassMaterial = lightPassMaterial
     self.gbuffer = {}
 
@@ -87,6 +87,22 @@ function DeferredRenderer:renderMeshes(camera)
     for i, light in ipairs(self.lights) do
         if not light.enabled then goto continue end
 
+        local volumeMatrix = nil
+        local volumeMesh = nil
+
+        if Utils.isType(light, "PointLight") then ---@cast light PointLight
+            volumeMatrix = Matrix4.CreateScale(Vector3(light.farPlane)):multiply(Matrix4.CreateTranslation(light.position)):multiply(camera.viewPerspectiveMatrix)
+            volumeMesh = sphereVolume
+
+        elseif Utils.isType(light, "SpotLight") then ---@cast light SpotLight
+            local coneSize = light.farPlane * math.cos(light.outerAngle)
+            volumeMatrix = Matrix4.CreateScale(Vector3(coneSize, coneSize, light.farPlane)):multiply(Matrix4.CreateWorld(light.position, light.direction, Vector3(0,1,0))):multiply(camera.viewPerspectiveMatrix)
+            volumeMesh = coneVolume
+        else
+            volumeMatrix = Matrix4.CreateOrthographicOffCenter(0, 1, 1, 0, 0, 1)
+            volumeMesh = squareVolume
+        end
+
         self.lightPassMaterial:setLight(light)
         self.lightPassMaterial.shader:use()
         self.lightPassMaterial.shader:sendCommonUniforms()
@@ -96,16 +112,9 @@ function DeferredRenderer:renderMeshes(camera)
         self.lightPassMaterial:apply()
 
         self.lightPassMaterial.shader:trySendUniform("u_deferredInput", unpack(self.gbuffer))
+        self.lightPassMaterial.shader:sendUniform("uWorldMatrix", "column", volumeMatrix)
 
-        if light:is(PointLight) then ---@cast light PointLight
-            local transform = Matrix4.CreateScale(Vector3(light:getLightRadius())) * Matrix4.CreateTranslation(light.position) * camera.viewPerspectiveMatrix
-
-            self.lightPassMaterial.shader:sendUniform("uWorldMatrix", "column", transform)
-            lg.draw(volume)
-        else
-            self.lightPassMaterial.shader:sendUniform("uWorldMatrix", "column", Matrix4.CreateOrthographicOffCenter(0, self.screensize.width, self.screensize.height, 0, 0, 1))
-            lg.draw(self.dummySquare)
-        end
+        lg.draw(volumeMesh)
 
         ::continue::
     end
