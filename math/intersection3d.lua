@@ -1,6 +1,8 @@
 local Vector3 = require "engine.math.vector3"
 local Inter3d = {}
 
+local double_epsilon = 1e-6
+
 -----------
 -- Point --
 -----------
@@ -38,7 +40,7 @@ end
 function Inter3d.ray_plane(rayPos,rayDir,   planePos,planeNormal)
     local denom = Vector3.Dot(planeNormal, rayDir)
 
-    if math.abs(denom) > 1e-6 then
+    if math.abs(denom) > double_epsilon then
         local t = Vector3.Dot(planePos - rayPos, planeNormal) / denom
         return t >= 0, rayPos + t * rayDir
     end
@@ -61,6 +63,65 @@ function Inter3d.ray_AABB(rayPos,rayDir,   topleft,bottomright)
     return tNear <= tFar and tFar >= 0, rayPos + rayDir * tNear, rayPos + rayDir * tFar
 end
 
+
+function Inter3d.ray_triangle(rayPos,rayDir,   p1,p2,p3)
+    local e1 = p2 - p1
+    local e2 = p3 - p1
+    local h = Vector3.Cross(rayDir, e2)
+    local a = Vector3.Dot(e1, h)
+
+    if a > -double_epsilon and a < double_epsilon then
+        return false, Vector3(0)
+    end
+
+    local f = 1 / a
+    local s = rayPos - p1
+    local u = f * Vector3.Dot(s, h)
+
+    if u < 0 or u > 1 then
+        return false, Vector3(0)
+    end
+
+    local q = Vector3.Cross(s, e1)
+    local v = f * Vector3.Dot(rayDir, q)
+
+    if v < 0 or u + v > 1 then
+        return false, Vector3(0)
+    end
+
+    local t = f * Vector3.Dot(e2, q)
+
+    if t > double_epsilon then
+        return true, rayPos + rayDir * t
+    end
+
+    return false, Vector3(0)
+end
+
+
+function Inter3d.ray_mesh(rayPos,rayDir,   mesh,transform)
+    local indices = mesh:getVertexMap()
+    local min, max = mesh:getDrawRange()
+
+    for i = min or 1, max or #indices, 3 do
+        local p1 = Vector3(mesh:getVertex(indices[i]))
+        local p2 = Vector3(mesh:getVertex(indices[i+1]))
+        local p3 = Vector3(mesh:getVertex(indices[i+2]))
+
+        if transform then
+            p1:transform(transform)
+            p2:transform(transform)
+            p3:transform(transform)
+        end
+
+        local hit, pos = Inter3d.ray_triangle(rayPos, rayDir, p1, p2, p3)
+        if hit then
+            return true, pos
+        end
+    end
+
+    return false, Vector3(0)
+end
 
 
 ----------
