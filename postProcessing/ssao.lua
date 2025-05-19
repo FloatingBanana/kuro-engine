@@ -81,8 +81,6 @@ function SSAO:onPreRender(renderer, camera)
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.clear()
     love.graphics.draw(self.blurCanvas)
-
-    renderer.ambientOcclusion = self.ssaoCanvas
 end
 
 

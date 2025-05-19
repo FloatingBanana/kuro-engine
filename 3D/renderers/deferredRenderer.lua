@@ -108,7 +108,6 @@ function DeferredRenderer:renderMeshes(camera)
         self.lightPassMaterial.shader:sendCommonUniforms()
         self.lightPassMaterial.shader:sendRendererUniforms(self)
         self.lightPassMaterial.shader:sendCameraUniforms(camera)
-        self.lightPassMaterial.shader:trySendUniform("u_ambientOcclusion", self.ambientOcclusion)
         self.lightPassMaterial:apply()
 
         self.lightPassMaterial.shader:trySendUniform("u_deferredInput", unpack(self.gbuffer))

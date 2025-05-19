@@ -8,10 +8,11 @@ local phongShader = ShaderEffect("engine/shaders/3D/phongMaterialShader.frag", {
 
 --- @class PhongMaterial: BaseMaterial
 ---
---- @field diffuseTexture love.Texture
+--- @field diffuseMap love.Texture
 --- @field normalMap love.Texture
 --- @field shininess number
 --- @field transparency number
+--- @field ssaoTexture love.Texture
 ---
 --- @overload fun(): PhongMaterial
 local PhongMaterial = Material:extend("PhongMaterial")
@@ -23,6 +24,7 @@ function PhongMaterial:new()
         normalMap    = {uniform = "u_input.normalMap",    value = Material.DefaultNormalTex},
         shininess    = {uniform = "u_input.shininess",    value = 128},
         transparence = {uniform = "u_input.transparency", value = 0},
+        ssaoTexture  = {uniform = "u_input.ssaoTexture",  value = Material.DefaultOneTex},
     }
 
     Material.new(self, attributes, phongShader)
@@ -65,7 +67,7 @@ end
 
 
 ---@type love.PixelFormat[]
-PhongMaterial.GBufferLayout = {"rg8", "rgba8"}
+PhongMaterial.GBufferLayout = {"rgba8", "rgba8"}
 
 
 return PhongMaterial

@@ -83,7 +83,6 @@ function ForwardRenderer:renderMeshes(camera)
                 material:setLight(light)
 
                 shader:use()
-                shader:trySendUniform("u_ambientOcclusion", self.ambientOcclusion)
                 shader:sendCommonUniforms()
                 shader:sendRendererUniforms(self) --! Sending this amount of data every single pass isn't really a good idea, gonna fix it later 
                 shader:sendCameraUniforms(camera)

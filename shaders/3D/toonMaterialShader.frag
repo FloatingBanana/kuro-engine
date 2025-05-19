@@ -12,6 +12,8 @@ struct MaterialInput {
 	sampler2D diffuseMap;
 	float shininess;
 	float transparency;
+
+	sampler2D ssaoTexture;
 };
 
 #pragma include "engine/shaders/include/incl_material.glsl"
@@ -31,8 +33,9 @@ void materialPrepass(FragmentData fragData, MaterialInput matInput) {
 void materialGBufferPass(FragmentData fragData, MaterialInput matInput, out vec4 data[MATERIAL_DATA_CHANNELS]) {
 	vec3 normal = normalize(fragData.tbnMatrix * (texture(matInput.normalMap, fragData.uv).xyz * 2.0 - 1.0));
 	vec3 diffuse = texture(matInput.diffuseMap, fragData.uv).rgb;
+	float ao = matInput.transparency > 0 ? 1 : texture(matInput.ssaoTexture, fragData.screenUV).r;
 
-	data[0] = vec4(EncodeNormal(normal), 1.0, 1.0);
+	data[0] = vec4(EncodeNormal(normal), ao, 1.0);
 	data[1] = vec4(diffuse, matInput.shininess / 255.0);
 }
 
@@ -43,13 +46,14 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput 
 	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragData.position, 1.0);
 
 	vec3 normal     = DecodeNormal(data[0].rg);
+	float ao        = data[0].b;
 	vec3 diffuse    = data[1].rgb;
 	float shininess = data[1].a * 255.0;
 	vec3 result     = vec3(0.0);
 
 
 #	if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-        result = diffuse * light.color;
+        result = diffuse * light.color * ao;
 #	else
 		vec3 lightDir = CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
 		result = CaculateToonLighting(light, lightDir, normal, viewFragDirection, diffuse, shininess);

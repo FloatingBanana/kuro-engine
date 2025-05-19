@@ -17,6 +17,8 @@ local pbrShader = ShaderEffect("engine/shaders/3D/PBRMaterialShader.frag", {CURR
 --- @field emissiveIntensity number
 --- @field transparency number
 ---
+--- @field ssaoTexture love.Texture
+---
 --- @overload fun(): PBRMaterial
 local PBRMaterial = Material:extend("PBRMaterial")
 
@@ -37,6 +39,8 @@ function PBRMaterial:new()
         irradianceVolumeProbeBuffer  = {uniform = "u_input.irradianceVolume.probeBuffer",   value = Material.DefaultZeroTex},
         irradianceVolumeInvTransform = {uniform = "u_input.irradianceVolume.invTransform",  value = Matrix4.Identity()},
         irradianceVolumeGridSize     = {uniform = "u_input.irradianceVolume.gridSize",      value = Vector3(0,0,0)},
+
+        ssaoTexture                  = {uniform = "u_input.ssaoTexture",                    value = Material.DefaultOneTex},
     }
 
     Material.new(self, attributes, pbrShader)

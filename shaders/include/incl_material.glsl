@@ -159,7 +159,6 @@ void effect() {
 #if defined(PIXEL) && ISRENDERPASS(RENDER_PASS_FORWARD)
 uniform LightData u_light;
 uniform MATERIAL_INPUT_STRUCT u_input;
-uniform sampler2D u_ambientOcclusion;
 
 out vec4 oFragColor;
 
@@ -170,9 +169,7 @@ void effect() {
     MATERIAL_GBUFFER_PASS(fragData, u_input, inData);
 
     float visibility = 1.0;
-#   if ISLIGHT(LIGHT_TYPE_AMBIENT)
-        visibility = texture(u_ambientOcclusion, fragData.screenUV).r;
-#   else
+#   if !ISLIGHT(LIGHT_TYPE_AMBIENT)
         visibility = 1.0 - _getShadowOcclusion(u_light, fragData, uViewPosition);
 #   endif
 
@@ -202,7 +199,6 @@ void effect() {
 
 #if defined(PIXEL) && ISRENDERPASS(RENDER_PASS_DEFERRED_LIGHTPASS)
 uniform sampler2D u_deferredInput[MATERIAL_DATA_CHANNELS];
-uniform sampler2D u_ambientOcclusion;
 uniform MATERIAL_INPUT_STRUCT u_input;
 uniform LightData u_light;
 
@@ -241,9 +237,7 @@ void effect() {
 
 
     float visibility = 1.0;
-#   if ISLIGHT(LIGHT_TYPE_AMBIENT)
-        visibility = texture(u_ambientOcclusion, fragData.screenUV).r;
-#   else
+#   if !ISLIGHT(LIGHT_TYPE_AMBIENT)
         visibility = 1.0 - _getShadowOcclusion(u_light, fragData, uViewPosition);
 #   endif
     

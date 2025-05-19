@@ -16,7 +16,6 @@ local configPool = Stack()
 --- @field public resultCanvas love.Canvas
 --- @field public depthCanvas love.Canvas
 --- @field public skyBoxTexture love.Texture
---- @field public ambientOcclusion love.Texture
 --- @field public postProcessingEffects BasePostProcessingEffect[]
 --- @field protected meshParts Stack
 --- @field protected lights BaseLight[]
@@ -32,7 +31,6 @@ function Renderer:new(screensize)
     self.lights = {}
 
     self.skyBoxTexture = nil
-    self.ambientOcclusion = nil
 
     self.resultCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "rg11b10f"})
     self.depthCanvas = love.graphics.newCanvas(screensize.width, screensize.height, {format = "depth24stencil8", readable = true})

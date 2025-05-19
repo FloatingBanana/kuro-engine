@@ -23,6 +23,8 @@ function ToonMaterial:new()
         normalMap    = {uniform = "u_input.normalMap",    value = Material.DefaultNormalTex},
         shininess    = {uniform = "u_input.shininess",    value = 128},
         transparency = {uniform = "u_input.transparency", value = 0},
+
+        ssaoTexture  = {uniform = "u_input.ssaoTexture",  value = Material.DefaultOneTex},
     }
 
     Material.new(self, attributes, phongShader)
@@ -65,7 +67,7 @@ end
 
 
 ---@type love.PixelFormat[]
-ToonMaterial.GBufferLayout = {"rg8", "rgba8"}
+ToonMaterial.GBufferLayout = {"rgba16", "rgba8"}
 
 
 return ToonMaterial
