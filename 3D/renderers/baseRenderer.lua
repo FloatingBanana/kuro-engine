@@ -57,6 +57,12 @@ end
 ---@param config MeshPartConfig
 function Renderer:removeMeshPart(config)
     table.remove(self.meshParts, Lume.find(self.meshParts, config))
+
+    config.animator = nil
+    config.meshPart = nil
+    config.material = nil
+    config.worldMatrix = nil
+    configPool:push(config)
 end
 
 
@@ -66,6 +72,7 @@ function Renderer:clearMeshParts()
         config.animator = nil
         config.meshPart = nil
         config.material = nil
+        config.worldMatrix = nil
         configPool:push(config)
     end
 end
