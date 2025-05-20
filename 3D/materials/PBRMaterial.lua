@@ -28,6 +28,7 @@ function PBRMaterial:new()
         emissiveMap          = {uniform = "u_input.emissiveMap",          value = Material.DefaultZeroTex},
         metallicRoughnessMap = {uniform = "u_input.metallicRoughnessMap", value = Material.DefaultOneTex},
         normalMap            = {uniform = "u_input.normalMap",            value = Material.DefaultNormalTex},
+        anisotropy           = {uniform = "u_input.anisotropy",           value = 0},
         emissiveIntensity    = {uniform = "u_input.emissiveIntensity",    value = 0},
         transparency         = {uniform = "u_input.transparency",         value = 0},
 

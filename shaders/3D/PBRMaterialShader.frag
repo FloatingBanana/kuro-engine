@@ -20,6 +20,7 @@ struct MaterialInput {
 	sampler2D albedoMap;
 	sampler2D emissiveMap;
 	sampler2D metallicRoughnessMap;
+	float anisotropy;
 	float emissiveIntensity;
 	float transparency;
 
@@ -45,7 +46,7 @@ void materialGBufferPass(FragmentData fragData, MaterialInput matInput, out vec4
     vec4 metallicRoughness = texture(matInput.metallicRoughnessMap, fragData.uv);
 
 	float ao = matInput.transparency > 0 ? 1 : texture(matInput.ssaoTexture, fragData.screenUV).r;
-	vec3 ambient = CalculateAmbientPBRLighting(matInput.irradianceVolume, matInput.reflectionProbe, uBRDF_LUT, uViewPosition, fragData.position, normal, albedo, metallicRoughness.g, metallicRoughness.b, ao);
+	vec3 ambient = CalculateAmbientPBRLighting(matInput.irradianceVolume, matInput.reflectionProbe, uBRDF_LUT, uViewPosition, fragData.position, normal, albedo, metallicRoughness.g, metallicRoughness.b, ao, matInput.anisotropy, fragData.tbnMatrix[1]);
 
 	data[0] = vec4(EncodeNormal(normal), metallicRoughness.b, metallicRoughness.g);
 	data[1] = vec4(albedo, 1.0);

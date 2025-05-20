@@ -70,10 +70,14 @@ vec3 CalculateDirectPBRLighting(LightData light, vec3 lightDirection, vec3 viewF
 }
 
 
-vec3 CalculateAmbientPBRLighting(IrradianceVolume irradianceVolume, ReflectionProbeOBB reflectionProbe, sampler2D brdfLUT, vec3 viewPos, vec3 fragPos, vec3 normal, vec3 albedo, float roughness, float metallic, float ao) {
+vec3 CalculateAmbientPBRLighting(IrradianceVolume irradianceVolume, ReflectionProbeOBB reflectionProbe, sampler2D brdfLUT, vec3 viewPos, vec3 fragPos, vec3 normal, vec3 albedo, float roughness, float metallic, float ao, float anisotropy, vec3 binormal) {
     vec3 N = normal;
     vec3 V = normalize(fragPos - viewPos);
     float NdotV = max(dot(N, V), 0.0);
+
+    vec3 anisoTangent = cross(V, binormal);
+    vec3 anisoNormal = cross(anisoTangent, binormal);
+    vec3 reflNormal = normalize(mix(N, anisoNormal, anisotropy));
 
     vec3 F0 = BaseFresnelReflection(albedo, metallic);
     vec3 F = FresnelSchlickRoughness(NdotV, F0, roughness);
@@ -83,7 +87,7 @@ vec3 CalculateAmbientPBRLighting(IrradianceVolume irradianceVolume, ReflectionPr
 	vec3 irradiance = IrrV_getIrradiance(irradianceVolume, fragPos, normal);
     vec3 diffuse = irradiance * albedo;
 
-	vec3 reflection = CalculateReflectionProbeColor(reflectionProbe, viewPos, fragPos, normal, roughness);
+	vec3 reflection = CalculateReflectionProbeColor(reflectionProbe, viewPos, fragPos, reflNormal, roughness);
     vec2 envBRDF = texture(brdfLUT, vec2(NdotV, roughness)).rg;
     vec3 specular = reflection * (F * envBRDF.x + envBRDF.y);
 
