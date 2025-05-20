@@ -8,7 +8,7 @@ local CubemapUtils = require "engine.misc.cubemapUtils"
 
 
 local pbrShader = ShaderEffect("engine/shaders/3D/PBRMaterialShader.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_FORWARD"})
-local brdfLUT = CubemapUtils.getBRDF_LUT()
+local brdfLUT = CubemapUtils.getBRDF_LUT(512)
 
 --- @class PBRMaterial: BaseMaterial
 ---
