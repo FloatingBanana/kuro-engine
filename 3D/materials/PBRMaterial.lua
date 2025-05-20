@@ -16,8 +16,17 @@ local brdfLUT = CubemapUtils.getBRDF_LUT()
 --- @field emissiveMap love.Texture
 --- @field metallicRoughnessMap love.Texture
 --- @field normalMap love.Texture
+--- @field anisotropy number
 --- @field emissiveIntensity number
 --- @field transparency number
+---
+--- @field reflectionProbeTexture love.Texture
+--- @field reflectionProbeInvTransform Matrix4
+--- @field reflectionProbePosition Vector3
+---
+--- @field irradianceVolumeProbeBuffer love.Texture
+--- @field irradianceVolumeInvTransform Matrix4
+--- @field irradianceVolumeGridSize Vector3
 ---
 --- @field ssaoTexture love.Texture
 --- @field brdfLUT love.Texture
