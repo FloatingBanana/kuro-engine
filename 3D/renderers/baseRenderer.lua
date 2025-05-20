@@ -4,6 +4,7 @@ local Stack        = require "engine.collections.stack"
 local ShaderEffect = require "engine.misc.shaderEffect"
 local CubemapUtils = require "engine.misc.cubemapUtils"
 local Object       = require "engine.3rdparty.classic.classic"
+local tableclear   = require "table.clear"
 
 local skyboxShader = ShaderEffect("engine/shaders/3D/skybox.glsl")
 local configPool = Stack()
@@ -17,8 +18,8 @@ local configPool = Stack()
 --- @field public depthCanvas love.Canvas
 --- @field public skyBoxTexture love.Texture
 --- @field public postProcessingEffects BasePostProcessingEffect[]
+--- @field public lights BaseLight[]
 --- @field protected meshParts Stack
---- @field protected lights BaseLight[]
 ---
 --- @overload fun(screenSize: Vector2): BaseRenderer
 local Renderer = Object:extend("BaseRenderer")
@@ -87,6 +88,11 @@ end
 ---@param light BaseLight
 function Renderer:removeLight(light)
     table.remove(self.lights, Lume.find(self.lights, light))
+end
+
+
+function Renderer:clearLights()
+    tableclear(self.lights)
 end
 
 
