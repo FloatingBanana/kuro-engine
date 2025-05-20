@@ -4,9 +4,11 @@ local Utils        = require "engine.misc.utils"
 local Vector2      = require "engine.math.vector2"
 local Matrix4      = require "engine.math.matrix4"
 local Vector3      = require "engine.math.vector3"
+local CubemapUtils = require "engine.misc.cubemapUtils"
 
 
 local pbrShader = ShaderEffect("engine/shaders/3D/PBRMaterialShader.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_FORWARD"})
+local brdfLUT = CubemapUtils.getBRDF_LUT()
 
 --- @class PBRMaterial: BaseMaterial
 ---
@@ -18,6 +20,7 @@ local pbrShader = ShaderEffect("engine/shaders/3D/PBRMaterialShader.frag", {CURR
 --- @field transparency number
 ---
 --- @field ssaoTexture love.Texture
+--- @field brdfLUT love.Texture
 ---
 --- @overload fun(): PBRMaterial
 local PBRMaterial = Material:extend("PBRMaterial")
@@ -42,6 +45,7 @@ function PBRMaterial:new()
         irradianceVolumeGridSize     = {uniform = "u_input.irradianceVolume.gridSize",      value = Vector3(0,0,0)},
 
         ssaoTexture                  = {uniform = "u_input.ssaoTexture",                    value = Material.DefaultOneTex},
+        brdfLUT                      = {uniform = "u_input.brdfLUT",                        value = brdfLUT},
     }
 
     Material.new(self, attributes, pbrShader)

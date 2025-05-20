@@ -23,7 +23,6 @@ local configPool = Stack()
 ---
 --- @overload fun(screenSize: Vector2): BaseRenderer
 local Renderer = Object:extend("BaseRenderer")
-Renderer.BRDF_LUT = CubemapUtils.getBRDF_LUT()
 
 function Renderer:new(screensize)
     self.screensize = screensize

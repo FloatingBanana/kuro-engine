@@ -236,7 +236,6 @@ end
 function ShaderEffect:sendRendererUniforms(renderer)
     self:trySendUniform("uDepthBuffer", renderer.depthCanvas)
 	self:trySendUniform("uColorBuffer", renderer.resultCanvas)
-	self:trySendUniform("uBRDF_LUT", renderer.BRDF_LUT)
 
     return self
 end
