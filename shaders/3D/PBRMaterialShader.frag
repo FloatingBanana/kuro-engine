@@ -49,7 +49,7 @@ void materialGBufferPass(FragmentData fragData, MaterialInput matInput, out vec4
 	float ao = matInput.transparency > 0 ? 1 : texture(matInput.ssaoTexture, fragData.screenUV).r;
 	vec3 ambient = CalculateAmbientPBRLighting(matInput.irradianceVolume, matInput.reflectionProbe, matInput.brdfLUT, uViewPosition, fragData.position, normal, albedo, metallicRoughness.g, metallicRoughness.b, ao, matInput.anisotropy, fragData.tbnMatrix[1]);
 
-	data[0] = vec4(EncodeNormal(normal), metallicRoughness.b, metallicRoughness.g);
+	data[0] = vec4(EncodeOctahedron(normal), metallicRoughness.b, metallicRoughness.g);
 	data[1] = vec4(albedo, 1.0);
 	data[2] = vec4(texture(matInput.emissiveMap, fragData.uv).rgb * matInput.emissiveIntensity, 1.0);
 	data[3] = vec4(ambient, 1.0);
@@ -61,7 +61,7 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput 
     vec3 viewFragDirection = normalize(uViewPosition - fragData.position);
 	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragData.position, 1.0);
 
-	vec3 normal     = DecodeNormal(data[0].rg);
+	vec3 normal     = DecodeOctahedron(data[0].rg);
 	float metallic  = data[0].b;
 	float roughness = data[0].a;
 	vec3 albedo     = data[1].rgb;

@@ -42,11 +42,11 @@ vec3 sampleMeshNormal(sampler2D depthTex, vec2 uv, vec3 offset) {
 }
 
 vec3 sampleNormal(sampler2D normalTex, vec2 uv, vec3 offset) {
-    vec3 center = DecodeNormal(texture(normalTex, uv            ).rg);
-    vec3 left   = DecodeNormal(texture(normalTex, uv - offset.xz).rg);
-    vec3 right  = DecodeNormal(texture(normalTex, uv + offset.xz).rg);
-    vec3 up     = DecodeNormal(texture(normalTex, uv + offset.zy).rg);
-    vec3 down   = DecodeNormal(texture(normalTex, uv - offset.zy).rg);
+    vec3 center = DecodeOctahedron(texture(normalTex, uv            ).rg);
+    vec3 left   = DecodeOctahedron(texture(normalTex, uv - offset.xz).rg);
+    vec3 right  = DecodeOctahedron(texture(normalTex, uv + offset.xz).rg);
+    vec3 up     = DecodeOctahedron(texture(normalTex, uv + offset.zy).rg);
+    vec3 down   = DecodeOctahedron(texture(normalTex, uv - offset.zy).rg);
 
     return
         abs(left  - center) + 

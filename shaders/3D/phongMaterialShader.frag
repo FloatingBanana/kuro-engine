@@ -35,7 +35,7 @@ void materialGBufferPass(FragmentData fragData, MaterialInput matInput, out vec4
 	vec3 diffuse = texture(matInput.diffuseMap, fragData.uv).rgb;
 	float ao = matInput.transparency > 0 ? 1 : texture(matInput.ssaoTexture, fragData.screenUV).r;
 
-	data[0] = vec4(EncodeNormal(normal), ao, 1.0);
+	data[0] = vec4(EncodeOctahedron(normal), ao, 1.0);
 	data[1] = vec4(diffuse, matInput.shininess / 255.0);
 }
 
@@ -45,7 +45,7 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput 
     vec3 viewFragDirection = normalize(uViewPosition - fragData.position);
 	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragData.position, 1.0);
 
-	vec3 normal     = DecodeNormal(data[0].rg);
+	vec3 normal     = DecodeOctahedron(data[0].rg);
 	float ao        = data[0].b;
 	vec3 diffuse    = data[1].rgb;
 	float shininess = data[1].a * 255.0;

@@ -82,12 +82,12 @@ vec3 DecodeSphericalMap(vec2 uv) {
 
 
 // https://knarkowicz.wordpress.com/2014/04/16/octahedron-normal-vector-encoding/
-vec2 EncodeNormal(vec3 n) {
+vec2 EncodeOctahedron(vec3 n) {
     n /= (abs(n.x) + abs(n.y) + abs(n.z));
     n.xy = n.z >= 0.0 ? n.xy : ((1.0 - abs(n.yx)) * sign(n.xy));
     return n.xy * 0.5 + 0.5;
 }
-vec3 DecodeNormal(vec2 f) {
+vec3 DecodeOctahedron(vec2 f) {
     f = f * 2.0 - 1.0;    
     vec3 n = vec3(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));
     float t = max(-n.z, 0.0);
