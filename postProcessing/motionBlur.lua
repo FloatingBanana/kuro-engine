@@ -5,7 +5,6 @@ local Utils      = require "engine.misc.utils"
 
 local motionBlurShader = Utils.newPreProcessedShader([[
     #pragma language glsl3
-    #pragma include "engine/shaders/include/incl_utils.glsl"
 
     uniform sampler2D u_velocityBuffer;
     uniform float u_velocityScale;
@@ -13,7 +12,9 @@ local motionBlurShader = Utils.newPreProcessedShader([[
     vec4 effect(vec4 color, sampler2D tex, vec2 texcoords, vec2 screencoords) {
         vec2 pixelSize = 1.0 / textureSize(tex, 0);
 
-        vec2 velocity = DecodeVelocity(texture(u_velocityBuffer, texcoords).xy) * u_velocityScale;
+        vec2 velocity = pow(texture(u_velocityBuffer, texcoords).xy, vec2(1.0 / 3.0)) * 2.0 - 1.0;
+        velocity *= u_velocityScale;
+        
         float speed = length(velocity / pixelSize);
         int nSamples = clamp(int(speed), 1, 10);
 

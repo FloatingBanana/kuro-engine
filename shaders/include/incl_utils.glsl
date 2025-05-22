@@ -98,14 +98,6 @@ vec3 DecodeOctahedron(vec2 f) {
 }
 
 
-vec2 EncodeVelocity(vec2 vel) {
-    return pow(vel * 0.5 + 0.5, vec2(VELOCITY_ENCODE_PRECISION));
-}
-
-vec2 DecodeVelocity(vec2 vel) {
-    return pow(vel, vec2(1.0 / VELOCITY_ENCODE_PRECISION)) * 2.0 - 1.0;
-}
-
 
 const vec3 lumFactor = vec3(0.2126, 0.7152, 0.0722);
 
