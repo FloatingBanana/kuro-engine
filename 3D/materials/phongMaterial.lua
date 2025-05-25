@@ -23,7 +23,7 @@ function PhongMaterial:new()
         diffuseMap   = {uniform = "u_input.diffuseMap",   value = Material.DefaultColorTex},
         normalMap    = {uniform = "u_input.normalMap",    value = Material.DefaultNormalTex},
         shininess    = {uniform = "u_input.shininess",    value = 128},
-        transparence = {uniform = "u_input.transparency", value = 0},
+        transparency = {uniform = "u_input.transparency", value = 0},
         ssaoTexture  = {uniform = "u_input.ssaoTexture",  value = Material.DefaultOneTex},
     }
 
@@ -35,7 +35,7 @@ end
 ---@param model Model
 function PhongMaterial:loadMaterialData(matData, model)
     -- self.shininess = matData.shininess
-    self.opacity = 1.0 - matData.opacity
+    self.transparency = 1.0 - matData.opacity
 
     if matData.tex_diffuse then
         self:_setupTexturePromise("diffuseMap", matData.tex_diffuse, model.contentLoader:getImage(matData.tex_diffuse.path, {mipmaps = true}))
