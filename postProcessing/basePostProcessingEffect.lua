@@ -5,14 +5,6 @@ local Object = require "engine.3rdparty.classic.classic"
 --- @operator call: BasePostProcessingEffect
 local baseEffect = Object:extend("BasePostProcessingEffect")
 
-
---- @param renderer BaseRenderer
---- @param camera Camera3D
-function baseEffect:onPreRender(renderer, camera)
-
-end
-
-
 --- @param renderer BaseRenderer
 --- @param camera Camera3D
 --- @param canvas love.Canvas

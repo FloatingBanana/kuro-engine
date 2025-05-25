@@ -50,16 +50,6 @@ function ForwardRenderer:renderMeshes(camera)
     end
 
 
-    lg.setShader()
-    lg.setCanvas()
-    lg.setDepthMode()
-    lg.setMeshCullMode("none")
-    lg.setBlendMode("alpha", "alphamultiply")
-
-    for i, effect in ipairs(self.postProcessingEffects) do
-        effect:onPreRender(self, camera)
-    end
-
     ---------------
     -- Rendering --
     ---------------

@@ -69,15 +69,8 @@ function DeferredRenderer:renderMeshes(camera)
     -- Light pass --
     ----------------
 
-    lg.setCanvas()
     lg.setDepthMode()
     lg.setMeshCullMode("front")
-    lg.setBlendMode("alpha", "alphamultiply")
-
-    for i, effect in ipairs(self.postProcessingEffects) do
-        effect:onPreRender(self, camera)
-    end
-
     lg.setBlendMode("add", "alphamultiply")
     lg.setCanvas(self.resultCanvas)
     lg.clear()

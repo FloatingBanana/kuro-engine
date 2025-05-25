@@ -61,8 +61,7 @@ function SSAO:new(screenSize, kernelSize, kernelRadius)
 end
 
 
---- @param renderer BaseRenderer
-function SSAO:onPreRender(renderer, camera)
+function SSAO:onPostRender(renderer, camera, canvas)
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.clear()
     self.shader:use()
@@ -81,6 +80,8 @@ function SSAO:onPreRender(renderer, camera)
     love.graphics.setCanvas(self.ssaoCanvas)
     love.graphics.clear()
     love.graphics.draw(self.blurCanvas)
+
+    return canvas
 end
 
 
