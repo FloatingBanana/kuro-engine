@@ -109,7 +109,7 @@ end
 
 
 ---@type love.PixelFormat[]
-PBRMaterial.GBufferLayout = {"rgba16", "rgba8", "rg11b10f", "rg11b10f"}
+PBRMaterial.GBufferLayout = {"rgba16", "rgba8", "rg11b10f"}
 
 
 return PBRMaterial

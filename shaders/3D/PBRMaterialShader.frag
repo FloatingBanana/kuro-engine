@@ -6,6 +6,7 @@
 #define MATERIAL_DEPTH_PASS materialPrepass
 #define MATERIAL_GBUFFER_PASS materialGBufferPass
 #define MATERIAL_LIGHT_PASS materialLightingPass
+#define MATERIAL_AMBIENT_PASS materialAmbientPass
 
 #pragma include "engine/shaders/include/incl_utils.glsl"
 #pragma include "engine/shaders/include/incl_commonBuffers.glsl"
@@ -46,13 +47,20 @@ void materialGBufferPass(FragmentData fragData, MaterialInput matInput, out vec4
 	vec3 albedo = texture(matInput.albedoMap, fragData.uv).rgb;
     vec4 metallicRoughness = texture(matInput.metallicRoughnessMap, fragData.uv);
 
-	float ao = matInput.transparency > 0 ? 1 : texture(matInput.ssaoTexture, fragData.screenUV).r;
-	vec3 ambient = CalculateAmbientPBRLighting(matInput.irradianceVolume, matInput.reflectionProbe, matInput.brdfLUT, uViewPosition, fragData.position, normal, albedo, metallicRoughness.g, metallicRoughness.b, ao, matInput.anisotropy, fragData.tbnMatrix[1]);
-
 	data[0] = vec4(EncodeOctahedron(normal), metallicRoughness.b, metallicRoughness.g);
 	data[1] = vec4(albedo, 1.0);
 	data[2] = vec4(texture(matInput.emissiveMap, fragData.uv).rgb * matInput.emissiveIntensity, 1.0);
-	data[3] = vec4(ambient, 1.0);
+}
+
+vec4 materialAmbientPass(FragmentData fragData, MaterialInput matInput, vec4 data[MATERIAL_DATA_CHANNELS]) {
+	vec3 normal = DecodeOctahedron(data[0].rg);
+	vec3 albedo = data[1].rgb;
+	float metallic = data[0].b;
+	float roughness = data[0].a;
+	
+	float ao = matInput.transparency > 0 ? 1 : texture(matInput.ssaoTexture, fragData.screenUV).r;
+	vec3 ambient = CalculateAmbientPBRLighting(matInput.irradianceVolume, matInput.reflectionProbe, matInput.brdfLUT, uViewPosition, fragData.position, normal, albedo, roughness, metallic, ao, matInput.anisotropy, fragData.tbnMatrix[1]);
+	return vec4(ambient, 1.0);
 }
 
 
@@ -66,17 +74,10 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput 
 	float roughness = data[0].a;
 	vec3 albedo     = data[1].rgb;
 	vec3 emissive   = data[2].rgb;
-	vec3 ambient    = data[3].rgb;
-	vec3 result     = vec3(0.0);
 
-
-#	if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-		result = ambient;
-#	else
-		vec3 lightDir = light.type == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
-		result = CalculateDirectPBRLighting(light, lightDir, viewFragDirection, normal, albedo, roughness, metallic);
-		result *= CalculateLightInfluence(light, fragData.position);
-#	endif
+	vec3 lightDir = light.type == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
+	vec3 result = CalculateDirectPBRLighting(light, lightDir, viewFragDirection, normal, albedo, roughness, metallic);
+	result *= CalculateLightInfluence(light, fragData.position);
 
 	return vec4(result, 1.0);
 }

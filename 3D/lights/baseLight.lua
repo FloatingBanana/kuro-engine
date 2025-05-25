@@ -5,7 +5,7 @@ local shadowMapRendererShader = ShaderEffect("engine/shaders/3D/defaultVertexSha
 
 
 ---@alias LightTypeDefinition
----|`BaseLight.LIGHT_TYPE_AMBIENT`
+---|`BaseLight.LIGHT_TYPE_UNKNOWN`
 ---|`BaseLight.LIGHT_TYPE_DIRECTIONAL`
 ---|`BaseLight.LIGHT_TYPE_SPOT`
 ---|`BaseLight.LIGHT_TYPE_POINT`
@@ -23,7 +23,7 @@ local shadowMapRendererShader = ShaderEffect("engine/shaders/3D/defaultVertexSha
 --- @overload fun(typeDefinition: LightTypeDefinition): BaseLight
 local BaseLight = Object:extend("BaseLight")
 
-BaseLight.LIGHT_TYPE_AMBIENT     = 0
+BaseLight.LIGHT_TYPE_UNKNOWN     = 0
 BaseLight.LIGHT_TYPE_DIRECTIONAL = 1
 BaseLight.LIGHT_TYPE_SPOT        = 2
 BaseLight.LIGHT_TYPE_POINT       = 3

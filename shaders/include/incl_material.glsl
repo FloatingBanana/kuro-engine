@@ -23,6 +23,10 @@
 #   define MATERIAL_GBUFFER_PASS defaultGBufferPass
 #endif
 
+#ifndef MATERIAL_AMBIENT_PASS
+#   define MATERIAL_AMBIENT_PASS defaultAmbientPass
+#endif
+
 #ifndef MATERIAL_LIGHT_PASS
 #   define MATERIAL_LIGHT_PASS defaultLightPass
 #endif
@@ -32,7 +36,7 @@
 #endif
 
 #ifndef CURRENT_LIGHT_TYPE
-#   define CURRENT_LIGHT_TYPE LIGHT_TYPE_AMBIENT
+#   define CURRENT_LIGHT_TYPE LIGHT_TYPE_UNKNOWN
 #endif
 
 // #define MATERIAL_DISABLE_SHADOWS
@@ -66,11 +70,13 @@ struct DefaultMaterialInput {
 
 void MATERIAL_DEPTH_PASS(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput);
 void MATERIAL_GBUFFER_PASS(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput, out vec4 data[MATERIAL_DATA_CHANNELS]);
+vec4 MATERIAL_AMBIENT_PASS(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput, vec4 data[MATERIAL_DATA_CHANNELS]);
 vec4 MATERIAL_LIGHT_PASS(FragmentData fragData, LightData light, MATERIAL_INPUT_STRUCT materialInput, vec4 data[MATERIAL_DATA_CHANNELS]);
 
 
 void defaultDepthPass(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput) {}
 void defaultGBufferPass(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput, out vec4 data[MATERIAL_DATA_CHANNELS]) {}
+vec4 defaultAmbientPass(FragmentData fragData, MATERIAL_INPUT_STRUCT materialInput, vec4 data[MATERIAL_DATA_CHANNELS]) {return vec4(0,0,0,1);}
 vec4 defaultLightPass(FragmentData fragData, LightData light, MATERIAL_INPUT_STRUCT materialInput, vec4 data[MATERIAL_DATA_CHANNELS]) {return vec4(0,0,0,1);}
 
 
@@ -129,9 +135,6 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
 #   if ISRENDERPASS(RENDER_PASS_DEFERRED_LIGHTPASS)
         screen = uWorldMatrix * position;
-#   elif ISRENDERPASS(RENDER_PASS_DEPTH_PREPASS)
-        screen.z += 0.00001;
-		screen.y *= -1.0;
 #   endif
 
 
@@ -147,9 +150,15 @@ vec4 position(mat4 transformProjection, vec4 position) {
 
 #if defined(PIXEL) && ISRENDERPASS(RENDER_PASS_DEPTH_PREPASS)
 uniform MATERIAL_INPUT_STRUCT u_input;
+out vec4 oAmbientColor;
 
 void effect() {
-    MATERIAL_DEPTH_PASS(_getFragmentData(gl_FragCoord.xy), u_input);
+    FragmentData fragData = _getFragmentData(gl_FragCoord.xy);
+    MATERIAL_DEPTH_PASS(fragData, u_input);
+
+    vec4 inData[MATERIAL_DATA_CHANNELS];
+    MATERIAL_GBUFFER_PASS(fragData, u_input, inData);
+    oAmbientColor = MATERIAL_AMBIENT_PASS(fragData, u_input, inData);
 }
 #endif // RENDER_PASS_DEPTH_PREPASS
 
@@ -168,10 +177,7 @@ void effect() {
     vec4 inData[MATERIAL_DATA_CHANNELS];
     MATERIAL_GBUFFER_PASS(fragData, u_input, inData);
 
-    float visibility = 1.0;
-#   if !ISLIGHT(LIGHT_TYPE_AMBIENT)
-        visibility = 1.0 - _getShadowOcclusion(u_light, fragData, uViewPosition);
-#   endif
+    float visibility = 1.0 - _getShadowOcclusion(u_light, fragData, uViewPosition);
 
 	oFragColor = MATERIAL_LIGHT_PASS(fragData, u_light, u_input, inData) * visibility;
 }
@@ -184,13 +190,18 @@ void effect() {
 
 #if defined(PIXEL) && ISRENDERPASS(RENDER_PASS_DEFERRED)
 uniform MATERIAL_INPUT_STRUCT u_input;
+
+out vec4 oAmbientColor;
 out vec4 oDeferredOutputs[MATERIAL_DATA_CHANNELS];
 
 void effect() {
     FragmentData fragData = _getFragmentData(gl_FragCoord.xy);
+    vec4 inData[MATERIAL_DATA_CHANNELS];
 
 	MATERIAL_DEPTH_PASS(fragData, u_input);
-    MATERIAL_GBUFFER_PASS(fragData, u_input, oDeferredOutputs);
+    MATERIAL_GBUFFER_PASS(fragData, u_input, inData);
+    oAmbientColor = MATERIAL_AMBIENT_PASS(fragData, u_input, inData);
+    oDeferredOutputs = inData;
 }
 #endif // RENDER_PASS_DEFERRED
 
@@ -236,10 +247,7 @@ void effect() {
 #   endif
 
 
-    float visibility = 1.0;
-#   if !ISLIGHT(LIGHT_TYPE_AMBIENT)
-        visibility = 1.0 - _getShadowOcclusion(u_light, fragData, uViewPosition);
-#   endif
+    float visibility = 1.0 - _getShadowOcclusion(u_light, fragData, uViewPosition);
     
     oFragColor = MATERIAL_LIGHT_PASS(fragData, u_light, u_input, inData) * visibility;
 }

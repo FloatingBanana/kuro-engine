@@ -5,6 +5,7 @@
 
 #define MATERIAL_DEPTH_PASS materialPrepass
 #define MATERIAL_GBUFFER_PASS materialGBufferPass
+#define MATERIAL_AMBIENT_PASS materialAmbientPass
 #define MATERIAL_LIGHT_PASS materialLightingPass
 
 struct MaterialInput {
@@ -13,6 +14,7 @@ struct MaterialInput {
 	float shininess;
 	float transparency;
 
+	vec3 ambientColor;
 	sampler2D ssaoTexture;
 };
 
@@ -33,10 +35,18 @@ void materialPrepass(FragmentData fragData, MaterialInput matInput) {
 void materialGBufferPass(FragmentData fragData, MaterialInput matInput, out vec4 data[MATERIAL_DATA_CHANNELS]) {
 	vec3 normal = normalize(fragData.tbnMatrix * (texture(matInput.normalMap, fragData.uv).xyz * 2.0 - 1.0));
 	vec3 diffuse = texture(matInput.diffuseMap, fragData.uv).rgb;
-	float ao = matInput.transparency > 0 ? 1 : texture(matInput.ssaoTexture, fragData.screenUV).r;
 
-	data[0] = vec4(EncodeOctahedron(normal), ao, 1.0);
+	data[0] = vec4(EncodeOctahedron(normal), 1.0, 1.0);
 	data[1] = vec4(diffuse, matInput.shininess / 255.0);
+}
+
+
+vec4 materialAmbientPass(FragmentData fragData, MaterialInput matInput, vec4 data[MATERIAL_DATA_CHANNELS]) {
+	vec3 normal = DecodeOctahedron(data[0].rg);
+	vec3 diffuse = data[1].rgb;
+	float ao = matInput.transparency > 0.0 ? 1.0 : texture(matInput.ssaoTexture, fragData.screenUV).r;
+	
+	return vec4(matInput.ambientColor * diffuse * ao, 1.0);
 }
 
 
@@ -46,19 +56,12 @@ vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput 
 	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragData.position, 1.0);
 
 	vec3 normal     = DecodeOctahedron(data[0].rg);
-	float ao        = data[0].b;
 	vec3 diffuse    = data[1].rgb;
 	float shininess = data[1].a * 255.0;
-	vec3 result     = vec3(0.0);
 
-
-#	if CURRENT_LIGHT_TYPE == LIGHT_TYPE_AMBIENT
-        result = diffuse * light.color * ao;
-#	else
-		vec3 lightDir = CURRENT_LIGHT_TYPE == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
-		result = CaculateToonLighting(light, lightDir, normal, viewFragDirection, diffuse, shininess);
-		result *= CalculateLightInfluence(light, fragData.position);
-#   endif
+	vec3 lightDir = light.type == LIGHT_TYPE_DIRECTIONAL ? light.direction : lightFragDirection;
+	vec3 result = CaculateToonLighting(light, lightDir, normal, viewFragDirection, diffuse, shininess);
+	result *= CalculateLightInfluence(light, fragData.position);
 
 	return vec4(result, 1.0);
 }

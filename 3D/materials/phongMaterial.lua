@@ -1,6 +1,7 @@
 local Material     = require "engine.3D.materials.baseMaterial"
 local ShaderEffect = require "engine.misc.shaderEffect"
 local Vector2      = require "engine.math.vector2"
+local Vector3      = require "engine.math.vector3"
 local Utils        = require "engine.misc.utils"
 
 local phongShader = ShaderEffect("engine/shaders/3D/phongMaterialShader.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_FORWARD"})
@@ -24,6 +25,7 @@ function PhongMaterial:new()
         normalMap    = {uniform = "u_input.normalMap",    value = Material.DefaultNormalTex},
         shininess    = {uniform = "u_input.shininess",    value = 128},
         transparency = {uniform = "u_input.transparency", value = 0},
+        ambientColor = {uniform = "u_input.ambientColor", value = Vector3(0)},
         ssaoTexture  = {uniform = "u_input.ssaoTexture",  value = Material.DefaultOneTex},
     }
 
@@ -67,7 +69,7 @@ end
 
 
 ---@type love.PixelFormat[]
-PhongMaterial.GBufferLayout = {"rgba8", "rgba8"}
+PhongMaterial.GBufferLayout = {"rg8", "rgba8"}
 
 
 return PhongMaterial

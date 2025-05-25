@@ -41,7 +41,7 @@ function DeferredRenderer:renderMeshes(camera)
     --------------
 
     --* TODO: cache this
-    lg.setCanvas {depthstencil = self.depthCanvas, unpack(self.gbuffer)}
+    lg.setCanvas {depthstencil = self.depthCanvas, self.resultCanvas, unpack(self.gbuffer)}
     lg.clear()
 
     lg.setDepthMode("lequal", true)
@@ -73,7 +73,6 @@ function DeferredRenderer:renderMeshes(camera)
     lg.setMeshCullMode("front")
     lg.setBlendMode("add", "alphamultiply")
     lg.setCanvas(self.resultCanvas)
-    lg.clear()
 
     self.lightPassMaterial:setRenderPass("lightpass")
 

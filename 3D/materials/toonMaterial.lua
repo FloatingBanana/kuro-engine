@@ -1,6 +1,7 @@
 local Material     = require "engine.3D.materials.baseMaterial"
 local ShaderEffect = require "engine.misc.shaderEffect"
 local Vector2      = require "engine.math.vector2"
+local Vector3      = require "engine.math.vector3"
 local Utils        = require "engine.misc.utils"
 
 local phongShader = ShaderEffect("engine/shaders/3D/toonMaterialShader.frag", {CURRENT_RENDER_PASS = "RENDER_PASS_FORWARD"})
@@ -12,6 +13,7 @@ local phongShader = ShaderEffect("engine/shaders/3D/toonMaterialShader.frag", {C
 --- @field normalMap love.Texture
 --- @field shininess number
 --- @field transparency number
+--- @field ambientColor Vector3
 --- @field ssaoTexture love.Texture
 ---
 --- @overload fun(): ToonMaterial
@@ -25,6 +27,7 @@ function ToonMaterial:new()
         shininess    = {uniform = "u_input.shininess",    value = 128},
         transparency = {uniform = "u_input.transparency", value = 0},
 
+        ambientColor = {uniform = "u_input.ambientColor", value = Vector3(0)},
         ssaoTexture  = {uniform = "u_input.ssaoTexture",  value = Material.DefaultOneTex},
     }
 
@@ -68,7 +71,7 @@ end
 
 
 ---@type love.PixelFormat[]
-ToonMaterial.GBufferLayout = {"rgba16", "rgba8"}
+ToonMaterial.GBufferLayout = {"rg16", "rgba8"}
 
 
 return ToonMaterial
