@@ -12,6 +12,7 @@ local phongShader = ShaderEffect("engine/shaders/3D/toonMaterialShader.frag", {C
 --- @field normalMap love.Texture
 --- @field shininess number
 --- @field transparency number
+--- @field ssaoTexture love.Texture
 ---
 --- @overload fun(): ToonMaterial
 local ToonMaterial = Material:extend("ToonMaterial")
