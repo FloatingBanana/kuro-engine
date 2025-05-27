@@ -19,7 +19,7 @@ function ForwardRenderer:renderMeshes(camera)
     lg.setCanvas({self.resultCanvas, depthstencil = self.depthCanvas})
     lg.clear()
 
-    frustum:updatePlanes(camera.viewPerspectiveMatrix)
+    frustum:updatePlanes(camera.viewProjectionMatrix)
 
     --------------------
     -- Depth pre-pass --

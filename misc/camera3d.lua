@@ -2,6 +2,8 @@ local Matrix4 = require "engine.math.matrix4"
 local Vector3 = require "engine.math.vector3"
 local Object  = require "engine.3rdparty.classic.classic"
 
+---@alias ProjectionType "perspective" | "orthographic"
+
 --- @class Camera3D
 --- 
 --- @field position Vector3
@@ -13,25 +15,27 @@ local Object  = require "engine.3rdparty.classic.classic"
 --- @field viewMatrix Matrix4
 --- @field perspectiveMatrix Matrix4
 --- @field orthographicMatrix Matrix4
---- @field viewPerspectiveMatrix Matrix4
---- @field viewOrthographicMatrix Matrix4
+--- @field projectionMatrix Matrix4
+--- @field viewProjectionMatrix Matrix4
 --- @field forward Vector3
 --- @field backward Vector3
 --- @field up Vector3
 --- @field down Vector3
 --- @field left Vector3
 --- @field right Vector3
+--- @field type ProjectionType
 ---
---- @overload fun(position: Vector3, rotation: Quaternion, fov: number, screenSize: Vector2, nearPlane: number, farPlane: number): Camera3D
+--- @overload fun(position: Vector3, rotation: Quaternion, fov: number, screenSize: Vector2, nearPlane: number, farPlane: number, type: ProjectionType?): Camera3D
 local Camera = Object:extend("Camera3D")
 
-function Camera:new(position, rotation, fov, screenSize, nearPlane, farPlane)
+function Camera:new(position, rotation, fov, screenSize, nearPlane, farPlane, type)
     self.position = position
     self.rotation = rotation
     self.fov = fov
     self.screenSize = screenSize
     self.nearPlane = nearPlane
     self.farPlane = farPlane
+    self.type = type or "perspective"
 end
 
 function Camera:__index(key)
@@ -47,12 +51,18 @@ function Camera:__index(key)
         return Matrix4.CreateOrthographic(self.screenSize.width, self.screenSize.height, self.nearPlane, self.farPlane)
     end
 
-    if key == "viewPerspectiveMatrix" then
-        return self.viewMatrix * self.perspectiveMatrix
+    if key == "projectionMatrix" then
+        if self.type == "perspective" then
+            return self.perspectiveMatrix
+        elseif self.type == "orthographic" then
+            return self.orthographicMatrix
+        else
+            error("Unknown camera projection type: " .. tostring(self.type))
+        end
     end
 
-    if key == "viewOrthographicMatrix" then
-        return self.viewMatrix * self.perspectiveMatrix
+    if key == "viewProjectionMatrix" then
+        return self.viewMatrix:multiply(self.projectionMatrix)
     end
 
     if key == "forward" then

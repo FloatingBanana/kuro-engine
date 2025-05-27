@@ -48,7 +48,7 @@ function DeferredRenderer:renderMeshes(camera)
     lg.setBlendMode("replace", "premultiplied")
     lg.setMeshCullMode("back")
 
-    frustum:updatePlanes(camera.viewPerspectiveMatrix)
+    frustum:updatePlanes(camera.viewProjectionMatrix)
     self.lightPassMaterial:setRenderPass("gbuffer")
     self.lightPassMaterial.shader:sendCommonUniforms()
     self.lightPassMaterial.shader:sendRendererUniforms(self)
@@ -83,12 +83,12 @@ function DeferredRenderer:renderMeshes(camera)
         local volumeMesh = nil
 
         if Utils.isType(light, "PointLight") then ---@cast light PointLight
-            volumeMatrix = Matrix4.CreateScale(Vector3(light.farPlane)):multiply(Matrix4.CreateTranslation(light.position)):multiply(camera.viewPerspectiveMatrix)
+            volumeMatrix = Matrix4.CreateScale(Vector3(light.farPlane)):multiply(Matrix4.CreateTranslation(light.position)):multiply(camera.viewProjectionMatrix)
             volumeMesh = sphereVolume
 
         elseif Utils.isType(light, "SpotLight") then ---@cast light SpotLight
             local coneSize = light.farPlane * math.cos(light.outerAngle)
-            volumeMatrix = Matrix4.CreateScale(Vector3(coneSize, coneSize, light.farPlane)):multiply(Matrix4.CreateWorld(light.position, light.direction, Vector3(0,1,0))):multiply(camera.viewPerspectiveMatrix)
+            volumeMatrix = Matrix4.CreateScale(Vector3(coneSize, coneSize, light.farPlane)):multiply(Matrix4.CreateWorld(light.position, light.direction, Vector3(0,1,0))):multiply(camera.viewProjectionMatrix)
             volumeMesh = coneVolume
         else
             volumeMatrix = Matrix4.CreateOrthographicOffCenter(0, 1, 1, 0, 0, 1)

@@ -8,7 +8,7 @@ local SH9Color        = require "engine.math.SH9Color"
 local CubemapUtils    = require "engine.misc.cubemapUtils"
 local Matrix3         = require "engine.math.matrix3"
 
-local camera = Camera3D(Vector3(0), Quaternion.Identity(), math.rad(90), Vector2(1), 0.1, 100)
+local camera = Camera3D(Vector3(0), Quaternion.Identity(), math.rad(90), Vector2(1), 0.1, 100, "perspective")
 
 
 ---@class IrradianceVolume: Object

@@ -6,7 +6,7 @@ local Quaternion      = require "engine.math.quaternion"
 local Matrix3         = require "engine.math.matrix3"
 local CubemapUtils    = require "engine.misc.cubemapUtils"
 
-local camera = Camera3D(Vector3(0), Quaternion.Identity(), math.rad(90), Vector2(1), 0.1, 100)
+local camera = Camera3D(Vector3(0), Quaternion.Identity(), math.rad(90), Vector2(1), 0.1, 100, "perspective")
 
 ---@class ReflectionProbe: Object
 ---

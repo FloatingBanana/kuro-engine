@@ -208,17 +208,17 @@ end
 ---@return self
 function ShaderEffect:sendCameraUniforms(camera)
     self:trySendUniform("uViewMatrix", "column", camera.viewMatrix)
-	self:trySendUniform("uProjMatrix", "column", camera.perspectiveMatrix)
-    self:trySendUniform("uViewProjMatrix", "column", camera.viewPerspectiveMatrix)
+	self:trySendUniform("uProjMatrix", "column", camera.projectionMatrix)
+    self:trySendUniform("uViewProjMatrix", "column", camera.viewProjectionMatrix)
 
     if self:hasUniform("uInvViewMatrix") then
         self:sendUniform("uInvViewMatrix", "column", camera.viewMatrix:invert())
     end
     if self:hasUniform("uInvProjMatrix") then
-        self:sendUniform("uInvProjMatrix", "column", camera.perspectiveMatrix:invert())
+        self:sendUniform("uInvProjMatrix", "column", camera.projectionMatrix:invert())
     end
     if self:hasUniform("uInvViewProjMatrix") then
-        self:sendUniform("uInvViewProjMatrix", "column", camera.viewPerspectiveMatrix:invert())
+        self:sendUniform("uInvViewProjMatrix", "column", camera.viewProjectionMatrix:invert())
     end
 
     self:trySendUniform("uNearPlane", camera.nearPlane)
