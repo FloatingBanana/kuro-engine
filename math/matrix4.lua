@@ -1,7 +1,7 @@
 local Vector3 = require "engine.math.vector3"
 local Quaternion = require "engine.math.quaternion"
 local CStruct = require "engine.misc.cstruct"
-local abs, tan, sqrt, huge = math.abs, math.tan, math.sqrt, math.huge
+local abs, tan, sqrt, huge, cos, sin = math.abs, math.tan, math.sqrt, math.huge, math.cos, math.sin
 
 -- See [engine/vector2.lua] for explanation
 local function commutative_reorder(object, number)
