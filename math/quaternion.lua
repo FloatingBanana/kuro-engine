@@ -405,12 +405,55 @@ end
 
 ---Creates a quaternion from a direction an up vector
 ---@param direction Vector3 Direction of the rotation
+---@param forward Vector3 Forward direction relative to the deisired rotation
 ---@param up Vector3 Up direction relative to the deisired rotation
 ---@return Quaternion result
-function Quaternion.CreateFromDirection(direction, up)
-	local right = Vector3.Cross(direction, up):normalize()
-	return Quaternion(right.x, right.y, right.z, Vector3.Dot(direction, up))
+function Quaternion.CreateFromDirection(direction, forward, up)
+	local rot1 = Quaternion.RotationBetweenVectors(forward, direction);
+	local right = Vector3.Cross(direction, up)
+	up = Vector3.Cross(right, direction);
+
+	local newUp = Vector3(0,1,0):transform(rot1)
+	local rot2 = Quaternion.RotationBetweenVectors(newUp, up)
+	return rot2:multiply(rot1)
 end
+
+
+---@param forward Vector3
+---@param direction Vector3
+---@return Quaternion
+function Quaternion.RotationBetweenVectors(forward, direction)
+    forward = forward.normalized
+    direction = direction.normalized
+
+    local cosTheta = Vector3.Dot(forward, direction)
+
+    if cosTheta < -1 + 0.001 then
+        -- special case when vectors in opposite directions:
+        -- there is no "ideal" rotation axis
+        -- So guess one; any will do as long as it's perpendicular to start
+        local axis = Vector3.Cross(Vector3(0.0, 0.0, 1.0), forward)
+
+        if axis.lengthSquared * axis.lengthSquared < 0.01 then
+            axis = Vector3.Cross(Vector3(1.0, 0.0, 0.0), forward)
+		end
+
+        axis:normalize()
+        return Quaternion(axis.x, axis.y, axis.z, 0)
+	end
+
+    axis = Vector3.Cross(forward, direction)
+    local s = sqrt((1 + cosTheta) * 2)
+    local invs = 1 / s
+
+    return Quaternion(
+        axis.x * invs,
+        axis.y * invs,
+        axis.z * invs,
+        s * 0.5
+    )
+end
+
 
 
 
