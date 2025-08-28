@@ -4,7 +4,7 @@ local Object  = require "engine.3rdparty.classic.classic"
 
 ---@alias ProjectionType "perspective" | "orthographic"
 
---- @class Camera3D
+--- @class Camera3D: Object
 --- 
 --- @field position Vector3
 --- @field rotation Quaternion
