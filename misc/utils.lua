@@ -1,6 +1,4 @@
 local Lume   = require "engine.3rdparty.lume"
-local Object = require "engine.3rdparty.classic.classic"
-local Kuro   = require "engine.kuro"
 local ffi    = require "ffi"
 
 
@@ -277,6 +275,37 @@ local vertexFormat3D = {
 	{"VertexTexCoords", "float", 2},
 	{"VertexNormal", "float", 3}
 }
+
+
+function Utils.newCubeMesh(size)
+	size = size / 2
+
+	local verts = {
+		{-size.x,-size.y,-size.z, 0, 0, 0, 0,-1},
+		{ size.x,-size.y,-size.z, 1, 0, 0, 0,-1},
+		{ size.x, size.y,-size.z, 1, 1, 0, 0,-1},
+		{-size.x, size.y,-size.z, 0, 1, 0, 0,-1},
+
+		{-size.x,-size.y, size.z, 0, 0, 0, 0, 1},
+		{ size.x,-size.y, size.z, 1, 0, 0, 0, 1},
+		{ size.x, size.y, size.z, 1, 1, 0, 0, 1},
+		{-size.x, size.y, size.z, 0, 1, 0, 0, 1},
+	}
+
+	local indices = {
+		1, 2, 4, 4, 2, 3,
+		2, 6, 3, 3, 6, 7,
+		6, 5, 7, 7, 5, 8,
+		5, 1, 8, 8, 1, 4,
+		4, 3, 8, 8, 3, 7,
+		5, 6, 1, 1, 6, 2
+	}
+
+	local mesh = love.graphics.newMesh(vertexFormat3D, verts, "triangles", "static")
+	mesh:setVertexMap(indices)
+
+	return mesh
+end
 
 
 ---@param size Vector3
