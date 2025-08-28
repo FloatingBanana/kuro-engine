@@ -45,7 +45,7 @@ function Inter3d.ray_plane(rayPos,rayDir,   planePos,planeNormal)
         return t >= 0, rayPos + t * rayDir
     end
 
-    return false, 0
+    return false, Vector3(0)
 end
 
 
