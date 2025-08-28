@@ -39,7 +39,7 @@ function Entity:detachComponent(compClassName)
 
     assert(comp, "Entity does not have component "..compClassName)
     comp:onDetach(self)
-    self.entity = nil
+    comp.entity = nil
 
     self.components[compClassName] = nil
     self._disabledComponents[compClassName] = nil
