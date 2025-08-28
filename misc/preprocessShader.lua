@@ -12,6 +12,7 @@ local function preprocessShader(shaderStr, defaultDefines, isIncludedFile)
 	local parser = ParserHelper("", true)
 	local lineNumber = 0
 	local mainBlock = {}
+	local blockHierarchy = {}
 	local shader = shaderStr
 	local headerCode = love.filesystem.read("engine/shaders/default.glsl")
 	local insertLine = function(...) Lume.push(mainBlock, ...) end
@@ -81,6 +82,36 @@ local function preprocessShader(shaderStr, defaultDefines, isIncludedFile)
 					local code = preprocessShader(path, {}, true)
 
 					result = ("#line 0\n%s\n#line %d\n"):format(code, lineNumber)
+
+				-- Hacky loop unrolling
+				elseif parser:eat("loop") then
+					local index = parser:eatMatch(ParserHelper.IdentifierPattern)
+					local loopCount = parser:eatMatch(ParserHelper.NumberPattern)
+
+					assert(index and loopCount, "Malformed loop signature")
+
+					table.insert(blockHierarchy, mainBlock)
+					mainBlock = {indexName = index, loopCount = math.floor(tonumber(loopCount)), startLine = lineNumber}
+					goto continue
+
+				-- End of loop, incremente the index value and copy the loop block for every iteration
+				elseif parser:eat("endloop") then
+					assert(blockHierarchy[1], "Unmatched endloop directive")
+
+					local block = mainBlock
+					mainBlock = table.remove(blockHierarchy)
+
+					for i=0, block.loopCount-1 do
+						insertLine(
+							"#define "..block.indexName.." "..tostring(i),
+							"{",
+							"#line "..block.startLine,
+							table.concat(block, "\n"),
+							"}",
+							"#undef "..block.indexName
+						)
+					end
+					result = "#line "..lineNumber
 				end
 			end
 		end
@@ -89,6 +120,8 @@ local function preprocessShader(shaderStr, defaultDefines, isIncludedFile)
 		insertLine(result)
 		::continue::
 	end
+
+	assert(not blockHierarchy[1], "Missing #pragma endloop")
 
 	if isIncludedFile then
 		-- End file guard
