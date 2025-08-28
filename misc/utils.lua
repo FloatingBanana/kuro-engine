@@ -70,6 +70,27 @@ function Utils.containsTable(t1, t2, ignoreArrayOrder)
 end
 
 
+---@param t table
+---@param item any
+---@return integer?
+function Utils.findIndex(t, item)
+	for i=1, #t do
+		if t[i] == item then
+			return i
+		end
+	end
+	return nil
+end
+
+
+function Utils.push(t, ...)
+	local tsize = #t
+	for i=1, select("#", ...) do
+		t[tsize + i] = select(i, ...)
+	end
+end
+
+
 ---@param v any
 ---@return string|ffi.ctype*
 function Utils.getType(v)
