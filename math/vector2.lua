@@ -360,6 +360,15 @@ function Vector2.Lerp(v1, v2, t)
 end
 
 
+--- Calculates the cross product between two vectors
+--- @param v1 Vector2
+--- @param v2 Vector2
+--- @return number
+function Vector2.Cross(v1, v2)
+    return v1.x*v2.y - v1.y*v2.x;
+end
+
+
 --- Calculates the dot product between two vectors
 --- @param v1 Vector2: The first vector
 --- @param v2 Vector2: the second vector
