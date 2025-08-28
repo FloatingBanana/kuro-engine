@@ -1,5 +1,5 @@
-local Vector2 = require "engine.math.vector2"
 local Object  = require "engine.3rdparty.classic.classic"
+local ffi     = require "ffi"
 
 local vertexFormat = {
     {"VertexPosition", "float", 3},
@@ -10,22 +10,16 @@ local vertexFormat = {
     {"VertexWeights", "float", 4}
 }
 
-local jitEnabled = jit and jit.status()
-local ffi = nil
-if jitEnabled then
-    ffi = require "ffi"
-
-    ffi.cdef [[
-        struct vertex {
-            Vector3 position;
-            Vector2 uv;
-            Vector3 normal;
-            Vector3 tangent;
-            float boneIds[4];
-            float weights[4];
-        }
-    ]]
-end
+ffi.cdef [[
+    struct vertex {
+        Vector3 position;
+        Vector2 uv;
+        Vector3 normal;
+        Vector3 tangent;
+        float boneIds[4];
+        float weights[4];
+    }
+]]
 
 --- @alias VertexWeightArray table<integer, number>
 
@@ -53,8 +47,6 @@ end
 --- @private
 --- @param meshPartData table
 function Meshpart:__loadVertices(meshPartData)
-    assert(jitEnabled, "Mesh loading requires jit to be enabled")
-
     -- Vertices
     local vertices = love.data.newByteData(ffi.sizeof("struct vertex") * #meshPartData.positions)
     local pointer = ffi.cast("struct vertex*", vertices:getFFIPointer())
