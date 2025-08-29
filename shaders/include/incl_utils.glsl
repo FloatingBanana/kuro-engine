@@ -150,3 +150,26 @@ mat3 GetTBNMatrix(mat4 world, vec3 normal, vec3 tangent) {
 
     return mat3(T, B, N);
 }
+
+
+vec4 TextureTriplanar(sampler2D tex, vec3 normal, vec3 position) {
+	vec3 absNormal = normalize(max(abs(normal), vec3(0.0001)));
+	absNormal /= absNormal.x + absNormal.y + absNormal.z;
+
+	return
+		texture(tex, position.yz) * absNormal.x +
+		texture(tex, position.xz) * absNormal.y +
+		texture(tex, position.xy) * absNormal.z;
+}
+
+
+vec2 GetTriplanarUV(vec3 normal, vec3 position) {
+	vec3 absNormal = abs(normal);
+
+	if (absNormal.x > absNormal.y && absNormal.x > absNormal.z)
+		return position.yz;
+	else if (absNormal.y > absNormal.x && absNormal.y > absNormal.z)
+	 	return position.xz;
+
+    return position.xy;
+}
