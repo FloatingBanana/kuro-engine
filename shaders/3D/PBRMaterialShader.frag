@@ -67,7 +67,6 @@ vec4 materialAmbientPass(FragmentData fragData, MaterialInput matInput, vec4 dat
 vec4 materialLightingPass(FragmentData fragData, LightData light, MaterialInput matInput, vec4 data[MATERIAL_DATA_CHANNELS]) {
 	vec3 lightFragDirection = normalize(light.position - fragData.position);
     vec3 viewFragDirection = normalize(uViewPosition - fragData.position);
-	vec4 lightSpaceFragPos = light.lightMatrix * vec4(fragData.position, 1.0);
 
 	vec3 normal     = DecodeOctahedron(data[0].rg);
 	float metallic  = data[0].b;
