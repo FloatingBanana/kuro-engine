@@ -1,7 +1,7 @@
 #pragma language glsl3
 
 #define UVtoNDC(uv) (vec3(uv.x, 1.0 - uv.y, uv.z) * 2.0 - 1.0)
-#define NDCtoUV(ndc) (ndc * vec3(0.5, -0.5, 0.5) + 0.5)
+#define NDCtoUV(ndc) (ndc * vec3(0.5, 0.5, 0.5) + 0.5)
 
 vec3 ProjectUV(vec3 position, mat4 proj) {
     vec4 clipPos = proj * vec4(position, 1.0);
