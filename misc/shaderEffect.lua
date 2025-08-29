@@ -4,8 +4,6 @@ local Matrix3 = require "engine.math.matrix3"
 local Utils   = require "engine.misc.utils"
 local ffi     = require "ffi"
 
-local globalCache = {}
-
 
 ---@class ShaderEffect: Object
 ---
@@ -31,6 +29,7 @@ function ShaderEffect:new(vertexshader, pixelshader, defines)
     self._shader = nil
     self._defines = defines or {}
     self._isDirty = true
+    self._cache = {}
 
     self:_updateShader()
 end
@@ -51,10 +50,7 @@ end
 ---@private
 function ShaderEffect:_updateShader()
     if self._isDirty then
-        local cache = globalCache[self._shadercode] or {}
-        globalCache[self._shadercode] = cache
-
-        for defs, shader in pairs(cache) do
+        for defs, shader in pairs(self._cache) do
             if Utils.isTableEqual(defs, self._defines, false) then
                 self._shader = shader
                 self._isDirty = false
@@ -65,7 +61,7 @@ function ShaderEffect:_updateShader()
 
         local defsCopy = Utils.shallowCopy(self._defines)
         self._shader = Utils.newPreProcessedShader(self._shadercode, defsCopy)
-        globalCache[self._shadercode][defsCopy] = self._shader
+        self._cache[defsCopy] = self._shader
         self._isDirty = false
     end
 end
